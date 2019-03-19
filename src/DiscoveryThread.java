@@ -34,10 +34,8 @@ public class DiscoveryThread implements Runnable {
             }
 
             Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
-
+            System.out.println(getClass().getName() + ">>>Ready to receive broadcast packets!");
             while (true) {
-
-                System.out.println(getClass().getName() + ">>>Ready to receive broadcast packets!");
 
                 //Receive a packet
                 byte[] recvBuf = new byte[15000];
