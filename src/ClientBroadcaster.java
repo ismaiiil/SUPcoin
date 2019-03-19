@@ -1,11 +1,14 @@
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.*;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientBroadcaster implements Runnable {
     DatagramSocket c;
+    static String test;
 
     @Override
     public void run() {
@@ -17,16 +20,9 @@ public class ClientBroadcaster implements Runnable {
 
             byte[] sendData = "DISCOVER_FUIFSERVER_REQUEST".getBytes();
 
-            //Try the 255.255.255.255 first
-            try {
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 8888);
-                c.send(sendPacket);
-                System.out.println(getClass().getName() + ">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
-            } catch (Exception e) {
-            }
 
             // Broadcast the message over all the network interfaces
-            Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
 
@@ -60,6 +56,7 @@ public class ClientBroadcaster implements Runnable {
 
             //We have a response
             System.out.println(getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
+
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
