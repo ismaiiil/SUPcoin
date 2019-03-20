@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import enums.LogLevel;
 import enums.UDPMessage;
 import helpers.CLogger;
+import helpers.R;
 
 public class DiscoveryThread implements Runnable {
 
@@ -37,8 +38,6 @@ public class DiscoveryThread implements Runnable {
                 }
 
             }
-
-            Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
             CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Ready to receive broadcast packets!");
             while (true) {
 
@@ -49,9 +48,9 @@ public class DiscoveryThread implements Runnable {
 
                 if(!localaddresses.contains(packet.getAddress().getHostAddress())){
                     //Packet received
-                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>Discovery packet received from: " + packet.getAddress().getHostAddress());
-                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>Packet received; data: " + new String(packet.getData()));
-
+                    String packetAddress = packet.getAddress().getHostAddress();
+                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>packet received from: " + packetAddress);
+                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>data received: " + new String(packet.getData()));
 
 
                     //See if the packet holds the right command (message)
@@ -64,6 +63,10 @@ public class DiscoveryThread implements Runnable {
                         socket.send(sendPacket);
 
                         CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                    }
+                    if (message.equals(UDPMessage.CONFIRM_RDV_REQUEST.toString())){
+                        R.ClientAddreses.add(packetAddress);
+                        System.out.println(R.ClientAddreses);
                     }
                 }
 

@@ -8,6 +8,7 @@ import java.util.Enumeration;
 
 import enums.UDPMessage;
 import helpers.CLogger;
+import helpers.R;
 
 public class ClientBroadcaster implements Runnable {
     DatagramSocket c;
@@ -65,13 +66,16 @@ public class ClientBroadcaster implements Runnable {
 
             //We have a response
             CLogger.print(LogLevel.LOW,getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
-
+            R.RDVadress = receivePacket.getAddress().getHostAddress();
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
             if (message.equals(UDPMessage.DISCOVER_RDV_RESPONSE.toString())) {
-                //DO SOMETHING WITH THE SERVER'S IP (for example, store it in your controller)
                 CLogger.print(LogLevel.LOW,"got the response: "+ message);
+
+                sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(R.RDVadress), 8888);
+                c.send(sendPacket);
             }
 
             //Close the port!
