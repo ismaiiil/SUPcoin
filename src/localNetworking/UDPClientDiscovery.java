@@ -67,7 +67,7 @@ public class UDPClientDiscovery implements Runnable {
             //We have a response
             CLogger.print(LogLevel.LOW,getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
             //add RDV
-            R.RDVadress = receivePacket.getAddress().getHostAddress();
+            R.ClientAddreses.add(receivePacket.getAddress().getHostAddress());
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
@@ -76,7 +76,7 @@ public class UDPClientDiscovery implements Runnable {
 
                 //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our R class
                 sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(R.RDVadress), 8888);
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(R.ClientAddreses.get(0)), 8888);
                 c.send(sendPacket);
             }
 

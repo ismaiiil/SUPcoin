@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import enums.LogLevel;
+import enums.Role;
 import enums.UDPMessage;
 import helpers.CLogger;
 import helpers.R;
@@ -56,21 +57,24 @@ public class UDPMessageListener implements Runnable {
 
                     //See if the packet holds the right command (message)
                     String message = new String(packet.getData()).trim();
-                    switch (UDPMessage.valueOf(message)){
-                        case DISCOVER_RDV_REQUEST:
-                            byte[] sendData = UDPMessage.DISCOVER_RDV_RESPONSE.toString().getBytes();
-                            //Send a response
-                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
-                            socket.send(sendPacket);
-                            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
-                            break;
-                        case CONFIRM_RDV_REQUEST:
-                            if(!R.ClientAddreses.contains(packetAddress)){
-                                R.ClientAddreses.add(packetAddress);
-                                System.out.println("all current EDGEs connected to this RDV node are:" + R.ClientAddreses.toString());
-                            }
-                            break;
+                    if(R.myRole == Role.RDV){
+                        switch (UDPMessage.valueOf(message)){
+                            case DISCOVER_RDV_REQUEST:
+                                byte[] sendData = UDPMessage.DISCOVER_RDV_RESPONSE.toString().getBytes();
+                                //Send a response
+                                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
+                                socket.send(sendPacket);
+                                CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                                break;
+                            case CONFIRM_RDV_REQUEST:
+                                if(!R.ClientAddreses.contains(packetAddress)){
+                                    R.ClientAddreses.add(packetAddress);
+                                    System.out.println("all current EDGEs connected to this RDV node are:" + R.ClientAddreses.toString());
+                                }
+                                break;
+                        }
                     }
+
                 }
 
             }
