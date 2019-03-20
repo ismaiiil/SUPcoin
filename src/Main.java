@@ -11,7 +11,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        CLogger.logLevel = LogLevel.HIGH;
+        CLogger.logLevel = LogLevel.LOW;
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPcoin core");
@@ -32,6 +32,14 @@ public class Main {
             case EDGE:
                 Thread client = new Thread(new ClientBroadcaster(3));
                 client.start();
+                try {
+                    client.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if(R.RDVadress != null){
+                    System.out.println("Sucessfully found teh RDV node at: "+ R.RDVadress);
+                }
                 break;
             case RDV:
                 Thread discoveryThread = new Thread(DiscoveryThread.getInstance());

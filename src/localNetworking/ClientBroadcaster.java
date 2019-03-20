@@ -66,6 +66,7 @@ public class ClientBroadcaster implements Runnable {
 
             //We have a response
             CLogger.print(LogLevel.LOW,getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
+            //add RDV
             R.RDVadress = receivePacket.getAddress().getHostAddress();
 
             //Check if the message is correct
@@ -73,6 +74,7 @@ public class ClientBroadcaster implements Runnable {
             if (message.equals(UDPMessage.DISCOVER_RDV_RESPONSE.toString())) {
                 CLogger.print(LogLevel.LOW,"got the response: "+ message);
 
+                //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our R class
                 sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(R.RDVadress), 8888);
                 c.send(sendPacket);
