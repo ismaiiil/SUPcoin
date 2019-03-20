@@ -64,17 +64,17 @@ public class Main {
         //data associated to the message for example the block chain itself.
 
         System.out.println("do you want to test exhange of messges over TCP (y/n)");
+        TCPMessageListener messageListener = new TCPMessageListener(8888);
+        messageListener.start();
         String user_choice = user_input.nextLine();
         if(user_choice == "y"){
-            TCPMessageListener messageListener = new TCPMessageListener(8888);
-            messageListener.start();
-
             TCPMessage myCustomMessage = new TCPMessage();
             myCustomMessage.setMessage("TET KOK");
             myCustomMessage.setTcpMessageType(TCPMessageType.TEXT);
 
             for (String ipadd:R.ClientAddreses) {
                 TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(myCustomMessage,ipadd,8888);
+                tcpMessageEmmiter.start();
             }
         }
 
