@@ -68,7 +68,7 @@ public class DiscoveryThread implements Runnable {
                     if (message.equals(UDPMessage.CONFIRM_RDV_REQUEST.toString())){
                         if(!R.ClientAddreses.contains(packetAddress)){
                             R.ClientAddreses.add(packetAddress);
-                            CLogger.print(LogLevel.LOW,R.ClientAddreses.toString());
+                            System.out.println("all current EDGEs connected to this RDV node are:" + R.ClientAddreses.toString());
                         }
                     }
                 }

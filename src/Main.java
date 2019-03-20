@@ -11,7 +11,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        CLogger.logLevel = LogLevel.LOW;
+        CLogger.logLevel = LogLevel.NONE;
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPcoin core");
@@ -38,7 +38,7 @@ public class Main {
                     e.printStackTrace();
                 }
                 if(R.RDVadress != null){
-                    System.out.println("Sucessfully found teh RDV node at: "+ R.RDVadress);
+                    System.out.println("Sucessfully found the RDV node at: "+ R.RDVadress);
                 }
                 break;
             case RDV:
