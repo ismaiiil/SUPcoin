@@ -9,6 +9,11 @@ import java.util.logging.Logger;
 public class ClientBroadcaster implements Runnable {
     DatagramSocket c;
     static String test;
+    int maxretries;
+
+    public ClientBroadcaster(int maxRetries){
+        this.maxretries = maxRetries;
+    }
 
     @Override
     public void run() {
@@ -52,6 +57,7 @@ public class ClientBroadcaster implements Runnable {
             //Wait for a response
             byte[] recvBuf = new byte[15000];
             DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
+            c.setSoTimeout(10*1000);
             c.receive(receivePacket);
 
             //We have a response
@@ -67,26 +73,20 @@ public class ClientBroadcaster implements Runnable {
 
             //Close the port!
             c.close();
+
+        } catch (SocketTimeoutException ex){
+            System.out.println("Timeout waiting for server answer");
+            maxretries -= 1;
+            if(maxretries > 0){
+                System.out.println("Retrying to reach server");
+                this.run();
+            }else{
+                System.out.println("max retries reached stopping discovery");
+            }
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
-
-    public static ClientBroadcaster getInstance() {
-        return ClientThreadHolder.INSTANCE;
-    }
-
-
-    private static class ClientThreadHolder {
-        private static final ClientBroadcaster INSTANCE = new ClientBroadcaster();
-
-    }
-
-
-    public static void main(String[] args) {
-        Thread client = new Thread(ClientBroadcaster.getInstance());
-        client.start();
-
     }
 
 
