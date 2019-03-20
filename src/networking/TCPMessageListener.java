@@ -33,6 +33,7 @@ public class TCPMessageListener extends Thread{
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
                 System.out.println(tcpMessage.getMessage());
+                socket.close();
             }catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
             }

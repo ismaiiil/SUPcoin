@@ -67,12 +67,13 @@ public class Main {
         TCPMessageListener messageListener = new TCPMessageListener(8888);
         messageListener.start();
         String user_choice = user_input.nextLine();
-        if(user_choice == "y"){
+        if(user_choice.equals("y")){
             TCPMessage myCustomMessage = new TCPMessage();
             myCustomMessage.setMessage("TET KOK");
             myCustomMessage.setTcpMessageType(TCPMessageType.TEXT);
 
             for (String ipadd:R.ClientAddreses) {
+                System.out.println(ipadd);
                 TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(myCustomMessage,ipadd,8888);
                 tcpMessageEmmiter.start();
             }
