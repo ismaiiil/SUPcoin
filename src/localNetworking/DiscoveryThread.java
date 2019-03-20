@@ -1,3 +1,5 @@
+package localNetworking;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -9,6 +11,9 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import enums.LogLevel;
+import enums.UDPMessage;
+import helpers.CLogger;
 
 public class DiscoveryThread implements Runnable {
 
@@ -34,7 +39,7 @@ public class DiscoveryThread implements Runnable {
             }
 
             Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
-            System.out.println(getClass().getName() + ">>>Ready to receive broadcast packets!");
+            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Ready to receive broadcast packets!");
             while (true) {
 
                 //Receive a packet
@@ -44,21 +49,21 @@ public class DiscoveryThread implements Runnable {
 
                 if(!localaddresses.contains(packet.getAddress().getHostAddress())){
                     //Packet received
-                    System.out.println(getClass().getName() + ">>>Discovery packet received from: " + packet.getAddress().getHostAddress());
-                    System.out.println(getClass().getName() + ">>>Packet received; data: " + new String(packet.getData()));
+                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>Discovery packet received from: " + packet.getAddress().getHostAddress());
+                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>Packet received; data: " + new String(packet.getData()));
 
 
 
                     //See if the packet holds the right command (message)
                     String message = new String(packet.getData()).trim();
-                    if (message.equals("DISCOVER_FUIFSERVER_REQUEST")) {
-                        byte[] sendData = "DISCOVER_FUIFSERVER_RESPONSE".getBytes();
+                    if (message.equals(UDPMessage.DISCOVER_RDV_REQUEST.toString())) {
+                        byte[] sendData =UDPMessage.DISCOVER_RDV_RESPONSE.toString().getBytes();
 
                         //Send a response
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
                         socket.send(sendPacket);
 
-                        System.out.println(getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                        CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
                     }
                 }
 

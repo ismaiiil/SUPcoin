@@ -1,10 +1,13 @@
+package localNetworking;
+
+import enums.LogLevel;
+
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.*;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import enums.UDPMessage;
+import helpers.CLogger;
 
 public class ClientBroadcaster implements Runnable {
     DatagramSocket c;
@@ -23,10 +26,10 @@ public class ClientBroadcaster implements Runnable {
             c = new DatagramSocket();
             c.setBroadcast(true);
 
-            byte[] sendData = "DISCOVER_FUIFSERVER_REQUEST".getBytes();
+            byte[] sendData = UDPMessage.DISCOVER_RDV_REQUEST.toString().getBytes();
 
 
-            // Broadcast the message over all the network interfaces
+            // Broadcast the message over all the localNetworking interfaces
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
@@ -48,11 +51,11 @@ public class ClientBroadcaster implements Runnable {
                     } catch (Exception e) {
                     }
 
-                    System.out.println(getClass().getName() + ">>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
+                    CLogger.print(LogLevel.HIGH,getClass().getName() + ">>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
                 }
             }
 
-            System.out.println(getClass().getName() + ">>> Done looping over all network interfaces. Now waiting for a reply!");
+            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>> Done looping over all localNetworking interfaces. Now waiting for a reply!");
 
             //Wait for a response
             byte[] recvBuf = new byte[15000];
@@ -61,27 +64,27 @@ public class ClientBroadcaster implements Runnable {
             c.receive(receivePacket);
 
             //We have a response
-            System.out.println(getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
+            CLogger.print(LogLevel.LOW,getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
 
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
-            if (message.equals("DISCOVER_FUIFSERVER_RESPONSE")) {
+            if (message.equals(UDPMessage.DISCOVER_RDV_RESPONSE.toString())) {
                 //DO SOMETHING WITH THE SERVER'S IP (for example, store it in your controller)
-                System.out.println("got the response: "+ message);
+                CLogger.print(LogLevel.LOW,"got the response: "+ message);
             }
 
             //Close the port!
             c.close();
 
         } catch (SocketTimeoutException ex){
-            System.out.println("Timeout waiting for server answer");
+            CLogger.print(LogLevel.LOW,"Timeout waiting for server answer");
             maxretries -= 1;
             if(maxretries > 0){
-                System.out.println("Retrying to reach server");
+                CLogger.print(LogLevel.LOW,"Retrying to reach server");
                 this.run();
             }else{
-                System.out.println("max retries reached stopping discovery");
+                CLogger.print(LogLevel.LOW,"max retries reached stopping discovery");
             }
 
         } catch (IOException ex) {
