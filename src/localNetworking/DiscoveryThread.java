@@ -16,6 +16,7 @@ import enums.UDPMessage;
 import helpers.CLogger;
 import helpers.R;
 
+
 public class DiscoveryThread implements Runnable {
 
     DatagramSocket socket;
@@ -45,10 +46,10 @@ public class DiscoveryThread implements Runnable {
                 byte[] recvBuf = new byte[15000];
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
-
+                String packetAddress = packet.getAddress().getHostAddress();
                 if(!localaddresses.contains(packet.getAddress().getHostAddress())){
                     //Packet received
-                    String packetAddress = packet.getAddress().getHostAddress();
+
                     CLogger.print(LogLevel.LOW,getClass().getName() + ">>>packet received from: " + packetAddress);
                     CLogger.print(LogLevel.LOW,getClass().getName() + ">>>data received: " + new String(packet.getData()));
 
@@ -65,8 +66,10 @@ public class DiscoveryThread implements Runnable {
                         CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
                     }
                     if (message.equals(UDPMessage.CONFIRM_RDV_REQUEST.toString())){
-                        R.ClientAddreses.add(packetAddress);
-                        System.out.println(R.ClientAddreses);
+                        if(!R.ClientAddreses.contains(packetAddress)){
+                            R.ClientAddreses.add(packetAddress);
+                            CLogger.print(LogLevel.LOW,R.ClientAddreses.toString());
+                        }
                     }
                 }
 
