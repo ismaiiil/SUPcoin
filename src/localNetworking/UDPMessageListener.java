@@ -17,7 +17,7 @@ import helpers.CLogger;
 import helpers.R;
 
 
-public class DiscoveryThread implements Runnable {
+public class UDPMessageListener implements Runnable {
 
     DatagramSocket socket;
     List<String> localaddresses =  new ArrayList<>();
@@ -39,7 +39,7 @@ public class DiscoveryThread implements Runnable {
                 }
 
             }
-            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Ready to receive broadcast packets!");
+            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Ready to receive packets!");
             while (true) {
 
                 //Receive a packet
@@ -50,42 +50,42 @@ public class DiscoveryThread implements Runnable {
                 if(!localaddresses.contains(packet.getAddress().getHostAddress())){
                     //Packet received
 
-                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>packet received from: " + packetAddress);
-                    CLogger.print(LogLevel.LOW,getClass().getName() + ">>>data received: " + new String(packet.getData()));
+                    CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>packet received from: " + packetAddress);
+                    CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>data received: " + new String(packet.getData()));
 
 
                     //See if the packet holds the right command (message)
                     String message = new String(packet.getData()).trim();
-                    if (message.equals(UDPMessage.DISCOVER_RDV_REQUEST.toString())) {
-                        byte[] sendData =UDPMessage.DISCOVER_RDV_RESPONSE.toString().getBytes();
-
-                        //Send a response
-                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
-                        socket.send(sendPacket);
-
-                        CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
-                    }
-                    if (message.equals(UDPMessage.CONFIRM_RDV_REQUEST.toString())){
-                        if(!R.ClientAddreses.contains(packetAddress)){
-                            R.ClientAddreses.add(packetAddress);
-                            System.out.println("all current EDGEs connected to this RDV node are:" + R.ClientAddreses.toString());
-                        }
+                    switch (UDPMessage.valueOf(message)){
+                        case DISCOVER_RDV_REQUEST:
+                            byte[] sendData = UDPMessage.DISCOVER_RDV_RESPONSE.toString().getBytes();
+                            //Send a response
+                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
+                            socket.send(sendPacket);
+                            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                            break;
+                        case CONFIRM_RDV_REQUEST:
+                            if(!R.ClientAddreses.contains(packetAddress)){
+                                R.ClientAddreses.add(packetAddress);
+                                System.out.println("all current EDGEs connected to this RDV node are:" + R.ClientAddreses.toString());
+                            }
+                            break;
                     }
                 }
 
             }
         } catch (IOException ex) {
-            Logger.getLogger(DiscoveryThread.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(UDPMessageListener.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public static DiscoveryThread getInstance() {
-        return DiscoveryThreadHolder.INSTANCE;
+    public static UDPMessageListener getInstance() {
+        return UDPMessageListenerHolder.INSTANCE;
     }
 
-    private static class DiscoveryThreadHolder {
+    private static class UDPMessageListenerHolder {
 
-        private static final DiscoveryThread INSTANCE = new DiscoveryThread();
+        private static final UDPMessageListener INSTANCE = new UDPMessageListener();
     }
 
 }

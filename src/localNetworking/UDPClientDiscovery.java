@@ -10,12 +10,12 @@ import enums.UDPMessage;
 import helpers.CLogger;
 import helpers.R;
 
-public class ClientBroadcaster implements Runnable {
+public class UDPClientDiscovery implements Runnable {
     DatagramSocket c;
     static String test;
     int maxretries;
 
-    public ClientBroadcaster(int maxRetries){
+    public UDPClientDiscovery(int maxRetries){
         this.maxretries = maxRetries;
     }
 

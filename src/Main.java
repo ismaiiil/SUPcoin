@@ -2,8 +2,8 @@ import enums.LogLevel;
 import enums.Role;
 import helpers.CLogger;
 import helpers.R;
-import localNetworking.ClientBroadcaster;
-import localNetworking.DiscoveryThread;
+import localNetworking.UDPClientDiscovery;
+import localNetworking.UDPMessageListener;
 
 import java.util.Scanner;
 
@@ -30,7 +30,7 @@ public class Main {
         System.out.println("Your choose the myRole of " + R.myRole.toString());
         switch (R.myRole){
             case EDGE:
-                Thread client = new Thread(new ClientBroadcaster(3));
+                Thread client = new Thread(new UDPClientDiscovery(3));
                 client.start();
                 try {
                     client.join();
@@ -42,7 +42,7 @@ public class Main {
                 }
                 break;
             case RDV:
-                Thread discoveryThread = new Thread(DiscoveryThread.getInstance());
+                Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
                 discoveryThread.start();
                 break;
 
