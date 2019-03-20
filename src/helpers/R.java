@@ -2,10 +2,11 @@ package helpers;
 
 import enums.Role;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class R {
     public static Role myRole;
     public static String RDVadress;
-    public static List<String> ClientAddreses;
+    public static List<String> ClientAddreses = new ArrayList<>();
 }
