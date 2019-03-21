@@ -9,6 +9,7 @@ import models.TCPMessage;
 import networking.TCPMessageEmmiter;
 import networking.TCPMessageListener;
 
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Main {
@@ -77,23 +78,31 @@ public class Main {
         TCPMessageListener messageListener = new TCPMessageListener(8888);
         messageListener.start();
         String user_choice = user_input.nextLine();
-        if(user_choice.equals("y")){
-            TCPMessage myCustomMessage = new TCPMessage();
-            myCustomMessage.setMessage("TEST MESSAGE");
-            myCustomMessage.setTcpMessageType(TCPMessageType.TEXT);
 
-            for (String ipadd:R.ClientAddreses) {
-                System.out.println("sending test message to"+ ipadd);
-                TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(myCustomMessage,ipadd,8888);
-                tcpMessageEmmiter.start();
+        if(user_choice.equals("y")){
+            TCPMessage myCustomMessage = new TCPMessage("TEST MESSAGE",TCPMessageType.TEXT);
+            //each time we multicast a message to the connected peers we gotta check if its in the cache and not send it else we cache and send it
+            if(!R.cacheMessage.contains(myCustomMessage.getMessageHash())){
+                for (String ipadd:R.ClientAddreses) {
+                    System.out.println("directly test message to"+ ipadd);
+
+
+                        TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(myCustomMessage,ipadd,8888);
+                        tcpMessageEmmiter.start();
+
+
+                }
             }
         }
 
         /*
         TODO architecture for connections over the internet => TCP spider web like
-        TODO set up propagating packets
+        TODO set up propagating packets => hash messages and cache them, check the cash before propagating => have a TTL over TTL do not propagate
         set up the message listener to call the message emitter to propagate messages
-        challenge while doing so is facing p2p architectures where the message might loopcak to the same device more than twice
+        challenge while doing so is facing p2p architectures where the message might loopback to the same device more than twice
+        use a cache to cache signatures of messages maybe?
+        also messages ca n have a TTL over which it dies once it has finished,
+        messages can be associated with a job ID, hence a message that has been going though the netowrk and isnt relevant anymore is discarded
         */
 
 

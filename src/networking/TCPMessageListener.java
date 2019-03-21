@@ -38,11 +38,17 @@ public class TCPMessageListener extends Thread{
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
                 CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getMessage() + "from" + socket.getInetAddress());
-                for (String ipadd: R.ClientAddreses) {
-                    System.out.println("sending test message to"+ ipadd);
-                    TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
-                    tcpMessageEmmiter.start();
+                if(!R.cacheMessage.contains(tcpMessage.getMessageHash())){
+                    for (String ipadd: R.ClientAddreses) {
+                        System.out.println("propagating test message to"+ ipadd);
+                        TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
+                        tcpMessageEmmiter.start();
+                    }
+                }else{
+                    System.out.println("this message has already been sent from this node dropping it.");
                 }
+
+
                 socket.close();
             }catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
