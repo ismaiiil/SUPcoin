@@ -77,27 +77,31 @@ public class Main {
         System.out.println("do you want to test exchange of messages over TCP, type any text...");
         TCPMessageListener messageListener = new TCPMessageListener(8888);
         messageListener.start();
-        String user_choice = user_input.nextLine();
 
-        if(!user_choice.equals("")){
-            TCPMessage myCustomMessage = new TCPMessage(user_choice,TCPMessageType.TEXT);
+        while(true){
+            String user_choice = user_input.nextLine();
 
-            //each time we multicast a message to the connected peers we gotta check if its in the cache and not send it else we cache and send it
-            if(!R.cacheMessage.contains(myCustomMessage.getMessageHash())){
+            if(!user_choice.equals("")){
+                TCPMessage myCustomMessage = new TCPMessage(user_choice,TCPMessageType.TEXT);
 
-                for (String ipadd:R.ClientAddreses) {
-                    System.out.println("directly message to"+ ipadd);
+                //each time we multicast a message to the connected peers we gotta check if its in the cache and not send it else we cache and send it
+                if(!R.cacheMessage.contains(myCustomMessage.getMessageHash())){
+
+                    for (String ipadd:R.ClientAddreses) {
+                        System.out.println("directly message to"+ ipadd);
 
 
                         TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(myCustomMessage,ipadd,8888);
                         tcpMessageEmmiter.start();
 
 
+                    }
                 }
+                //add it after weve sent it
+                R.cacheMessage.add(myCustomMessage.getMessageHash());
             }
-            //add it after weve sent it
-            R.cacheMessage.add(myCustomMessage.getMessageHash());
         }
+
 
         /*
         TODO architecture for connections over the internet => TCP spider web like

@@ -50,7 +50,6 @@ public class TCPMessageListener extends Thread{
                 }
                 R.cacheMessage.add(tcpMessage.getMessageHash());
 
-
                 socket.close();
             }catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
