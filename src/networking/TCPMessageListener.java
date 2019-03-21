@@ -1,5 +1,7 @@
 package networking;
 
+import helpers.CLogger;
+import helpers.R;
 import models.TCPMessage;
 
 import java.io.IOException;
@@ -7,6 +9,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import static enums.LogLevel.HIGH;
+import static enums.LogLevel.LOW;
 
 public class TCPMessageListener extends Thread{
     private int port;
@@ -24,15 +29,20 @@ public class TCPMessageListener extends Thread{
     public void run() {
         while (true){
             try{
-                System.out.println("ServerSocket awaiting connections...");
+                CLogger.print(LOW,getClass().getName() + "ServerSocket awaiting connections...");
                 Socket socket = serverSocket.accept(); // blocking call, this will wait until a connection is attempted on this port.
-                System.out.println("Connection from " + socket + "!");
+                CLogger.print(LOW,getClass().getName() + "Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-                System.out.println(tcpMessage.getMessage());
+                CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getMessage() + "from" + socket.getInetAddress());
+                for (String ipadd: R.ClientAddreses) {
+                    System.out.println("sending test message to"+ ipadd);
+                    TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
+                    tcpMessageEmmiter.start();
+                }
                 socket.close();
             }catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
