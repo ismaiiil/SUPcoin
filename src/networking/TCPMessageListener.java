@@ -29,19 +29,18 @@ public class TCPMessageListener extends Thread{
     public void run() {
         while (true){
             try{
-                CLogger.print(LOW,getClass().getName() + "ServerSocket awaiting connections...");
+                CLogger.print(HIGH,getClass().getName() + "ServerSocket awaiting connections...");
                 Socket socket = serverSocket.accept(); // blocking call, this will wait until a connection is attempted on this port.
-                CLogger.print(LOW,getClass().getName() + "Connection from " + socket + "!");
+                CLogger.print(HIGH,getClass().getName() + "Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
                 CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getMessage() + "from" + socket.getInetAddress());
-
                 if(!R.cacheMessage.contains(tcpMessage.getMessageHash())){
                     for (String ipadd: R.ClientAddreses) {
-                        System.out.println("propagating message to"+ ipadd);
+                        System.out.println("propagating message" + tcpMessage.getMessage() +" to"+ ipadd);
                         TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
                         tcpMessageEmmiter.start();
                     }
