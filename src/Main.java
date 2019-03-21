@@ -69,7 +69,7 @@ public class Main {
         String user_choice = user_input.nextLine();
         if(user_choice.equals("y")){
             TCPMessage myCustomMessage = new TCPMessage();
-            myCustomMessage.setMessage("TET KOK");
+            myCustomMessage.setMessage("TEST MESSAGE");
             myCustomMessage.setTcpMessageType(TCPMessageType.TEXT);
 
             for (String ipadd:R.ClientAddreses) {
@@ -78,6 +78,9 @@ public class Main {
                 tcpMessageEmmiter.start();
             }
         }
+
+        //TODO architecture for connections over the internet => TCP spider web like
+        //TODO set up propagating packets
 
 
     }
