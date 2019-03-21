@@ -81,7 +81,7 @@ public class Main {
 
         if(user_choice.equals("y")){
             TCPMessage myCustomMessage = new TCPMessage("TEST MESSAGE",TCPMessageType.TEXT);
-            R.cacheMessage.add(myCustomMessage.getMessageHash());
+
             //each time we multicast a message to the connected peers we gotta check if its in the cache and not send it else we cache and send it
             if(!R.cacheMessage.contains(myCustomMessage.getMessageHash())){
 
@@ -95,6 +95,8 @@ public class Main {
 
                 }
             }
+            //add it after weve sent it
+            R.cacheMessage.add(myCustomMessage.getMessageHash());
         }
 
         /*
