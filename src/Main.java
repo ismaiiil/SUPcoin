@@ -49,6 +49,10 @@ public class Main {
                         System.out.println("Successfully found the RDV node at: "+ R.ClientAddreses.get(0));
                     }
                 }
+                else{
+                    System.out.println("Closing...");
+                    System.exit(0);
+                }
 
                 break;
             case RDV:
