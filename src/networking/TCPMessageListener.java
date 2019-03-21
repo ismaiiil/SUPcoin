@@ -41,7 +41,7 @@ public class TCPMessageListener extends Thread{
 
                 if(!R.cacheMessage.contains(tcpMessage.getMessageHash())){
                     for (String ipadd: R.ClientAddreses) {
-                        System.out.println("propagating test message to"+ ipadd);
+                        System.out.println("propagating message to"+ ipadd);
                         TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
                         tcpMessageEmmiter.start();
                     }

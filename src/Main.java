@@ -74,19 +74,19 @@ public class Main {
         data associated to the message for example the block chain itself.
         */
 
-        System.out.println("do you want to test exchange of messages over TCP (y/n)");
+        System.out.println("do you want to test exchange of messages over TCP, type any text...");
         TCPMessageListener messageListener = new TCPMessageListener(8888);
         messageListener.start();
         String user_choice = user_input.nextLine();
 
-        if(user_choice.equals("y")){
-            TCPMessage myCustomMessage = new TCPMessage("TEST MESSAGE",TCPMessageType.TEXT);
+        if(!user_choice.equals("")){
+            TCPMessage myCustomMessage = new TCPMessage(user_choice,TCPMessageType.TEXT);
 
             //each time we multicast a message to the connected peers we gotta check if its in the cache and not send it else we cache and send it
             if(!R.cacheMessage.contains(myCustomMessage.getMessageHash())){
 
                 for (String ipadd:R.ClientAddreses) {
-                    System.out.println("directly test message to"+ ipadd);
+                    System.out.println("directly message to"+ ipadd);
 
 
                         TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(myCustomMessage,ipadd,8888);
