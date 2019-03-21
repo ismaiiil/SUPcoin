@@ -38,6 +38,7 @@ public class TCPMessageListener extends Thread{
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
                 CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getMessage() + "from" + socket.getInetAddress());
+                R.cacheMessage.add(tcpMessage.getMessageHash());
                 if(!R.cacheMessage.contains(tcpMessage.getMessageHash())){
                     for (String ipadd: R.ClientAddreses) {
                         System.out.println("propagating test message to"+ ipadd);
