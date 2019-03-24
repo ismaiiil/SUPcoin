@@ -52,11 +52,11 @@ public class UDPClientDiscovery implements Runnable {
                     } catch (Exception e) {
                     }
 
-                    CLogger.print(LogLevel.HIGH,getClass().getName() + ">>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
+                    CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
                 }
             }
 
-            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>> Done looping over all localNetworking interfaces. Now waiting for a reply!");
+            CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Done looping over all localNetworking interfaces. Now waiting for a reply!");
 
             //Wait for a response
             byte[] recvBuf = new byte[15000];
@@ -65,14 +65,14 @@ public class UDPClientDiscovery implements Runnable {
             c.receive(receivePacket);
 
             //We have a response
-            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
+            CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
             //add RDV
             R.ClientAddreses.add(receivePacket.getAddress().getHostAddress());
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
             if (message.equals(UDPMessage.DISCOVER_RDV_RESPONSE.toString())) {
-                CLogger.print(LogLevel.HIGH,"got the response: "+ message);
+                CLogger.print(LogLevel.HIGH,getClass().getName() + " got the response: "+ message);
 
                 //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our R class
                 sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
@@ -84,13 +84,13 @@ public class UDPClientDiscovery implements Runnable {
             c.close();
 
         } catch (SocketTimeoutException ex){
-            CLogger.print(LogLevel.LOW,"Timeout waiting for server answer");
+            CLogger.print(LogLevel.LOW,getClass().getName() + " Timeout waiting for server answer");
             maxretries -= 1;
             if(maxretries > 0){
-                CLogger.print(LogLevel.LOW,"Retrying to reach server");
+                CLogger.print(LogLevel.LOW,getClass().getName() + " Retrying to reach server");
                 this.run();
             }else{
-                CLogger.print(LogLevel.LOW,"max retries reached stopping discovery");
+                CLogger.print(LogLevel.LOW,getClass().getName() + " max retries reached stopping discovery");
             }
 
         } catch (IOException ex) {

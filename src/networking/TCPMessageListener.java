@@ -29,16 +29,16 @@ public class TCPMessageListener extends Thread{
     public void run() {
         while (true){
             try{
-                CLogger.print(HIGH,getClass().getName() + "ServerSocket awaiting connections...");
+                CLogger.print(HIGH,getClass().getName() + " ServerSocket awaiting connections...");
                 Socket socket = serverSocket.accept(); // blocking call, this will wait until a connection is attempted on this port.
-                CLogger.print(HIGH,getClass().getName() + "Connection from " + socket + "!");
+                CLogger.print(HIGH,getClass().getName() + " Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
-                CLogger.print(LOW,"TCP connection from" + socket.getInetAddress().getHostAddress());
+                CLogger.print(LOW,getClass().getName() + " TCP connection from " + socket.getInetAddress().getHostAddress());
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-                CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getTcpMessageType().toString() + "from" + socket.getInetAddress().getHostAddress());
+                CLogger.print(LOW,getClass().getName() + " got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
 
                 if(tcpMessage.isPropagatable()){
                     TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());

@@ -1,5 +1,7 @@
 package networking;
 
+import enums.LogLevel;
+import helpers.CLogger;
 import helpers.R;
 import models.TCPMessage;
 
@@ -8,13 +10,13 @@ public class TCPUtils {
         if(!R.cacheMessage.contains(tcpMessage.getMessageHash())){
             for (String ipadd: R.ClientAddreses) {
                 if(!ipadd.equals(origin)){
-                    System.out.println("sending message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
+                    CLogger.print(LogLevel.LOW," sending message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
                     TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
                     tcpMessageEmmiter.start();
                 }
             }
         }else{
-            System.out.println("this message has already been sent from this node dropping it.");
+            CLogger.print(LogLevel.LOW,"this TCP message has already been sent from this node dropping it.");
         }
         R.cacheMessage.add(tcpMessage.getMessageHash());
     }
