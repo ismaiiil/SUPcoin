@@ -73,17 +73,15 @@ public class UDPClientDiscovery implements Runnable {
             String message = new String(receivePacket.getData()).trim();
             if (message.equals(UDPMessage.DISCOVER_RDV_RESPONSE.toString())) {
                 CLogger.print(LogLevel.HIGH,getClass().getName() + " got the response: "+ message);
-
                 //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our R class
                 sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
-                String connectedClientAsString = String.valueOf(R.ClientAddreses);
-                InetAddress connectedClient = InetAddress.getByName(connectedClientAsString.substring(1,connectedClientAsString.length()-1));
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, connectedClient, 8888);
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, receivePacket.getAddress(), 8888);
                 c.send(sendPacket);
             }
 
             //Close the port!
             c.close();
+
 
         } catch (SocketTimeoutException ex){
             CLogger.print(LogLevel.LOW,getClass().getName() + " Timeout waiting for server answer");
