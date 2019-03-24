@@ -76,7 +76,9 @@ public class UDPClientDiscovery implements Runnable {
 
                 //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our R class
                 sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(String.valueOf(R.ClientAddreses)), 8888);
+                String connectedClientAsString = String.valueOf(R.ClientAddreses);
+                InetAddress connectedClient = InetAddress.getByName(connectedClientAsString.substring(1,connectedClientAsString.length()-1));
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, connectedClient, 8888);
                 c.send(sendPacket);
             }
 
