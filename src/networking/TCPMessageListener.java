@@ -1,5 +1,6 @@
 package networking;
 
+import enums.LogLevel;
 import helpers.CLogger;
 import models.TCPMessage;
 
@@ -33,7 +34,7 @@ public class TCPMessageListener extends Thread{
                 CLogger.print(HIGH,getClass().getName() + "Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
-                System.out.println("TCP connection from" + socket.getInetAddress().getHostAddress());
+                CLogger.print(LOW,"TCP connection from" + socket.getInetAddress().getHostAddress());
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();

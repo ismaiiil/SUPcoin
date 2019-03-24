@@ -69,7 +69,7 @@ public class UDPMessageListener implements Runnable {
                             case CONFIRM_RDV_REQUEST:
                                 if(!R.ClientAddreses.contains(packetAddress)){
                                     R.ClientAddreses.add(packetAddress);
-                                    System.out.println(getClass().getName() + "all current EDGEs connected to this RDV node are:" + R.ClientAddreses.toString());
+                                    CLogger.print(LogLevel.LOW,getClass().getName() + "all current EDGEs connected to this RDV node are:" + R.ClientAddreses.toString());
                                 }
                                 break;
                         }
