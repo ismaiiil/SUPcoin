@@ -17,7 +17,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        CLogger.logLevel = LogLevel.HIGH;
+        CLogger.logLevel = LogLevel.LOW;
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPCoin core");
@@ -84,7 +84,7 @@ public class Main {
         while(true){
             String user_choice = user_input.nextLine();
 
-            if(!user_choice.equals("y")){
+            if(!user_choice.equals("")){
                 TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true);
                 TCPUtils.multicast(myCustomMessage,"none");
             }

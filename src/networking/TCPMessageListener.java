@@ -37,7 +37,7 @@ public class TCPMessageListener extends Thread{
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-                CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getTcpMessageType().toString() + "from" + socket.getInetAddress());
+                CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getTcpMessageType().toString() + "from" + socket.getInetAddress().getHostAddress());
 
                 if(tcpMessage.isPropagatable()){
                     TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());

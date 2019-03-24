@@ -8,7 +8,7 @@ public class TCPUtils {
         if(!R.cacheMessage.contains(tcpMessage.getMessageHash())){
             for (String ipadd: R.ClientAddreses) {
                 if(!ipadd.equals(origin)){
-                    System.out.println("propagating message: >>" + tcpMessage.getTcpMessageType().toString() +" to"+ ipadd);
+                    System.out.println("sending message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
                     TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
                     tcpMessageEmmiter.start();
                 }
