@@ -63,10 +63,13 @@ public class Main {
             case RDV:
                 Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
                 discoveryThread.start();
-                System.out.println("input the public ip address of another optional RDV");
+                System.out.println("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
-                TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
-                TCPUtils.unicast(requestMessage,userChoice);
+                if (!userChoice.contains("skip")) {
+                    TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
+                    TCPUtils.unicast(requestMessage,userChoice);
+                }
+                System.out.println("moving on...");
                 break;
         }
 
@@ -96,17 +99,14 @@ public class Main {
 
         /*
         TODO architecture for connections over the internet => TCP spider web like
-        TODO set up propagating packets => hash messages and cache them, check the cash before propagating => have a TTL over TTL do not multicast
-        TODO => set up TTL using UTC time,
-        TODO => from the NTP server
-        also messages ca n have a TTL over which it dies once it has finished,
-        */
 
 
-        /*
         RDV can either manually connect to a specific RDV or by default the ip of the seeder RDV is hardcoded so that
         we are able to redirect the RDV to a proper connection.
 
+        have a way to prevent multiple RDVS on hte same local network as this may cause bugs.
+
+        prevent user from adding an RDV which is already in the list of clients connected
 
         */
 
