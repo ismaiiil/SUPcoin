@@ -51,7 +51,7 @@ public class Main {
                         e.printStackTrace();
                     }
                     if(!R.ClientAddreses.isEmpty()){
-                        System.out.println("Successfully found the RDV node at: "+ R.ClientAddreses.get(0));
+                        System.out.println("Successfully found the RDV node at: "+ R.ClientAddreses);
                     }
                 }
                 else{
@@ -65,7 +65,7 @@ public class Main {
                 discoveryThread.start();
                 System.out.println("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
-                if (!userChoice.contains("skip")) {
+                if (!userChoice.contains("skip") && !R.ClientAddreses.contains(userChoice)) {
                     TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
                     TCPUtils.unicast(requestMessage,userChoice);
                 }
