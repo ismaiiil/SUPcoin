@@ -1,7 +1,6 @@
 package networking;
 
 import helpers.CLogger;
-import helpers.R;
 import models.TCPMessage;
 
 import java.io.IOException;
@@ -34,20 +33,15 @@ public class TCPMessageListener extends Thread{
                 CLogger.print(HIGH,getClass().getName() + "Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
+                System.out.println("TCP connection from" + socket.getInetAddress().getHostAddress());
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-                CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getMessage() + "from" + socket.getInetAddress());
-                if(!R.cacheMessage.contains(tcpMessage.getMessageHash())){
-                    for (String ipadd: R.ClientAddreses) {
-                        System.out.println("propagating message: >>" + tcpMessage.getMessage() +" to"+ ipadd);
-                        TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
-                        tcpMessageEmmiter.start();
-                    }
-                }else{
-                    System.out.println("this message has already been sent from this node dropping it.");
+                CLogger.print(LOW,getClass().getName() + "got the message" + tcpMessage.getTcpMessageType().toString() + "from" + socket.getInetAddress());
+
+                if(tcpMessage.isPropagatable()){
+                    TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());
                 }
-                R.cacheMessage.add(tcpMessage.getMessageHash());
 
                 socket.close();
             }catch (IOException | ClassNotFoundException ex){

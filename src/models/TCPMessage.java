@@ -8,30 +8,22 @@ import java.util.Date;
 import helpers.StringUtil;
 
 public class TCPMessage implements Serializable {
-    private String message;
     private TCPMessageType tcpMessageType;
     private String messageHash;
     private long dateTime;
+    private boolean propagatable;
 
-    public TCPMessage(String message, TCPMessageType tcpMessageType){
-        this.message = message;
+    public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable){
         this.dateTime = new Date().getTime();
         this.tcpMessageType = tcpMessageType;
         this.messageHash = calculateHash();
+        this.propagatable = propagatable;
     }
 
     private String calculateHash(){
-        return StringUtil.applySha256("message" + tcpMessageType + dateTime);
+        return StringUtil.applySha256(tcpMessageType.toString() + dateTime);
     }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
+    
     public TCPMessageType getTcpMessageType() {
         return tcpMessageType;
     }
@@ -47,5 +39,13 @@ public class TCPMessage implements Serializable {
 
     public void setMessageHash(String messageHash) {
         this.messageHash = messageHash;
+    }
+
+    public boolean isPropagatable() {
+        return propagatable;
+    }
+
+    public void setPropagatable(boolean propagatable) {
+        this.propagatable = propagatable;
     }
 }

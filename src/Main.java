@@ -8,6 +8,7 @@ import localNetworking.UDPMessageListener;
 import models.TCPMessage;
 import networking.TCPMessageEmmiter;
 import networking.TCPMessageListener;
+import networking.TCPUtils;
 
 import java.util.Objects;
 import java.util.Scanner;
@@ -16,7 +17,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        CLogger.logLevel = LogLevel.NONE;
+        CLogger.logLevel = LogLevel.HIGH;
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPCoin core");
@@ -59,6 +60,8 @@ public class Main {
             case RDV:
                 Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
                 discoveryThread.start();
+//                System.out.println("input the address of another optional RDV");
+//                userChoice = user_input.nextLine();
                 break;
         }
 
@@ -74,45 +77,35 @@ public class Main {
         data associated to the message for example the block chain itself.
         */
 
-        System.out.println("do you want to test exchange of messages over TCP, type any text...");
+        System.out.println("do you want to test a propagatable message...");
         TCPMessageListener messageListener = new TCPMessageListener(8888);
         messageListener.start();
 
         while(true){
             String user_choice = user_input.nextLine();
 
-            if(!user_choice.equals("")){
-                TCPMessage myCustomMessage = new TCPMessage(user_choice,TCPMessageType.TEXT);
-
-                //each time we multicast a message to the connected peers we gotta check if its in the cache and not send it else we cache and send it
-                if(!R.cacheMessage.contains(myCustomMessage.getMessageHash())){
-
-                    for (String ipadd:R.ClientAddreses) {
-                        System.out.println("directly message to"+ ipadd);
-
-
-                        TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(myCustomMessage,ipadd,8888);
-                        tcpMessageEmmiter.start();
-
-
-                    }
-                }
-                //add it after weve sent it
-                R.cacheMessage.add(myCustomMessage.getMessageHash());
+            if(!user_choice.equals("y")){
+                TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true);
+                TCPUtils.multicast(myCustomMessage,"none");
             }
         }
 
 
         /*
         TODO architecture for connections over the internet => TCP spider web like
-        TODO set up propagating packets => hash messages and cache them, check the cash before propagating => have a TTL over TTL do not propagate
-        set up the message listener to call the message emitter to propagate messages
-        challenge while doing so is facing p2p architectures where the message might loopback to the same device more than twice
-        use a cache to cache signatures of messages maybe?
+        TODO set up propagating packets => hash messages and cache them, check the cash before propagating => have a TTL over TTL do not multicast
+        TODO => set up TTL using UTC time,
+        TODO => from the NTP server
         also messages ca n have a TTL over which it dies once it has finished,
-        messages can be associated with a job ID, hence a message that has been going though the netowrk and isnt relevant anymore is discarded
         */
 
+
+        /*
+        RDV can either manually connect to a specific RDV or by default the ip of the seeder RDV is hardcoded so that
+        we are able to redirect the RDV to a proper connection.
+
+
+        */
 
     }
 }
