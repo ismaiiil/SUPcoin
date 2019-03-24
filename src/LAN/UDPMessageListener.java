@@ -1,4 +1,4 @@
-package localNetworking;
+package LAN;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

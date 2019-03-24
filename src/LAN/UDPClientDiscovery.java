@@ -1,4 +1,4 @@
-package localNetworking;
+package LAN;
 
 import enums.LogLevel;
 
@@ -30,7 +30,7 @@ public class UDPClientDiscovery implements Runnable {
             byte[] sendData = UDPMessage.DISCOVER_RDV_REQUEST.toString().getBytes();
 
 
-            // Broadcast the message over all the localNetworking interfaces
+            // Broadcast the message over all the LAN interfaces
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
@@ -56,7 +56,7 @@ public class UDPClientDiscovery implements Runnable {
                 }
             }
 
-            CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Done looping over all localNetworking interfaces. Now waiting for a reply!");
+            CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Done looping over all LAN interfaces. Now waiting for a reply!");
 
             //Wait for a response
             byte[] recvBuf = new byte[15000];

@@ -1,5 +1,5 @@
 package enums;
 
 public enum TCPMessageType {
-    VERIFY,ACK,TRANSFER,TEXT
+    VERIFY,REQUEST_CONNECTION,CONFIRM_CONNECTION,TEXT
 }

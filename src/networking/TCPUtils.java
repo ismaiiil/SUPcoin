@@ -20,4 +20,8 @@ public class TCPUtils {
         }
         R.cacheMessage.add(tcpMessage.getMessageHash());
     }
+    public static void unicast(TCPMessage tcpMessage,String destination){
+        TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,destination,8888);
+        tcpMessageEmmiter.start();
+    }
 }

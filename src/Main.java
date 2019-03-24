@@ -3,14 +3,13 @@ import enums.Role;
 import enums.TCPMessageType;
 import helpers.CLogger;
 import helpers.R;
-import localNetworking.UDPClientDiscovery;
-import localNetworking.UDPMessageListener;
+import LAN.UDPClientDiscovery;
+import LAN.UDPMessageListener;
 import models.TCPMessage;
 import networking.TCPMessageEmmiter;
 import networking.TCPMessageListener;
 import networking.TCPUtils;
 
-import java.util.Objects;
 import java.util.Scanner;
 
 public class Main {
@@ -34,6 +33,10 @@ public class Main {
             }
         }
         System.out.println("Your choose the Role of " + R.myRole.toString());
+
+        TCPMessageListener messageListener = new TCPMessageListener(8888);
+        messageListener.start();
+
         switch (R.myRole){
             case EDGE:
                 System.out.println("Do you want to initiate network discovery of an RDP (y/n)");
@@ -60,8 +63,10 @@ public class Main {
             case RDV:
                 Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
                 discoveryThread.start();
-//                System.out.println("input the address of another optional RDV");
-//                userChoice = user_input.nextLine();
+                System.out.println("input the public ip address of another optional RDV");
+                userChoice = user_input.nextLine();
+                TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
+                TCPUtils.unicast(requestMessage,userChoice);
                 break;
         }
 
@@ -78,8 +83,6 @@ public class Main {
         */
 
         System.out.println("do you want to test a propagatable message...");
-        TCPMessageListener messageListener = new TCPMessageListener(8888);
-        messageListener.start();
 
         while(true){
             String user_choice = user_input.nextLine();

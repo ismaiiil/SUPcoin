@@ -1,7 +1,9 @@
 package networking;
 
 import enums.LogLevel;
+import enums.TCPMessageType;
 import helpers.CLogger;
+import helpers.R;
 import models.TCPMessage;
 
 import java.io.IOException;
@@ -34,15 +36,33 @@ public class TCPMessageListener extends Thread{
                 CLogger.print(HIGH,getClass().getName() + " Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
-                CLogger.print(LOW,getClass().getName() + " TCP connection from " + socket.getInetAddress().getHostAddress());
+                String origin = socket.getInetAddress().getHostAddress();
+                CLogger.print(LOW,getClass().getName() + " TCP connection from " + origin);
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
                 CLogger.print(LOW,getClass().getName() + " got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
-
-                if(tcpMessage.isPropagatable()){
-                    TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());
+                switch (tcpMessage.getTcpMessageType()){
+                    case REQUEST_CONNECTION:
+                        TCPMessage responseMessage = new TCPMessage(TCPMessageType.CONFIRM_CONNECTION,false);
+                        TCPUtils.unicast(responseMessage,origin);
+                        R.ClientAddreses.add(origin);
+                        CLogger.print(LOW,getClass().getName() + "REQUEST RECEIVED >>>added " + origin + "to the list of clients");
+                        break;
+                    case CONFIRM_CONNECTION:
+                        R.ClientAddreses.add(origin);
+                        CLogger.print(LOW,getClass().getName() + "CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
+                        break;
+                    case VERIFY:
+                        if(tcpMessage.isPropagatable()){
+                            TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());
+                        }
+                        break;
+                    default:
+                        break;
                 }
+
 
                 socket.close();
             }catch (IOException | ClassNotFoundException ex){
