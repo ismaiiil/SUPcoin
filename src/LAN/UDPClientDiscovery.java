@@ -8,7 +8,7 @@ import java.util.Enumeration;
 
 import enums.UDPMessage;
 import helpers.CLogger;
-import helpers.R;
+import helpers.RUtils;
 
 public class UDPClientDiscovery implements Runnable {
     DatagramSocket c;
@@ -21,7 +21,7 @@ public class UDPClientDiscovery implements Runnable {
 
     @Override
     public void run() {
-        // Find the server using UDP broadcast
+
         try {
             //Open a random port to send the package
             c = new DatagramSocket();
@@ -50,6 +50,7 @@ public class UDPClientDiscovery implements Runnable {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);
                         c.send(sendPacket);
                     } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
                     CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
@@ -67,13 +68,13 @@ public class UDPClientDiscovery implements Runnable {
             //We have a response
             CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
             //add RDV
-            R.ClientAddreses.add(receivePacket.getAddress().getHostAddress());
+            RUtils.ClientAddreses.add(receivePacket.getAddress().getHostAddress());
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();
             if (message.equals(UDPMessage.DISCOVER_RDV_RESPONSE.toString())) {
                 CLogger.print(LogLevel.HIGH,getClass().getName() + " got the response: "+ message);
-                //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our R class
+                //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our RUtils class
                 sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, receivePacket.getAddress(), 8888);
                 c.send(sendPacket);

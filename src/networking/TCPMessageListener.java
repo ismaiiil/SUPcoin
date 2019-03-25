@@ -1,9 +1,8 @@
 package networking;
 
-import enums.LogLevel;
 import enums.TCPMessageType;
 import helpers.CLogger;
-import helpers.R;
+import helpers.RUtils;
 import models.TCPMessage;
 
 import java.io.IOException;
@@ -47,11 +46,11 @@ public class TCPMessageListener extends Thread{
                     case REQUEST_CONNECTION:
                         TCPMessage responseMessage = new TCPMessage(TCPMessageType.CONFIRM_CONNECTION,false);
                         TCPUtils.unicast(responseMessage,origin);
-                        R.ClientAddreses.add(origin);
+                        RUtils.ClientAddreses.add(origin);
                         CLogger.print(LOW,getClass().getName() + "REQUEST RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case CONFIRM_CONNECTION:
-                        R.ClientAddreses.add(origin);
+                        RUtils.ClientAddreses.add(origin);
                         CLogger.print(LOW,getClass().getName() + "CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case VERIFY:

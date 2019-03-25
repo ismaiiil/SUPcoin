@@ -2,11 +2,10 @@ import enums.LogLevel;
 import enums.Role;
 import enums.TCPMessageType;
 import helpers.CLogger;
-import helpers.R;
+import helpers.RUtils;
 import LAN.UDPClientDiscovery;
 import LAN.UDPMessageListener;
 import models.TCPMessage;
-import networking.TCPMessageEmmiter;
 import networking.TCPMessageListener;
 import networking.TCPUtils;
 
@@ -25,19 +24,19 @@ public class Main {
         String userChoice = user_input.nextLine();
         while (true){
             try{
-                R.myRole = Role.valueOf(userChoice);
+                RUtils.myRole = Role.valueOf(userChoice);
                 break;
             }catch (IllegalArgumentException e){
                 System.out.println("wrong choice please try either inputting EDGE or RDV");
                 userChoice = user_input.nextLine();
             }
         }
-        System.out.println("Your choose the Role of " + R.myRole.toString());
+        System.out.println("Your choose the Role of " + RUtils.myRole.toString());
 
         TCPMessageListener messageListener = new TCPMessageListener(8888);
         messageListener.start();
 
-        switch (R.myRole){
+        switch (RUtils.myRole){
             case EDGE:
                 System.out.println("Do you want to initiate network discovery of an RDP (y/n)");
                 userChoice = user_input.nextLine();
@@ -50,8 +49,8 @@ public class Main {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    if(!R.ClientAddreses.isEmpty()){
-                        System.out.println("Successfully found the RDV node at: "+ R.ClientAddreses);
+                    if(!RUtils.ClientAddreses.isEmpty()){
+                        System.out.println("Successfully found the RDV node at: "+ RUtils.ClientAddreses);
                     }
                 }
                 else{
@@ -65,7 +64,7 @@ public class Main {
                 discoveryThread.start();
                 System.out.println("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
-                if (!userChoice.contains("skip") && !R.ClientAddreses.contains(userChoice)) {
+                if (!userChoice.contains("skip") && !RUtils.ClientAddreses.contains(userChoice)) {
                     TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
                     TCPUtils.unicast(requestMessage,userChoice);
                 }
@@ -99,7 +98,7 @@ public class Main {
 
         /*
         TODO architecture for connections over the internet => TCP spider web like
-
+        TODO after local testing is done make it impossible to have more than one RDV per router, possible using the local UDP broadcast to check for any other RDVs reachable
 
         RDV can either manually connect to a specific RDV or by default the ip of the seeder RDV is hardcoded so that
         we are able to redirect the RDV to a proper connection.
