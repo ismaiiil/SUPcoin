@@ -46,11 +46,11 @@ public class TCPMessageListener extends Thread{
                     case REQUEST_CONNECTION:
                         TCPMessage responseMessage = new TCPMessage(TCPMessageType.CONFIRM_CONNECTION,false);
                         TCPUtils.unicast(responseMessage,origin);
-                        RUtils.ClientAddreses.add(origin);
+                        RUtils.externalClientAddresses.add(origin);
                         CLogger.print(LOW,getClass().getName() + "REQUEST RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case CONFIRM_CONNECTION:
-                        RUtils.ClientAddreses.add(origin);
+                        RUtils.externalClientAddresses.add(origin);
                         CLogger.print(LOW,getClass().getName() + "CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case VERIFY:

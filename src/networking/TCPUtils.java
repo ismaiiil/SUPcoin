@@ -8,7 +8,7 @@ import models.TCPMessage;
 public class TCPUtils {
     public static void multicast(TCPMessage tcpMessage, String origin){
         if(!RUtils.isMessageCached(tcpMessage)){
-            for (String ipadd: RUtils.ClientAddreses) {
+            for (String ipadd: RUtils.allClientAddresses()) {
                 if(!ipadd.equals(origin)){
                     CLogger.print(LogLevel.LOW," sending message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
                     TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);

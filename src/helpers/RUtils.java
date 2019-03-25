@@ -10,14 +10,17 @@ public class RUtils {
     //since we heavily want unique values in those Sets, also Hashsets have a .contains search speed of O(1)
     //compared to O(n) for normal ArrayLists
     public static Role myRole;
-    public static HashSet<String> ClientAddreses = new HashSet<>();
+    public static String externalIP;
+    public static HashSet<String> localClientAddresses = new HashSet<>();
+    public static HashSet<String> externalClientAddresses = new HashSet<>();
     public static HashSet<String> cacheMessages = new HashSet<>();
     public static HashSet<String> oldCacheMessages = new HashSet<>();
     public static int maxCacheSize = 1000;
+    public static int maxExternalRDVs = 2;
 
     public static void addMessageToCache(TCPMessage message){
         String messageHash = message.getMessageHash();
-        if(cacheMessages.size()>=1000){
+        if(cacheMessages.size()>=maxCacheSize){
             oldCacheMessages.clear();
             oldCacheMessages = (HashSet) cacheMessages.clone();
             cacheMessages.clear();
@@ -29,4 +32,14 @@ public class RUtils {
         String messageHash = message.getMessageHash();
         return cacheMessages.contains(messageHash) || oldCacheMessages.contains(messageHash);
     }
+
+    public static HashSet<String> allClientAddresses(){
+        HashSet<String> total = new HashSet<>();
+        total.addAll(localClientAddresses);
+        total.addAll(externalClientAddresses);
+        return total;
+    }
+
+
+
 }

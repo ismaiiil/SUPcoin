@@ -68,7 +68,7 @@ public class UDPClientDiscovery implements Runnable {
             //We have a response
             CLogger.print(LogLevel.HIGH,getClass().getName() + " >>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
             //add RDV
-            RUtils.ClientAddreses.add(receivePacket.getAddress().getHostAddress());
+            RUtils.localClientAddresses.add(receivePacket.getAddress().getHostAddress());
 
             //Check if the message is correct
             String message = new String(receivePacket.getData()).trim();

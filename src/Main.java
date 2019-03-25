@@ -6,6 +6,7 @@ import helpers.RUtils;
 import LAN.UDPClientDiscovery;
 import LAN.UDPMessageListener;
 import models.TCPMessage;
+import helpers.ExternalIPGet;
 import networking.TCPMessageListener;
 import networking.TCPUtils;
 
@@ -14,7 +15,7 @@ import java.util.Scanner;
 public class Main {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         CLogger.logLevel = LogLevel.LOW;
 
         Scanner user_input = new Scanner(System.in);
@@ -42,6 +43,7 @@ public class Main {
                 userChoice = user_input.nextLine();
 
                 if(userChoice.equals("y")){
+                    System.out.println("Searching for an RDV...");
                     Thread client = new Thread(new UDPClientDiscovery(3));
                     client.start();
                     try {
@@ -49,8 +51,8 @@ public class Main {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    if(!RUtils.ClientAddreses.isEmpty()){
-                        System.out.println("Successfully found the RDV node at: "+ RUtils.ClientAddreses);
+                    if(!RUtils.localClientAddresses.isEmpty()){
+                        System.out.println("Successfully found the RDV node at: "+ RUtils.localClientAddresses);
                     }
                 }
                 else{
@@ -60,13 +62,22 @@ public class Main {
 
                 break;
             case RDV:
+
+                CLogger.print(LogLevel.LOW,"Fetching your public IP...");
+                ExternalIPGet externalIPGet = new ExternalIPGet();
+                externalIPGet.run();
+                externalIPGet.join();
+                CLogger.print(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+
                 Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
                 discoveryThread.start();
                 System.out.println("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
-                if (!userChoice.contains("skip") && !RUtils.ClientAddreses.contains(userChoice)) {
+                if (!userChoice.contains("skip") && !RUtils.allClientAddresses().contains(userChoice) && !userChoice.equals(RUtils.externalIP)) {
                     TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
                     TCPUtils.unicast(requestMessage,userChoice);
+                }else{
+                    System.out.println("skipping, you already have this IP in your list or your input is your own External IP");
                 }
                 System.out.println("moving on...");
                 break;

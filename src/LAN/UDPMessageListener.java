@@ -67,10 +67,8 @@ public class UDPMessageListener implements Runnable {
                                 CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
                                 break;
                             case CONFIRM_RDV_REQUEST:
-                                if(!RUtils.ClientAddreses.contains(packetAddress)){
-                                    RUtils.ClientAddreses.add(packetAddress);
-                                    CLogger.print(LogLevel.LOW,getClass().getName() + " all current EDGEs connected to this RDV node are:" + RUtils.ClientAddreses.toString());
-                                }
+                                RUtils.localClientAddresses.add(packetAddress);
+                                CLogger.print(LogLevel.LOW,getClass().getName() + " all current EDGEs connected to this RDV node are:" + RUtils.localClientAddresses.toString());
                                 break;
                         }
                     }
