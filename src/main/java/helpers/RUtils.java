@@ -1,5 +1,6 @@
 package helpers;
 
+import enums.LogLevel;
 import enums.Role;
 import models.TCPMessage;
 
@@ -9,6 +10,7 @@ public class RUtils {
     //using hashsets will allow for a margin of error when trying to add duplicate entries
     //since we heavily want unique values in those Sets, also Hashsets have a .contains search speed of O(1)
     //compared to O(n) for normal ArrayLists
+    public static LogLevel logLevel;
     public static Role myRole;
     public static String externalIP;
     public static HashSet<String> localClientAddresses = new HashSet<>();

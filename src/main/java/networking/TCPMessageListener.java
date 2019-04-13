@@ -17,6 +17,7 @@ import static enums.LogLevel.LOW;
 public class TCPMessageListener extends Thread{
     private int port;
     private ServerSocket serverSocket;
+    private CLogger cLogger = new CLogger(this.getClass());
     public TCPMessageListener(int port) {
         this.port = port;
         try {
@@ -26,32 +27,34 @@ public class TCPMessageListener extends Thread{
         }
     }
 
+
+
     @Override
     public void run() {
         while (true){
             try{
-                CLogger.print(HIGH,getClass().getName() + " ServerSocket awaiting connections...");
+                cLogger.print(HIGH,"ServerSocket awaiting connections...");
                 Socket socket = serverSocket.accept(); // blocking call, this will wait until a connection is attempted on this port.
-                CLogger.print(HIGH,getClass().getName() + " Connection from " + socket + "!");
+                cLogger.print(HIGH,"Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
                 String origin = socket.getInetAddress().getHostAddress();
-                CLogger.print(LOW,getClass().getName() + " TCP connection from " + origin);
+                cLogger.print(LOW,"TCP connection from " + origin);
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-                CLogger.print(LOW,getClass().getName() + " got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
+                cLogger.print(LOW, "got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
                 switch (tcpMessage.getTcpMessageType()){
                     case REQUEST_CONNECTION:
                         TCPMessage responseMessage = new TCPMessage(TCPMessageType.CONFIRM_CONNECTION,false);
                         TCPUtils.unicast(responseMessage,origin);
                         RUtils.externalClientAddresses.add(origin);
-                        CLogger.print(LOW,getClass().getName() + "REQUEST RECEIVED >>>added " + origin + "to the list of clients");
+                        cLogger.print(LOW,"REQUEST RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case CONFIRM_CONNECTION:
                         RUtils.externalClientAddresses.add(origin);
-                        CLogger.print(LOW,getClass().getName() + "CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
+                        cLogger.print(LOW,"CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case VERIFY:
                         if(tcpMessage.isPropagatable()){

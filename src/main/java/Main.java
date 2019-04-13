@@ -9,7 +9,7 @@ import models.TCPMessage;
 import helpers.ExternalIPGet;
 import networking.TCPMessageListener;
 import networking.TCPUtils;
-import com.dosse.upnp.UPnP;
+import networking.UPnPManager;
 
 import java.util.Scanner;
 
@@ -17,20 +17,10 @@ public class Main {
 
 
     public static void main(String[] args) throws InterruptedException {
-        CLogger.logLevel = LogLevel.LOW;
-
-        System.out.println("Attempting UPnP port forwarding...");
-        if (UPnP.isUPnPAvailable()) { //is UPnP available?
-            if (UPnP.isMappedTCP(RUtils.tcpPort)) { //is the port already mapped?
-                System.out.println("UPnP port forwarding not enabled: port is already mapped");
-            } else if (UPnP.openPortTCP(RUtils.tcpPort)) { //try to map port
-                System.out.println("UPnP port forwarding enabled");
-            } else {
-                System.out.println("UPnP port forwarding failed");
-            }
-        } else {
-            System.out.println("UPnP is not available");
-        }
+        RUtils.logLevel = LogLevel.LOW;
+        CLogger cLogger = new CLogger(Main.class);
+        Thread uPnPManagerThread = new Thread(new UPnPManager());
+        uPnPManagerThread.start();
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPCoin core");
@@ -77,11 +67,11 @@ public class Main {
                 break;
             case RDV:
 
-                CLogger.print(LogLevel.LOW,"Fetching your public IP...");
+                cLogger.print(LogLevel.LOW,"Fetching your public IP...");
                 ExternalIPGet externalIPGet = new ExternalIPGet();
                 externalIPGet.run();
                 externalIPGet.join();
-                CLogger.print(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+                cLogger.print(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
 
                 Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
                 discoveryThread.start();

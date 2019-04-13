@@ -23,6 +23,8 @@ public class UDPMessageListener implements Runnable {
     DatagramSocket socket;
     List<String> localaddresses =  new ArrayList<>();
 
+    private CLogger cLogger = new CLogger(this.getClass());
+
     @Override
     public void run() {
         try {
@@ -40,7 +42,7 @@ public class UDPMessageListener implements Runnable {
                 }
 
             }
-            CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Ready to receive packets!");
+            cLogger.print(LogLevel.HIGH,"Ready to receive packets!");
             while (true) {
 
                 //Receive a packet
@@ -51,8 +53,8 @@ public class UDPMessageListener implements Runnable {
                 if(!localaddresses.contains(packet.getAddress().getHostAddress())){
                     //Packet received
 
-                    CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>packet received from: " + packetAddress);
-                    CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>data received: " + new String(packet.getData()));
+                    cLogger.print(LogLevel.HIGH, "packet received from: " + packetAddress);
+                    cLogger.print(LogLevel.HIGH,"data received: " + new String(packet.getData()));
 
 
                     //See if the packet holds the right command (message)
@@ -64,11 +66,11 @@ public class UDPMessageListener implements Runnable {
                                 //Send a response
                                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
                                 socket.send(sendPacket);
-                                CLogger.print(LogLevel.HIGH,getClass().getName() + ">>>Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                                cLogger.print(LogLevel.HIGH, "Sent packet to: " + sendPacket.getAddress().getHostAddress());
                                 break;
                             case CONFIRM_RDV_REQUEST:
                                 RUtils.localClientAddresses.add(packetAddress);
-                                CLogger.print(LogLevel.LOW,getClass().getName() + " all current EDGEs connected to this RDV node are:" + RUtils.localClientAddresses.toString());
+                                cLogger.print(LogLevel.LOW,"all current EDGEs connected to this RDV node are:" + RUtils.localClientAddresses.toString());
                                 break;
                         }
                     }
