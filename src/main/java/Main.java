@@ -9,6 +9,7 @@ import models.TCPMessage;
 import helpers.ExternalIPGet;
 import networking.TCPMessageListener;
 import networking.TCPUtils;
+import com.dosse.upnp.UPnP;
 
 import java.util.Scanner;
 
@@ -17,6 +18,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         CLogger.logLevel = LogLevel.LOW;
+        UPnP.openPortTCP(8888);
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPCoin core");
