@@ -18,8 +18,19 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         CLogger.logLevel = LogLevel.LOW;
-        UPnP.openPortTCP(RUtils.tcpPort);
-        UPnP.openPortUDP(RUtils.udpPort);
+
+        System.out.println("Attempting UPnP port forwarding...");
+        if (UPnP.isUPnPAvailable()) { //is UPnP available?
+            if (UPnP.isMappedTCP(RUtils.tcpPort)) { //is the port already mapped?
+                System.out.println("UPnP port forwarding not enabled: port is already mapped");
+            } else if (UPnP.openPortTCP(RUtils.tcpPort)) { //try to map port
+                System.out.println("UPnP port forwarding enabled");
+            } else {
+                System.out.println("UPnP port forwarding failed");
+            }
+        } else {
+            System.out.println("UPnP is not available");
+        }
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPCoin core");
