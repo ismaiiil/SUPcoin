@@ -18,7 +18,8 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         CLogger.logLevel = LogLevel.LOW;
-        UPnP.openPortTCP(8888);
+        UPnP.openPortTCP(RUtils.tcpPort);
+        UPnP.openPortUDP(RUtils.udpPort);
 
         Scanner user_input = new Scanner(System.in);
         System.out.println("Welcome to SUPCoin core");
@@ -36,7 +37,7 @@ public class Main {
         }
         System.out.println("Your choose the Role of " + RUtils.myRole.toString());
 
-        TCPMessageListener messageListener = new TCPMessageListener(8888);
+        TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
         messageListener.start();
 
         switch (RUtils.myRole){

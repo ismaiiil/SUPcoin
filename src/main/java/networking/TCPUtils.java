@@ -11,7 +11,7 @@ public class TCPUtils {
             for (String ipadd: RUtils.allClientAddresses()) {
                 if(!ipadd.equals(origin)){
                     CLogger.print(LogLevel.LOW," sending message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
-                    TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,8888);
+                    TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,RUtils.tcpPort);
                     tcpMessageEmmiter.start();
                 }
             }
@@ -21,7 +21,7 @@ public class TCPUtils {
         RUtils.addMessageToCache(tcpMessage);
     }
     public static void unicast(TCPMessage tcpMessage,String destination){
-        TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,destination,8888);
+        TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,destination,RUtils.tcpPort);
         tcpMessageEmmiter.start();
     }
 }

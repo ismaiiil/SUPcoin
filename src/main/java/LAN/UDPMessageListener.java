@@ -27,7 +27,7 @@ public class UDPMessageListener implements Runnable {
     public void run() {
         try {
             //Keep a socket open to listen to all the UDP trafic that is destined for this port
-            socket = new DatagramSocket(8888, InetAddress.getByName("0.0.0.0"));
+            socket = new DatagramSocket(RUtils.udpPort, InetAddress.getByName("0.0.0.0"));
             socket.setBroadcast(true);
 
             //Check if packet is from localhost ignore it if it is a loopback

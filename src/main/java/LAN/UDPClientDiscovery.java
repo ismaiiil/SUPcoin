@@ -47,7 +47,7 @@ public class UDPClientDiscovery implements Runnable {
 
                     // Send the broadcast package!
                     try {
-                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);
+                        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, RUtils.udpPort);
                         c.send(sendPacket);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -76,7 +76,7 @@ public class UDPClientDiscovery implements Runnable {
                 CLogger.print(LogLevel.HIGH,getClass().getName() + " got the response: "+ message);
                 //since the RDV was discovered properly we confirm the rdv that indeed we were able to discover it and have added its address to our RUtils class
                 sendData = UDPMessage.CONFIRM_RDV_REQUEST.toString().getBytes();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, receivePacket.getAddress(), 8888);
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, receivePacket.getAddress(), RUtils.udpPort);
                 c.send(sendPacket);
             }
 
