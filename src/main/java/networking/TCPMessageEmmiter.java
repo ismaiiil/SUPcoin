@@ -30,23 +30,25 @@ public class TCPMessageEmmiter extends Thread {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(tcpMessage);
             objectOutputStream.flush();
-
-
-            //TODO TESTING CLIENT RECEIVING SERVER RESPONSE IN THE SOCKET ITSELF INSTEAD OF A NEW SOCKET RESPONSE
-            InputStream inputStream = socket.getInputStream();
-            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-            TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-            cLogger.print(LogLevel.SUPERHIGH, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
-
             objectOutputStream.close();
-            objectInputStream.close();
 
-            if(tcpMessage.getTcpMessageType() == TCPMessageType.CLOSE_SOCKET) {
-                socket.close();
-                cLogger.print(LogLevel.SUPERHIGH, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
+//            //TESTING WALLET RECEIVING SERVER RESPONSE IN THE SOCKET ITSELF INSTEAD OF A NEW SOCKET RESPONSE
+//            InputStream inputStream = socket.getInputStream();
+//            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+//            TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
+//            cLogger.print(LogLevel.SUPERHIGH, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
+//
+//
+//            objectInputStream.close();
+//
+//            if(tcpMessage.getTcpMessageType() == TCPMessageType.CLOSE_SOCKET) {
+//                socket.close();
+//                cLogger.print(LogLevel.SUPERHIGH, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
+//
+//            }
 
-            }
-        } catch (IOException | ClassNotFoundException e) {
+            socket.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

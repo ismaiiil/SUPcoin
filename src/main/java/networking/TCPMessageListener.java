@@ -64,13 +64,15 @@ public class TCPMessageListener extends Thread{
                         break;
                 }
 
-                //TODO TESTING SERVER OUTPUT BACK TO CLIENT
-                TCPMessage myTestMessage = new TCPMessage(TCPMessageType.CLOSE_SOCKET,false);
-                OutputStream outputStream = socket.getOutputStream();
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                objectOutputStream.writeObject(myTestMessage);
-                objectOutputStream.flush();
-                objectOutputStream.close();
+//                //TESTING NODE OUTPUT BACK TO WALLET
+//                TCPMessage myTestMessage = new TCPMessage(TCPMessageType.CLOSE_SOCKET,false);
+//                OutputStream outputStream = socket.getOutputStream();
+//                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+//                objectOutputStream.writeObject(myTestMessage);
+//                objectOutputStream.flush();
+//                objectOutputStream.close();
+
+                socket.close();
 
             }catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
