@@ -1,10 +1,10 @@
 package networking;
 
+import enums.LogLevel;
+import helpers.CLogger;
 import models.TCPMessage;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class TCPMessageEmmiter extends Thread {
@@ -12,6 +12,8 @@ public class TCPMessageEmmiter extends Thread {
     TCPMessage tcpMessage;
     int port;
     Socket socket;
+
+    private CLogger cLogger = new CLogger(this.getClass());
 
     public TCPMessageEmmiter(TCPMessage tcpMessage, String hostname, int port){
         this.tcpMessage = tcpMessage;
@@ -29,7 +31,13 @@ public class TCPMessageEmmiter extends Thread {
             objectOutputStream.flush();
             objectOutputStream.close();
 
-        } catch (IOException e) {
+            //TODO TESTING CLIENT RECEIVING SERVER RESPONSE IN THE SOCKET ITSELF INSTEAD OF A NEW SOCKET RESPONSE
+            InputStream inputStream = socket.getInputStream();
+            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+            TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
+            cLogger.print(LogLevel.HIGH, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
+
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }

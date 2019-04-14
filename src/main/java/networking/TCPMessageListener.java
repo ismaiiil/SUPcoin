@@ -5,9 +5,7 @@ import helpers.CLogger;
 import helpers.RUtils;
 import models.TCPMessage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -42,9 +40,17 @@ public class TCPMessageListener extends Thread{
                 cLogger.print(LOW,"TCP connection from " + origin);
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
                 cLogger.print(LOW, "got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
+
+                //TODO TESTING SERVER OUTPUT BACK TO CLIENT
+                TCPMessage myTestMessage = new TCPMessage(TCPMessageType.MESSAGE_SUCCESS,false);
+                OutputStream outputStream = socket.getOutputStream();
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                objectOutputStream.writeObject(myTestMessage);
+                objectOutputStream.flush();
+                objectOutputStream.close();
+
                 switch (tcpMessage.getTcpMessageType()){
                     case REQUEST_CONNECTION:
                         TCPMessage responseMessage = new TCPMessage(TCPMessageType.CONFIRM_CONNECTION,false);

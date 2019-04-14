@@ -112,7 +112,7 @@ public class Main {
 
 
         /*
-        TODO architecture for connections over the internet => TCP spider web like
+        TODO architectures for connections over the internet => TCP spider web like
         TODO after local testing is done make it impossible to have more than one RDV per router, possible using the local UDP broadcast to check for any other RDVs reachable
 
         RDV can either manually connect to a specific RDV or by default the ip of the seeder RDV is hardcoded so that
