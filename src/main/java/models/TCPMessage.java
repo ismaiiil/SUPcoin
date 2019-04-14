@@ -1,6 +1,7 @@
 package models;
 
 import enums.TCPMessageType;
+import java.util.Random;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -13,6 +14,12 @@ public class TCPMessage implements Serializable {
     private long dateTime;
     private boolean propagatable;
 
+
+
+
+
+
+
     public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable){
         this.dateTime = new Date().getTime();
         this.tcpMessageType = tcpMessageType;
@@ -21,7 +28,9 @@ public class TCPMessage implements Serializable {
     }
 
     private String calculateHash(){
-        return StringUtil.applySha256(tcpMessageType.toString() + dateTime);
+        Random rand = new Random();
+        int n = rand.nextInt(100000);
+        return StringUtil.applySha256(tcpMessageType.toString() + dateTime + n);
     }
     
     public TCPMessageType getTcpMessageType() {

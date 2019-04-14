@@ -18,7 +18,7 @@ public class TCPUtils {
                 }
             }
         }else{
-            cLogger.print(LogLevel.LOW,"this TCP message has already been sent from this node dropping it.");
+            cLogger.print(LogLevel.LOW,"this TCP message has already been sent from this node dropping it." + tcpMessage.getMessageHash());
         }
         RUtils.addMessageToCache(tcpMessage);
     }

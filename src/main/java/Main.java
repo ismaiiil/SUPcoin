@@ -105,8 +105,11 @@ public class Main {
             String user_choice = user_input.nextLine();
 
             if(!user_choice.equals("")){
+
                 TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true);
                 TCPUtils.multicast(myCustomMessage,"none");
+
+
             }
         }
 
