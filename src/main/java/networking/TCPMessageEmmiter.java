@@ -1,6 +1,7 @@
 package networking;
 
 import enums.LogLevel;
+import enums.TCPMessageType;
 import helpers.CLogger;
 import models.TCPMessage;
 
@@ -39,6 +40,10 @@ public class TCPMessageEmmiter extends Thread {
 
             objectOutputStream.close();
             objectInputStream.close();
+
+            if(tcpMessage.getTcpMessageType() == TCPMessageType.CLOSE_SOCKET) {
+                socket.close();
+            }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }

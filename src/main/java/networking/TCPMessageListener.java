@@ -43,13 +43,7 @@ public class TCPMessageListener extends Thread{
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
                 cLogger.print(LOW, "got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
 
-                //TODO TESTING SERVER OUTPUT BACK TO CLIENT
-                TCPMessage myTestMessage = new TCPMessage(TCPMessageType.MESSAGE_SUCCESS,false);
-                OutputStream outputStream = socket.getOutputStream();
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                objectOutputStream.writeObject(myTestMessage);
-                objectOutputStream.flush();
-                objectOutputStream.close();
+
 
                 switch (tcpMessage.getTcpMessageType()){
                     case REQUEST_CONNECTION:
@@ -71,8 +65,14 @@ public class TCPMessageListener extends Thread{
                         break;
                 }
 
+                //TODO TESTING SERVER OUTPUT BACK TO CLIENT
+                TCPMessage myTestMessage = new TCPMessage(TCPMessageType.CLOSE_SOCKET,false);
+                OutputStream outputStream = socket.getOutputStream();
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                objectOutputStream.writeObject(myTestMessage);
+                objectOutputStream.flush();
+                objectOutputStream.close();
 
-                //socket.close();
             }catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
             }
