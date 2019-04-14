@@ -43,6 +43,8 @@ public class TCPMessageEmmiter extends Thread {
 
             if(tcpMessage.getTcpMessageType() == TCPMessageType.CLOSE_SOCKET) {
                 socket.close();
+                cLogger.print(LogLevel.HIGH, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
+
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
