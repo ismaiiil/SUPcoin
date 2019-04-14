@@ -29,7 +29,7 @@ public class TCPMessageEmmiter extends Thread {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
             objectOutputStream.writeObject(tcpMessage);
             objectOutputStream.flush();
-            objectOutputStream.close();
+
 
             //TODO TESTING CLIENT RECEIVING SERVER RESPONSE IN THE SOCKET ITSELF INSTEAD OF A NEW SOCKET RESPONSE
             InputStream inputStream = socket.getInputStream();
@@ -37,6 +37,8 @@ public class TCPMessageEmmiter extends Thread {
             TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
             cLogger.print(LogLevel.HIGH, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
 
+            objectOutputStream.close();
+            objectInputStream.close();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }

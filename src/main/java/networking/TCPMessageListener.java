@@ -72,7 +72,7 @@ public class TCPMessageListener extends Thread{
                 }
 
 
-                socket.close();
+                //socket.close();
             }catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
             }
