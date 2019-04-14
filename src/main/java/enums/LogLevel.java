@@ -1,5 +1,5 @@
 package enums;
 
 public enum LogLevel{
-    NONE,LOW,HIGH
+    NONE,LOW,HIGH,SUPERHIGH
 }

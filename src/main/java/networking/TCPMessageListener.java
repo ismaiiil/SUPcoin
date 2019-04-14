@@ -9,8 +9,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static enums.LogLevel.HIGH;
-import static enums.LogLevel.LOW;
+import static enums.LogLevel.*;
 
 public class TCPMessageListener extends Thread{
     private int port;
@@ -31,9 +30,9 @@ public class TCPMessageListener extends Thread{
     public void run() {
         while (true){
             try{
-                cLogger.print(HIGH,"ServerSocket awaiting connections...");
+                cLogger.print(SUPERHIGH,"ServerSocket awaiting connections...");
                 Socket socket = serverSocket.accept(); // blocking call, this will wait until a connection is attempted on this port.
-                cLogger.print(HIGH,"Connection from " + socket + "!");
+                cLogger.print(SUPERHIGH,"Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
                 String origin = socket.getInetAddress().getHostAddress();

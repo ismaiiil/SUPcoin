@@ -15,6 +15,11 @@ public class CLogger {
     public void print(LogLevel logLevel,String text){
 
         switch (RUtils.logLevel){
+            case SUPERHIGH:
+                if(logLevel == LogLevel.LOW  || logLevel == LogLevel.HIGH || logLevel == LogLevel.SUPERHIGH){
+                    System.out.println(beautify(logLevel,text));
+                }
+                break;
             case HIGH:
                 if(logLevel == LogLevel.LOW || logLevel == LogLevel.HIGH){
                     System.out.println(beautify(logLevel,text));
