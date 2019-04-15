@@ -17,7 +17,7 @@ public class Main {
 
 
     public static void main(String[] args) throws InterruptedException {
-        RUtils.logLevel = LogLevel.NONE;
+        RUtils.logLevel = LogLevel.LOW;
         CLogger cLogger = new CLogger(Main.class);
         Thread uPnPManagerThread = new Thread(new UPnPManager());
         uPnPManagerThread.start();
@@ -89,17 +89,6 @@ public class Main {
         }
 
 
-        /*
-        if this is an RDV get the block chain from SEEDER peer which is technically also an RDV peer
-        after the block chain has been downloaded, the EDGE peers can send a request a connection to the seed peer
-        once a connection has been established to a SEED peer OR another RDV peer, the current RDV peer will request for the
-        block chain, the seeder will cascade redirect the RDV peer to other RDV peers in the p2p network,
-        even if the seeder peers go down, the p2p would be still working but no new connections would be possible to be made
-        no new transactions either, unless you can get the public ip of any RDV peer
-        send messages over TCP, a message class contains different data types such as, origin of TCP packet, an enum, and the
-        data associated to the message for example the block chain itself.
-        */
-
         cLogger.printInput("do you want to test a propagatable message...");
 
         while(true){
@@ -114,19 +103,6 @@ public class Main {
             }
         }
 
-
-        /*
-        TODO architectures for connections over the internet => TCP spider web like
-        TODO after local testing is done make it impossible to have more than one RDV per router, possible using the local UDP broadcast to check for any other RDVs reachable
-
-        RDV can either manually connect to a specific RDV or by default the ip of the seeder RDV is hardcoded so that
-        we are able to redirect the RDV to a proper connection.
-
-        have a way to prevent multiple RDVS on hte same local network as this may cause bugs.
-
-        prevent user from adding an RDV which is already in the list of clients connected
-
-        */
 
     }
 }

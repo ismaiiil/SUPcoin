@@ -54,11 +54,18 @@ public class TCPMessageListener extends Thread{
                     case CONFIRM_CONNECTION:
                         RUtils.externalClientAddresses.add(origin);
                         cLogger.log(LOW,"CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
+
+                        //After that this peer has received a confirmation of connection it can begin looking up for
+                        //redundant connections, it can do so by sending a messenger.
+
                         break;
                     case VERIFY:
                         if(tcpMessage.isPropagatable()){
                             TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());
                         }
+                        break;
+                    case MESSENGER:
+                        TCPMessage messenger = new TCPMessage(TCPMessageType.MESSENGER, true);
                         break;
                     default:
                         break;

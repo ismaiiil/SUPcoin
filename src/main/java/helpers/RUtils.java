@@ -21,6 +21,7 @@ public class RUtils {
     public static int maxExternalRDVs = 2;
     public static int tcpPort = 8888;
     public static int udpPort = 8888;
+    public static int numberOfConnections = 2;
 
     public static void addMessageToCache(TCPMessage message){
         String messageHash = message.getMessageHash();
