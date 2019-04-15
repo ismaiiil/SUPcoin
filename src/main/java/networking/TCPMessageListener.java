@@ -85,10 +85,10 @@ public class TCPMessageListener extends Thread{
                                 TCPUtils.unicast(messengerCarrier,messenger.getSearchingIP());
 
                             }else{
-                                cLogger.log(HIGH,"This client already has the max number of allowed clients");
+                                cLogger.log(HIGH,"This client already has the max number of allowed clients or the Message REQ came from a directly connected PEER");
                                 if(tcpMessage.isAlive()){
                                     TCPUtils.multicastRDVs(tcpMessage,origin);
-                                    cLogger.log(HIGH,"Messenger is alive, multicastAll him again.");
+                                    cLogger.log(HIGH,"Messenger is alive, multicastAll it again.");
                                 }else{
                                     cLogger.log(HIGH,"Messenger is dead, no multicastAll done.");
                                 }
