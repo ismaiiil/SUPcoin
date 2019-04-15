@@ -62,7 +62,7 @@ public class TCPMessageListener extends Thread{
                             //redundant connections, it can do so by sending a messenger.
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true,10);
-                                Messenger messenger = new Messenger(origin,null);
+                                Messenger messenger = new Messenger(RUtils.externalIP,null);
                                 // Convert messenger to byte array
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
@@ -75,6 +75,7 @@ public class TCPMessageListener extends Thread{
                             Messenger messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
                             if((RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections)
                                     && !RUtils.externalClientAddresses.contains(messenger.getSearchingIP())){
+                                System.out.println(messenger.getSearchingIP() + " " + RUtils.externalClientAddresses);
                                 cLogger.log(HIGH,"Slot available and messenger not form a directly connected peer");
                                 messenger.setNewPeerAddress(RUtils.externalIP);
                                 TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_ACK, false,0);
