@@ -18,7 +18,6 @@ public class RUtils {
     public static HashSet<String> cacheMessages = new HashSet<>();
     public static HashSet<String> oldCacheMessages = new HashSet<>();
     public static int maxCacheSize = 1000;
-    public static int maxExternalRDVs = 2;
     public static int tcpPort = 8888;
     public static int udpPort = 8888;
     public static int minNumberOfConnections = 2;
@@ -46,5 +45,19 @@ public class RUtils {
     }
 
 
+
+    public static String getStats(){
+        return ("LogLevel: " + RUtils.logLevel + "\n" +
+                "Role: " + RUtils.myRole + "\n" +
+                "ExternalIP: " + RUtils.externalIP + "\n" +
+                "localClientAddresses: " + RUtils.localClientAddresses + "\n" +
+                "externalClientAddresses: " + RUtils.externalClientAddresses + "\n" +
+                "cacheMessages: " + RUtils.cacheMessages + "\n" +
+                "oldCacheMessages: " + RUtils.oldCacheMessages + "\n" +
+                "maxCacheSize: " + RUtils.maxCacheSize + "\n" +
+                "tcpPort: " + RUtils.tcpPort + "\n" +
+                "udpPort: " + RUtils.udpPort + "\n" +
+                "minNumberOfConnections: " + RUtils.minNumberOfConnections + "\n");
+    }
 
 }

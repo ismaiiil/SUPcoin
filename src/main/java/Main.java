@@ -92,13 +92,15 @@ public class Main {
         while(true){
             String user_choice = user_input.nextLine();
 
-            if(!user_choice.equals("")){
+            if(user_choice.equals("stats")){
+                cLogger.println(RUtils.getStats());
+            }
+            if(user_choice.equals("yes")){
 
                 TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true,10);
-                TCPUtils.multicast(myCustomMessage,"none");
-
-
+                TCPUtils.multicastAll(myCustomMessage,"none");
             }
+
         }
 
 

@@ -16,10 +16,10 @@ public class TCPMessage implements Serializable {
     private boolean propagatable;
     private byte[] data = new byte[0];
 
-    public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable, long timeoutSec){
+    public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable, long propagationTimeout){
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         this.dateTime = cal.getTimeInMillis();
-        this.propagationTimeout = timeoutSec * 1000;
+        this.propagationTimeout = propagationTimeout * 1000;
         this.tcpMessageType = tcpMessageType;
         this.messageHash = calculateHash();
         this.propagatable = propagatable;

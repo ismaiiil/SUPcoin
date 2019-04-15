@@ -66,7 +66,7 @@ public class TCPMessageListener extends Thread{
                                 // Convert messenger to byte array
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
-                                TCPUtils.multicast(messengerCarrier,socket.getInetAddress().getHostAddress());
+                                TCPUtils.multicastRDVs(messengerCarrier,socket.getInetAddress().getHostAddress());
                             }
 
                             break;
@@ -86,10 +86,10 @@ public class TCPMessageListener extends Thread{
                             }else{
                                 cLogger.log(HIGH,"This client already has the max number of allowed clients");
                                 if(tcpMessage.isAlive()){
-                                    TCPUtils.multicast(tcpMessage,origin);
-                                    cLogger.log(HIGH,"Messenger is alive, multicast him again.");
+                                    TCPUtils.multicastRDVs(tcpMessage,origin);
+                                    cLogger.log(HIGH,"Messenger is alive, multicastAll him again.");
                                 }else{
-                                    cLogger.log(HIGH,"Messenger is dead, no multicast done.");
+                                    cLogger.log(HIGH,"Messenger is dead, no multicastAll done.");
                                 }
 
                             }
@@ -99,6 +99,7 @@ public class TCPMessageListener extends Thread{
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
                                 TCPUtils.unicast(requestMessage,messenger.getNewPeerAddress());
+                                cLogger.log(LOW,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                         default:
                             break;
@@ -109,8 +110,8 @@ public class TCPMessageListener extends Thread{
                 //these are protocols that apply to both RDVs and EDGEs
                 switch (tcpMessage.getTcpMessageType()){
                     case VERIFY:
-                        if(tcpMessage.isPropagatable()){
-                            TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());
+                        if(tcpMessage.isPropagatable() && tcpMessage.isAlive()){
+                            TCPUtils.multicastAll(tcpMessage,socket.getInetAddress().getHostAddress());
                         }
                         break;
                 }
