@@ -66,7 +66,7 @@ public class TCPMessageListener extends Thread{
                                 // Convert messenger to byte array
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
-                                TCPUtils.multicastRDVs(messengerCarrier,socket.getInetAddress().getHostAddress());
+                                TCPUtils.multicastRDVs(messengerCarrier,"none");
                             }
 
                             break;
