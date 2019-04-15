@@ -17,7 +17,7 @@ public class Main {
 
 
     public static void main(String[] args) throws InterruptedException {
-        RUtils.logLevel = LogLevel.SUPERHIGH;
+        RUtils.logLevel = LogLevel.LOW;
         CLogger cLogger = new CLogger(Main.class);
         Thread uPnPManagerThread = new Thread(new UPnPManager());
         uPnPManagerThread.start();
