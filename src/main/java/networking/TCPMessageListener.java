@@ -83,6 +83,7 @@ public class TCPMessageListener extends Thread{
                                 TCPUtils.unicast(messengerCarrier,messenger.getOrigin());
                             }
                         }else{
+                            //TODO fox infinitely spreading messenger, the propagation NEEDS to stop at some point
                             TCPUtils.multicast(tcpMessage,origin);
                         }
                         break;
