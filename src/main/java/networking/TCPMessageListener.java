@@ -74,14 +74,14 @@ public class TCPMessageListener extends Thread{
                             cLogger.log(HIGH,"This has received a MESSENGER_REQ");
                             Messenger messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
                             if((RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections)
-                                    && !RUtils.externalClientAddresses.contains(messenger.getOrigin())){
+                                    && !RUtils.externalClientAddresses.contains(messenger.getSearchingIP())){
                                 cLogger.log(HIGH,"Slot available and messenger not form a directly connected peer");
                                 messenger.setNewPeerAddress(RUtils.externalIP);
                                 TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_ACK, false,0);
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
                                 //it fetches the public ip of the new machine and unicast it back to its origin
                                 cLogger.log(HIGH, "sending messenger back to its origin since this peer is the new peer to be added");
-                                TCPUtils.unicast(messengerCarrier,messenger.getOrigin());
+                                TCPUtils.unicast(messengerCarrier,messenger.getSearchingIP());
 
                             }else{
                                 cLogger.log(HIGH,"This client already has the max number of allowed clients");
@@ -98,7 +98,7 @@ public class TCPMessageListener extends Thread{
                             messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
-                                TCPUtils.unicast(requestMessage,messenger.getNewPeerAddress());
+                                TCPUtils.unicast(requestMessage,messenger.getSearchingIP());
                                 cLogger.log(LOW,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                         default:

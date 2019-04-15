@@ -3,15 +3,15 @@ package models;
 import java.io.Serializable;
 
 public class Messenger implements Serializable {
-    private String origin;
+    private String searchingIP;
     private String newPeerAddress;
 
-    public String getOrigin() {
-        return origin;
+    public String getSearchingIP() {
+        return searchingIP;
     }
 
-    public void setOrigin(String origin) {
-        this.origin = origin;
+    public void setSearchingIP(String searchingIP) {
+        this.searchingIP = searchingIP;
     }
 
     public String getNewPeerAddress() {
@@ -22,8 +22,8 @@ public class Messenger implements Serializable {
         this.newPeerAddress = newPeerAddress;
     }
 
-    public Messenger(String origin, String newPeerAddress) {
-        this.origin = origin;
+    public Messenger(String searchingIP, String newPeerAddress) {
+        this.searchingIP = searchingIP;
         this.newPeerAddress = newPeerAddress;
     }
 }
