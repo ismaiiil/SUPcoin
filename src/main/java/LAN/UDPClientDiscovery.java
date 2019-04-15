@@ -12,7 +12,6 @@ import helpers.RUtils;
 
 public class UDPClientDiscovery implements Runnable {
     DatagramSocket c;
-    static String test;
     int maxretries;
 
     private CLogger cLogger = new CLogger(this.getClass());

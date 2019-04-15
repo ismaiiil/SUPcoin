@@ -61,7 +61,7 @@ public class TCPMessageListener extends Thread{
                             //After that this peer has received a confirmation of connection it can begin looking up for
                             //redundant connections, it can do so by sending a messenger.
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
-                                TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true,10);
+                                TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout);
                                 Messenger messenger = new Messenger(RUtils.externalIP,null);
                                 // Convert messenger to byte array
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
@@ -99,7 +99,7 @@ public class TCPMessageListener extends Thread{
                             messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
-                                TCPUtils.unicast(requestMessage,messenger.getSearchingIP());
+                                TCPUtils.unicast(requestMessage,messenger.getNewPeerAddress());
                                 cLogger.log(LOW,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                         default:
@@ -107,7 +107,6 @@ public class TCPMessageListener extends Thread{
                     }
                 }
 
-                //TODO multicasting in RDVs still send RDV related messages to edges which is not right
                 //these are protocols that apply to both RDVs and EDGEs
                 switch (tcpMessage.getTcpMessageType()){
                     case VERIFY:

@@ -38,7 +38,7 @@ public class CLogger {
         System.out.println(WHITE_BACKGROUND_BRIGHT+BLACK_BOLD+"SUPCOIN >>> "+RESET + text);
     }
     public void printInput(String text){
-        System.out.println(WHITE_BACKGROUND_BRIGHT+BLACK_BOLD+"SUPCOIN >>> "+RESET + text);
+        println(text);
         System.out.print(WHITE_BACKGROUND_BRIGHT+BLACK_BOLD+"SUPCOIN >>> "+RESET);
     }
 
