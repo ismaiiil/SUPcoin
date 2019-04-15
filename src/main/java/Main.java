@@ -17,37 +17,38 @@ public class Main {
 
 
     public static void main(String[] args) throws InterruptedException {
-        RUtils.logLevel = LogLevel.LOW;
+        RUtils.logLevel = LogLevel.NONE;
         CLogger cLogger = new CLogger(Main.class);
         Thread uPnPManagerThread = new Thread(new UPnPManager());
         uPnPManagerThread.start();
 
         Scanner user_input = new Scanner(System.in);
-        System.out.println("Welcome to SUPCoin core");
-        System.out.println("This is prior setup before you start mining");
-        System.out.println("Do you want to use this machine as an RDV(Rendez-Vous) peer or EDGE peer");
+        cLogger.println("Welcome to SUPCoin core");
+        cLogger.println("This is prior setup before you start mining");
+        cLogger.printInput("Do you want to use this machine as an RDV(Rendez-Vous) peer or EDGE peer");
         String userChoice = user_input.nextLine();
         while (true){
             try{
                 RUtils.myRole = Role.valueOf(userChoice);
                 break;
             }catch (IllegalArgumentException e){
-                System.out.println("wrong choice please try either inputting EDGE or RDV");
+                //cLogger.log(LogLevel.EXCEPTION,"wrong choice please try either inputting EDGE or RDV");
+                cLogger.printInput("wrong choice please try either inputting EDGE or RDV");
                 userChoice = user_input.nextLine();
             }
         }
-        System.out.println("Your choose the Role of " + RUtils.myRole.toString());
+        cLogger.println("Your choose the Role of " + RUtils.myRole.toString());
 
         TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
         messageListener.start();
 
         switch (RUtils.myRole){
             case EDGE:
-                System.out.println("Do you want to initiate network discovery of an RDP (y/n)");
+                cLogger.printInput("Do you want to initiate network discovery of an RDP (y/n)");
                 userChoice = user_input.nextLine();
 
                 if(userChoice.equals("y")){
-                    System.out.println("Searching for an RDV...");
+                    cLogger.println("Searching for an RDV...");
                     Thread client = new Thread(new UDPClientDiscovery(3));
                     client.start();
                     try {
@@ -56,34 +57,34 @@ public class Main {
                         e.printStackTrace();
                     }
                     if(!RUtils.localClientAddresses.isEmpty()){
-                        System.out.println("Successfully found the RDV node at: "+ RUtils.localClientAddresses);
+                        cLogger.println("Successfully found the RDV node at: "+ RUtils.localClientAddresses);
                     }
                 }
                 else{
-                    System.out.println("Closing...");
+                    cLogger.println("Closing...");
                     System.exit(0);
                 }
 
                 break;
             case RDV:
 
-                cLogger.print(LogLevel.LOW,"Fetching your public IP...");
+                cLogger.log(LogLevel.LOW,"Fetching your public IP...");
                 ExternalIPGet externalIPGet = new ExternalIPGet();
                 externalIPGet.run();
                 externalIPGet.join();
-                cLogger.print(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+                cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
 
                 Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
                 discoveryThread.start();
-                System.out.println("input the public ip address of another optional RDV, write skip to skip this step.");
+                cLogger.printInput("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
                 if (!userChoice.contains("skip") && !RUtils.allClientAddresses().contains(userChoice) && !userChoice.equals(RUtils.externalIP)) {
                     TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
                     TCPUtils.unicast(requestMessage,userChoice);
                 }else{
-                    System.out.println("skipping, you already have this IP in your list or your input is your own External IP");
+                    cLogger.println("skipping, you already have this IP in your list or your input is your own External IP");
                 }
-                System.out.println("moving on...");
+                cLogger.println("moving on...");
                 break;
         }
 
@@ -99,7 +100,7 @@ public class Main {
         data associated to the message for example the block chain itself.
         */
 
-        System.out.println("do you want to test a propagatable message...");
+        cLogger.printInput("do you want to test a propagatable message...");
 
         while(true){
             String user_choice = user_input.nextLine();

@@ -7,6 +7,7 @@ import models.TCPMessage;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class TCPMessageEmmiter extends Thread {
     String hostname;
@@ -36,18 +37,20 @@ public class TCPMessageEmmiter extends Thread {
 //            InputStream inputStream = socket.getInputStream();
 //            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 //            TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-//            cLogger.print(LogLevel.SUPERHIGH, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
+//            cLogger.log(LogLevel.SUPERHIGH, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
 //
 //
 //            objectInputStream.close();
 //
 //            if(tcpMessage.getTcpMessageType() == TCPMessageType.CLOSE_SOCKET) {
 //                socket.close();
-//                cLogger.print(LogLevel.SUPERHIGH, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
+//                cLogger.log(LogLevel.SUPERHIGH, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
 //
 //            }
 
             socket.close();
+        } catch (UnknownHostException e){
+            cLogger.log(LogLevel.EXCEPTION,e.toString() + ", You may have input an invalid IP");
         } catch (IOException e) {
             e.printStackTrace();
         }

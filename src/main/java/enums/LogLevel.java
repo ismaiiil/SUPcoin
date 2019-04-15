@@ -5,7 +5,7 @@ import java.util.Map;
 
 public enum LogLevel {
     // various instances associated with integers or not
-    NONE(0),LOW(1),HIGH(2), SUPERHIGH(3),DEFAULT;
+    EXCEPTION(-1),NONE(0),LOW(1),HIGH(2), SUPERHIGH(3),SUPERDUPERHIGH(4),DEFAULT;
     // int value
     private int value;
     // empty constructor for default value

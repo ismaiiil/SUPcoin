@@ -30,17 +30,17 @@ public class TCPMessageListener extends Thread{
     public void run() {
         while (true){
             try{
-                cLogger.print(SUPERHIGH,"ServerSocket awaiting connections...");
+                cLogger.log(SUPERHIGH,"ServerSocket awaiting connections...");
                 Socket socket = serverSocket.accept(); // blocking call, this will wait until a connection is attempted on this port.
-                cLogger.print(SUPERHIGH,"Connection from " + socket + "!");
+                cLogger.log(SUPERHIGH,"Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
                 String origin = socket.getInetAddress().getHostAddress();
-                cLogger.print(LOW,"TCP connection from " + origin);
+                cLogger.log(LOW,"TCP connection from " + origin);
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-                cLogger.print(LOW, "got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
+                cLogger.log(LOW, "got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
 
 
 
@@ -49,11 +49,11 @@ public class TCPMessageListener extends Thread{
                         TCPMessage responseMessage = new TCPMessage(TCPMessageType.CONFIRM_CONNECTION,false);
                         TCPUtils.unicast(responseMessage,origin);
                         RUtils.externalClientAddresses.add(origin);
-                        cLogger.print(LOW,"REQUEST RECEIVED >>>added " + origin + "to the list of clients");
+                        cLogger.log(LOW,"REQUEST RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case CONFIRM_CONNECTION:
                         RUtils.externalClientAddresses.add(origin);
-                        cLogger.print(LOW,"CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
+                        cLogger.log(LOW,"CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
                         break;
                     case VERIFY:
                         if(tcpMessage.isPropagatable()){
