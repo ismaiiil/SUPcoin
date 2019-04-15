@@ -1,8 +1,10 @@
 package networking;
 
 import enums.TCPMessageType;
+import helpers.BytesUtil;
 import helpers.CLogger;
 import helpers.RUtils;
+import models.Messenger;
 import models.TCPMessage;
 
 import java.io.*;
@@ -57,6 +59,13 @@ public class TCPMessageListener extends Thread{
 
                         //After that this peer has received a confirmation of connection it can begin looking up for
                         //redundant connections, it can do so by sending a messenger.
+                        if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
+                            TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true);
+                            Messenger messenger = new Messenger(origin,null);
+                            // Convert messenger to byte array
+                            messengerCarrier.setData(BytesUtil.toByteArray(messenger));
+                            TCPUtils.multicast(messengerCarrier,socket.getInetAddress().getHostAddress());
+                        }
 
                         break;
                     case VERIFY:
@@ -64,9 +73,24 @@ public class TCPMessageListener extends Thread{
                             TCPUtils.multicast(tcpMessage,socket.getInetAddress().getHostAddress());
                         }
                         break;
-                    case MESSENGER:
-                        TCPMessage messenger = new TCPMessage(TCPMessageType.MESSENGER, true);
+                    case MESSENGER_REQ:
+                        if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
+                            Messenger messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
+                            if(messenger.getNewPeerAddress() == null){
+                                messenger.setNewPeerAddress(RUtils.externalIP);
+                                TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_ACK, true);
+                                messengerCarrier.setData(BytesUtil.toByteArray(messenger));
+                                TCPUtils.unicast(messengerCarrier,messenger.getOrigin());
+                            }
+                        }else{
+                            TCPUtils.multicast(tcpMessage,origin);
+                        }
                         break;
+                    case MESSENGER_ACK:
+                        Messenger messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
+                        if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
+                            RUtils.externalClientAddresses.add(messenger.getNewPeerAddress());
+                        }
                     default:
                         break;
                 }

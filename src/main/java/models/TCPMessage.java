@@ -15,7 +15,10 @@ public class TCPMessage implements Serializable {
     private String messageHash;
     private long dateTime;
     private boolean propagatable;
-    private Byte[] data = new Byte[0];
+
+
+
+    private byte[] data = new byte[0];
 
     public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable){
         this.dateTime = new Date().getTime();
@@ -30,8 +33,12 @@ public class TCPMessage implements Serializable {
         return StringUtil.applySha256(tcpMessageType.toString() + dateTime + n + Arrays.toString(data));
     }
 
-    public void setData(Byte[] data) {
+    public void setData(byte[] data) {
         this.data = data;
+    }
+
+    public byte[] getData() {
+        return data;
     }
 
     public TCPMessageType getTcpMessageType() {
