@@ -17,7 +17,7 @@ public class Main {
 
 
     public static void main(String[] args) throws InterruptedException {
-        RUtils.logLevel = LogLevel.LOW;
+        RUtils.logLevel = LogLevel.SUPERDUPERHIGH;
         CLogger cLogger = new CLogger(Main.class);
 
         Scanner user_input = new Scanner(System.in);

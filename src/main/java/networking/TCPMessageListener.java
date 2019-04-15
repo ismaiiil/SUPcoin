@@ -110,6 +110,7 @@ public class TCPMessageListener extends Thread{
                 //these are protocols that apply to both RDVs and EDGEs
                 switch (tcpMessage.getTcpMessageType()){
                     case VERIFY:
+                        cLogger.log(HIGH,"Got a verify Message, from "+ origin+ " propagating");
                         if(tcpMessage.isPropagatable() && tcpMessage.isAlive()){
                             TCPUtils.multicastAll(tcpMessage,socket.getInetAddress().getHostAddress());
                         }
