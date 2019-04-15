@@ -2,11 +2,9 @@ package models;
 
 import enums.TCPMessageType;
 
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import helpers.StringUtil;
 
@@ -14,14 +12,14 @@ public class TCPMessage implements Serializable {
     private TCPMessageType tcpMessageType;
     private String messageHash;
     private long dateTime;
+    private long propagationTimeout;
     private boolean propagatable;
-
-
-
     private byte[] data = new byte[0];
 
-    public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable){
-        this.dateTime = new Date().getTime();
+    public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable, long timeoutSec){
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        this.dateTime = cal.getTimeInMillis();
+        this.propagationTimeout = timeoutSec * 1000;
         this.tcpMessageType = tcpMessageType;
         this.messageHash = calculateHash();
         this.propagatable = propagatable;
@@ -64,5 +62,22 @@ public class TCPMessage implements Serializable {
 
     public void setPropagatable(boolean propagatable) {
         this.propagatable = propagatable;
+    }
+
+    public long getPropagationTimeout() {
+        return propagationTimeout;
+    }
+
+    public void setPropagationTimeout(long propagationTimeout) {
+        this.propagationTimeout = propagationTimeout;
+    }
+
+    public boolean isAlive(){
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        long currentTime = cal.getTimeInMillis();
+        if(propagationTimeout == 0){
+            return true;
+        }
+        return currentTime < dateTime + propagationTimeout;
     }
 }

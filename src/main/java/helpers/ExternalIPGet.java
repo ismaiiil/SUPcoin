@@ -1,5 +1,6 @@
 package helpers;
 
+import enums.LogLevel;
 import helpers.RUtils;
 
 import java.io.BufferedReader;
@@ -10,11 +11,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 public class ExternalIPGet extends Thread {
-
+    private CLogger cLogger = new CLogger(this.getClass());
     @Override
     public void run(){
         try {
-
+            cLogger.log(LogLevel.LOW,"Fetching your public IP...");
             URL url = new URL("https://myexternalip.com/raw");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -33,10 +34,6 @@ public class ExternalIPGet extends Thread {
             }
 
             conn.disconnect();
-
-        } catch (MalformedURLException e) {
-
-            e.printStackTrace();
 
         } catch (IOException e) {
 

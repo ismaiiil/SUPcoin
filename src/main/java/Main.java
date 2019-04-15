@@ -19,8 +19,6 @@ public class Main {
     public static void main(String[] args) throws InterruptedException {
         RUtils.logLevel = LogLevel.LOW;
         CLogger cLogger = new CLogger(Main.class);
-        Thread uPnPManagerThread = new Thread(new UPnPManager());
-        uPnPManagerThread.start();
 
         Scanner user_input = new Scanner(System.in);
         cLogger.println("Welcome to SUPCoin core");
@@ -67,8 +65,8 @@ public class Main {
 
                 break;
             case RDV:
-
-                cLogger.log(LogLevel.LOW,"Fetching your public IP...");
+                Thread uPnPManagerThread = new Thread(new UPnPManager());
+                uPnPManagerThread.start();
                 ExternalIPGet externalIPGet = new ExternalIPGet();
                 externalIPGet.run();
                 externalIPGet.join();
@@ -79,7 +77,7 @@ public class Main {
                 cLogger.printInput("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
                 if (!userChoice.contains("skip") && !RUtils.allClientAddresses().contains(userChoice) && !userChoice.equals(RUtils.externalIP)) {
-                    TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false);
+                    TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
                     TCPUtils.unicast(requestMessage,userChoice);
                 }else{
                     cLogger.println("skipping, you already have this IP in your list or your input is your own External IP");
@@ -96,7 +94,7 @@ public class Main {
 
             if(!user_choice.equals("")){
 
-                TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true);
+                TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true,10);
                 TCPUtils.multicast(myCustomMessage,"none");
 
 
