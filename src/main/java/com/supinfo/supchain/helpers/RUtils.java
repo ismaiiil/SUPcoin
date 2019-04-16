@@ -21,6 +21,7 @@ public class RUtils {
     public static int tcpPort = 8888;
     public static int udpPort = 8888;
     public static int minNumberOfConnections = 2;
+    public static int maxNumberOfConnections = 2;
     public static long messengerTimeout = 10;
 
     public static void addMessageToCache(TCPMessage message){

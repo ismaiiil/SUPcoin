@@ -15,12 +15,9 @@ public enum LogLevel {
     }
 
     public static LogLevel forValue(int value) {
-        // iterating values
         for (LogLevel n: values()) {
-            // matches argument
             if (n.getValue() == value) return n;
         }
-        // no match, returning DEFAULT
         return DEFAULT;
     }
 }

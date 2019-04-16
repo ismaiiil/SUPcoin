@@ -79,12 +79,12 @@ public class Main {
                 cLogger.printInput("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
                 if (!userChoice.contains("skip") && !RUtils.allClientAddresses().contains(userChoice) && !userChoice.equals(RUtils.externalIP)) {
+                    cLogger.println("We are now contacting this RDV!");
                     TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
                     TCPUtils.unicast(requestMessage,userChoice);
                 }else{
                     cLogger.println("skipping, you already have this IP in your list or your input is your own External IP");
                 }
-                cLogger.println("moving on...");
                 break;
         }
 
