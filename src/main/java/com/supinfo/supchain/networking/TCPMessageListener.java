@@ -94,7 +94,7 @@ public class TCPMessageListener extends Thread{
                                 TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_ACK, false,0);
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
                                 //it fetches the public ip of the new machine and unicast it back to its origin
-                                cLogger.log(HIGH, "sending messenger back to its origin since this peer is the new peer to be added");
+                                cLogger.log(HIGH, "sending messenger back to its origin:"+ messenger.getSearchingIP() +" since this peer is the new peer to be added");
                                 TCPUtils.unicast(messengerCarrier,messenger.getSearchingIP());
 
                             }else{
