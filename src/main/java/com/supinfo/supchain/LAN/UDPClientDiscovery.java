@@ -1,14 +1,14 @@
-package LAN;
+package com.supinfo.supchain.LAN;
 
-import enums.LogLevel;
+import com.supinfo.supchain.enums.LogLevel;
 
 import java.io.IOException;
 import java.net.*;
 import java.util.Enumeration;
 
-import enums.UDPMessage;
-import helpers.CLogger;
-import helpers.RUtils;
+import com.supinfo.supchain.enums.UDPMessage;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
 
 public class UDPClientDiscovery implements Runnable {
     DatagramSocket c;
@@ -31,7 +31,7 @@ public class UDPClientDiscovery implements Runnable {
             byte[] sendData = UDPMessage.DISCOVER_RDV_REQUEST.toString().getBytes();
 
 
-            // Broadcast the message over all the LAN interfaces
+            // Broadcast the message over all the com.supinfo.supchain.LAN interfaces
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();
@@ -58,7 +58,7 @@ public class UDPClientDiscovery implements Runnable {
                 }
             }
 
-            cLogger.log(LogLevel.HIGH,"Done looping over all LAN interfaces. Now waiting for a reply!");
+            cLogger.log(LogLevel.HIGH,"Done looping over all com.supinfo.supchain.LAN interfaces. Now waiting for a reply!");
 
             //Wait for a response
             byte[] recvBuf = new byte[15000];

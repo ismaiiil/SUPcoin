@@ -1,8 +1,8 @@
-package helpers;
+package com.supinfo.supchain.helpers;
 
-import enums.LogLevel;
-import enums.Role;
-import models.TCPMessage;
+import com.supinfo.supchain.enums.LogLevel;
+import com.supinfo.supchain.enums.Role;
+import com.supinfo.supchain.models.TCPMessage;
 
 import java.util.HashSet;
 

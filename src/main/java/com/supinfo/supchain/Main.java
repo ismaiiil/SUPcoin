@@ -1,15 +1,17 @@
-import enums.LogLevel;
-import enums.Role;
-import enums.TCPMessageType;
-import helpers.CLogger;
-import helpers.RUtils;
-import LAN.UDPClientDiscovery;
-import LAN.UDPMessageListener;
-import models.TCPMessage;
-import helpers.ExternalIPGet;
-import networking.TCPMessageListener;
-import networking.TCPUtils;
-import networking.UPnPManager;
+package com.supinfo.supchain;
+
+import com.supinfo.supchain.enums.LogLevel;
+import com.supinfo.supchain.enums.Role;
+import com.supinfo.supchain.enums.TCPMessageType;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
+import com.supinfo.supchain.LAN.UDPClientDiscovery;
+import com.supinfo.supchain.LAN.UDPMessageListener;
+import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.supchain.helpers.ExternalIPGet;
+import com.supinfo.supchain.networking.TCPMessageListener;
+import com.supinfo.supchain.networking.TCPUtils;
+import com.supinfo.supchain.networking.UPnPManager;
 
 import java.util.Scanner;
 

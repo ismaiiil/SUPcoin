@@ -1,18 +1,18 @@
-package networking;
+package com.supinfo.supchain.networking;
 
-import enums.Role;
-import enums.TCPMessageType;
-import helpers.BytesUtil;
-import helpers.CLogger;
-import helpers.RUtils;
-import models.Messenger;
-import models.TCPMessage;
+import com.supinfo.supchain.enums.Role;
+import com.supinfo.supchain.enums.TCPMessageType;
+import com.supinfo.supchain.helpers.BytesUtil;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
+import com.supinfo.supchain.models.Messenger;
+import com.supinfo.supchain.models.TCPMessage;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static enums.LogLevel.*;
+import static com.supinfo.supchain.enums.LogLevel.*;
 
 public class TCPMessageListener extends Thread{
     private int port;

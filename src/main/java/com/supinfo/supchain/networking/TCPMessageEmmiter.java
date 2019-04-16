@@ -1,9 +1,8 @@
-package networking;
+package com.supinfo.supchain.networking;
 
-import enums.LogLevel;
-import enums.TCPMessageType;
-import helpers.CLogger;
-import models.TCPMessage;
+import com.supinfo.supchain.enums.LogLevel;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.models.TCPMessage;
 
 import java.io.*;
 import java.net.Socket;

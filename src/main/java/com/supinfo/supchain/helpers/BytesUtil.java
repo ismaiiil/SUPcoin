@@ -1,4 +1,4 @@
-package helpers;
+package com.supinfo.supchain.helpers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

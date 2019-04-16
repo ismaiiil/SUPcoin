@@ -1,4 +1,4 @@
-package LAN;
+package com.supinfo.supchain.LAN;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -11,11 +11,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import enums.LogLevel;
-import enums.Role;
-import enums.UDPMessage;
-import helpers.CLogger;
-import helpers.RUtils;
+import com.supinfo.supchain.enums.LogLevel;
+import com.supinfo.supchain.enums.Role;
+import com.supinfo.supchain.enums.UDPMessage;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
 
 
 public class UDPMessageListener implements Runnable {

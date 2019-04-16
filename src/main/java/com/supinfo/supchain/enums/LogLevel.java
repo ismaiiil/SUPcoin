@@ -1,7 +1,4 @@
-package enums;
-
-import java.util.HashMap;
-import java.util.Map;
+package com.supinfo.supchain.enums;
 
 public enum LogLevel {
     EXCEPTION(-1),NONE(0),LOW(1),HIGH(2), SUPERHIGH(3),SUPERDUPERHIGH(4),DEFAULT;

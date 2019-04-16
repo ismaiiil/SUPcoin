@@ -1,12 +1,12 @@
-package models;
+package com.supinfo.supchain.models;
 
-import enums.TCPMessageType;
+import com.supinfo.supchain.enums.TCPMessageType;
 
 import java.util.*;
 
 import java.io.Serializable;
 
-import helpers.StringUtil;
+import com.supinfo.supchain.helpers.StringUtil;
 
 public class TCPMessage implements Serializable {
     private TCPMessageType tcpMessageType;

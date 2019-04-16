@@ -1,9 +1,9 @@
-package networking;
+package com.supinfo.supchain.networking;
 
-import enums.LogLevel;
-import helpers.CLogger;
-import helpers.RUtils;
-import models.TCPMessage;
+import com.supinfo.supchain.enums.LogLevel;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
+import com.supinfo.supchain.models.TCPMessage;
 
 public class TCPUtils {
 

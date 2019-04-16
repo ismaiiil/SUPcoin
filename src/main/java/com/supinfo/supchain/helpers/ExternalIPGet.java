@@ -1,13 +1,11 @@
-package helpers;
+package com.supinfo.supchain.helpers;
 
-import enums.LogLevel;
-import helpers.RUtils;
+import com.supinfo.supchain.enums.LogLevel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class ExternalIPGet extends Thread {

@@ -1,9 +1,9 @@
-package networking;
+package com.supinfo.supchain.networking;
 
 import com.dosse.upnp.UPnP;
-import enums.LogLevel;
-import helpers.CLogger;
-import helpers.RUtils;
+import com.supinfo.supchain.enums.LogLevel;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
 
 public class UPnPManager implements Runnable {
     private CLogger cLogger = new CLogger(this.getClass());

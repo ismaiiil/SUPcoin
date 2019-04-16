@@ -1,4 +1,4 @@
-package models;
+package com.supinfo.supchain.models;
 
 import java.io.Serializable;
 

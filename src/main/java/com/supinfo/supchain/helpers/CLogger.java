@@ -1,13 +1,13 @@
-package helpers;
+package com.supinfo.supchain.helpers;
 
-import enums.LogLevel;
+import com.supinfo.supchain.enums.LogLevel;
 
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static helpers.ConsoleColors.*;
+import static com.supinfo.supchain.helpers.ConsoleColors.*;
 
 
 public class CLogger {

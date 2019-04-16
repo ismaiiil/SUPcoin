@@ -6,33 +6,22 @@
 
     <groupId>com.supinfo.supchain</groupId>
     <artifactId>SUPcoin</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2</version>
 
     <repositories>
         <repository>
-            <id>4th-line-repo</id>
-            <url>http://4thline.org/m2/</url>
+            <id>src</id>
+            <url>http://src.me1312.net/maven/</url>
         </repository>
     </repositories>
 
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.fourthline.cling/cling -->
-        <dependency>
-            <groupId>org.fourthline.cling</groupId>
-            <artifactId>cling</artifactId>
-            <version>2.1.2</version>
-            <type>pom</type>
-        </dependency>
-
         <dependency>
             <groupId>com.dosse.upnp</groupId>
-            <artifactId>waifupnp</artifactId>
-            <version>1.1.7</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/src/main/resources/lib/WaifUPnP.jar</systemPath>
+            <artifactId>WaifUPnP</artifactId>
+            <version>1.1</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -44,6 +33,49 @@
                     <source>8</source>
                     <target>8</target>
                 </configuration>
+                <version>3.8.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+                <version>3.1.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <mainClass>com.supinfo.supchain.Main</mainClass>
+                    <includeProjectDependencies/>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.supinfo.supchain.Main</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <version>3.1.1</version>
             </plugin>
         </plugins>
     </build>
