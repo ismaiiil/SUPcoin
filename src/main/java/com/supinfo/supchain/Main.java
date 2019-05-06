@@ -14,15 +14,19 @@ import com.supinfo.supchain.networking.TCPUtils;
 import com.supinfo.supchain.networking.UPnPManager;
 import org.apache.commons.cli.*;
 
+import javax.xml.bind.*;
+import java.io.File;
 import java.util.Scanner;
 
 public class Main {
+    public static CLogger cLogger = new CLogger(Main.class);
 
-
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException{
         Options options = new Options();
         Option input = new Option("i", "init", false, "init config file as XML");
+        Option start = new Option("s", "start", false, "load xml config into program");
         options.addOption(input);
+        options.addOption(start);
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
@@ -37,9 +41,53 @@ public class Main {
         }
 
         if(cmd.hasOption("init")){
-            System.out.println("Creating xml file as config");
+            createNewConfig();
+
+        }
+        else if(cmd.hasOption("start")){
+            loadConfigFromXml();
+
         }
 
+    }
+
+    private static void loadConfigFromXml() {
+        cLogger.println("loading from xml config file");
+        JAXBContext jaxbContext = null;
+        try {
+            jaxbContext = JAXBContext.newInstance(RUtils.class);
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            // put a listener for advanced parsing errors
+            jaxbUnmarshaller.setEventHandler(event -> {
+                cLogger.log(LogLevel.LOW,event.getMessage());
+                return false;
+            });
+            //inject the xml back into the running application
+            RUtils rUtils = (RUtils) jaxbUnmarshaller.unmarshal( new File(".config/file.xml") );
+            cLogger.println("Last config successfully loaded!");
+            cLogger.log(LogLevel.HIGH,RUtils.getStats());
+
+        } catch (JAXBException e) {
+            //e.printStackTrace();
+        }
+    }
+
+    private static void createNewConfig() {
+        cLogger.println("Creating xml file as config");
+        try {
+            File file = new File(".config/file.xml");
+            JAXBContext jaxbContext = JAXBContext.newInstance(RUtils.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+
+            // output pretty printed
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+            RUtils rUtils = new RUtils();
+            jaxbMarshaller.marshal(rUtils, file);
+
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void oldMain() throws InterruptedException {
