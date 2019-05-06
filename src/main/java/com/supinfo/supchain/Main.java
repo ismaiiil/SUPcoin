@@ -12,7 +12,6 @@ import com.supinfo.supchain.helpers.ExternalIPGet;
 import com.supinfo.supchain.networking.TCPMessageListener;
 import com.supinfo.supchain.networking.TCPUtils;
 import com.supinfo.supchain.networking.UPnPManager;
-
 import java.util.Scanner;
 
 public class Main {

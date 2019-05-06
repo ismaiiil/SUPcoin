@@ -1,5 +1,6 @@
 package com.supinfo.supchain.helpers;
 
+import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
 import com.supinfo.supchain.models.TCPMessage;
@@ -10,6 +11,7 @@ public class RUtils {
     //using hashsets will allow for a margin of error when trying to add duplicate entries
     //since we heavily want unique values in those Sets, also Hashsets have a .contains search speed of O(1)
     //compared to O(n) for normal ArrayLists
+    public static Environment env = Environment.DEBUG;
     public static LogLevel logLevel;
     public static Role myRole;
     public static String externalIP;
@@ -21,8 +23,10 @@ public class RUtils {
     public static int tcpPort = 8888;
     public static int udpPort = 8888;
     public static int minNumberOfConnections = 2;
-    public static int maxNumberOfConnections = 2;
+    public static int maxNumberOfConnections = 3;
     public static long messengerTimeout = 10;
+    public static String bootstrapNode = "";
+
 
     public static void addMessageToCache(TCPMessage message){
         String messageHash = message.getMessageHash();
