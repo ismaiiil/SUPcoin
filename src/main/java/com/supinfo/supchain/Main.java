@@ -22,6 +22,33 @@ public class Main {
     public static CLogger cLogger = new CLogger(Main.class);
 
     public static void main(String[] args) throws InterruptedException{
+        CommandLine cmd = getCommandLine(args);
+
+        if(cmd.hasOption("init")){
+            cLogger.println("Creating new config file as xml");
+            saveConfig();
+
+        }
+        else if(cmd.hasOption("start")){
+            loadConfigFromXml();
+            /*
+                find a way to set up bootstrap node, the very first node of our system
+                have the ip hardcoded, we will have to settle with a local ip for now
+                then the bootstrap node will try to connect to itself, will have to do
+                a check for that
+                TODO: will have to make an argument to configure XML file without having to directly edit it or use GUI?
+                TODO:check self for bootstrap node
+                TODO:have a series of machines with static ips
+                TODO:have the external ip set to local ip in debug mode
+
+            */
+
+        }
+
+
+    }
+
+    private static CommandLine getCommandLine(String[] args) {
         Options options = new Options();
         Option input = new Option("i", "init", false, "init config file as XML");
         Option start = new Option("s", "start", false, "load xml config into program");
@@ -39,46 +66,36 @@ public class Main {
 
             System.exit(1);
         }
-
-        if(cmd.hasOption("init")){
-            createNewConfig();
-
-        }
-        else if(cmd.hasOption("start")){
-            loadConfigFromXml();
-
-        }
-
+        return cmd;
     }
 
     private static void loadConfigFromXml() {
-        cLogger.println("loading from xml config file");
+        cLogger.println("Loading from xml config file");
         JAXBContext jaxbContext = null;
         try {
             jaxbContext = JAXBContext.newInstance(RUtils.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             // put a listener for advanced parsing errors
             jaxbUnmarshaller.setEventHandler(event -> {
-                cLogger.log(LogLevel.LOW,event.getMessage());
+                cLogger.println(event.getMessage());
                 return false;
             });
             //inject the xml back into the running application
-            RUtils rUtils = (RUtils) jaxbUnmarshaller.unmarshal( new File(".config/file.xml") );
+            RUtils rUtils = (RUtils) jaxbUnmarshaller.unmarshal( new File(".config/rUtils.xml") );
             cLogger.println("Last config successfully loaded!");
             cLogger.log(LogLevel.HIGH,RUtils.getStats());
 
         } catch (JAXBException e) {
-            //e.printStackTrace();
+            cLogger.println("An error has occurred while loading the config!, please make sure your fields are valid" +
+                    " and that this file is present: ./config/rUtils.xml, you can recreate the config file by running with -i, --init");
         }
     }
 
-    private static void createNewConfig() {
-        cLogger.println("Creating xml file as config");
+    private static void saveConfig() {
         try {
-            File file = new File(".config/file.xml");
+            File file = new File(".config/rUtils.xml");
             JAXBContext jaxbContext = JAXBContext.newInstance(RUtils.class);
             Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
             // output pretty printed
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
