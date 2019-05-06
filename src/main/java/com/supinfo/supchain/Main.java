@@ -12,12 +12,37 @@ import com.supinfo.supchain.helpers.ExternalIPGet;
 import com.supinfo.supchain.networking.TCPMessageListener;
 import com.supinfo.supchain.networking.TCPUtils;
 import com.supinfo.supchain.networking.UPnPManager;
+import org.apache.commons.cli.*;
+
 import java.util.Scanner;
 
 public class Main {
 
 
     public static void main(String[] args) throws InterruptedException {
+        Options options = new Options();
+        Option input = new Option("i", "init", false, "init config file as XML");
+        options.addOption(input);
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("SUPCOIN", options);
+
+            System.exit(1);
+        }
+
+        if(cmd.hasOption("init")){
+            System.out.println("Creating xml file as config");
+        }
+
+    }
+
+    public static void oldMain() throws InterruptedException {
         RUtils.logLevel = LogLevel.SUPERDUPERHIGH;
         CLogger cLogger = new CLogger(Main.class);
 
@@ -103,7 +128,6 @@ public class Main {
             }
 
         }
-
-
     }
+
 }
