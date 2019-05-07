@@ -93,6 +93,7 @@ public class Main {
 
     private static void saveConfig() {
         try {
+            new File("./config").mkdirs();
             File file = new File(".config/rUtils.xml");
             JAXBContext jaxbContext = JAXBContext.newInstance(RUtils.class);
             Marshaller jaxbMarshaller = jaxbContext.createMarshaller();

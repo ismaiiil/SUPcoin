@@ -20,8 +20,8 @@ import com.supinfo.supchain.helpers.RUtils;
 
 public class UDPMessageListener implements Runnable {
 
-    DatagramSocket socket;
-    List<String> localaddresses =  new ArrayList<>();
+    private DatagramSocket socket;
+    private List<String> adapterAddresses =  new ArrayList<>();
 
     private CLogger cLogger = new CLogger(this.getClass());
 
@@ -38,7 +38,7 @@ public class UDPMessageListener implements Runnable {
             for (NetworkInterface netint : Collections.list(myints)){
                 Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
                 for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-                    localaddresses.add(inetAddress.getHostAddress());
+                    adapterAddresses.add(inetAddress.getHostAddress());
                 }
 
             }
@@ -50,7 +50,7 @@ public class UDPMessageListener implements Runnable {
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
                 String packetAddress = packet.getAddress().getHostAddress();
-                if(!localaddresses.contains(packet.getAddress().getHostAddress())){
+                if(!adapterAddresses.contains(packet.getAddress().getHostAddress())){
                     //Packet received
 
                     cLogger.log(LogLevel.HIGH, "packet received from: " + packetAddress);
