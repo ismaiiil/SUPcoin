@@ -1,5 +1,6 @@
 package com.supinfo.supchain;
 
+import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
 import com.supinfo.supchain.enums.TCPMessageType;
@@ -15,47 +16,61 @@ import com.supinfo.supchain.networking.UPnPManager;
 import org.apache.commons.cli.*;
 
 import javax.xml.bind.*;
-import java.io.File;
+import java.io.*;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
-    public static CLogger cLogger = new CLogger(Main.class);
+    private static CLogger cLogger = new CLogger(Main.class);
+    private static HelpFormatter formatter = new HelpFormatter();
+    private static Options options = new Options();
 
     public static void main(String[] args) throws InterruptedException{
         CommandLine cmd = getCommandLine(args);
 
-        if(cmd.hasOption("init")){
-            cLogger.println("Creating new config file as xml");
-            saveConfig();
+        if(cmd.hasOption("c")){
+            if(cmd.hasOption("i")){
+                cLogger.println("Creating new config file as xml");
+                saveConfig();
+            }
+            if(cmd.hasOption("m")){
+                cLogger.println("Below is the config manual:" + getManualText());
 
+            }
         }
-        else if(cmd.hasOption("start")){
+        else if(cmd.hasOption("r")){
             loadConfigFromXml();
             /*
                 find a way to set up bootstrap node, the very first node of our system
                 have the ip hardcoded, we will have to settle with a local ip for now
                 then the bootstrap node will try to connect to itself, will have to do
                 a check for that
-                TODO: will have to make an argument to configure XML file without having to directly edit it or use GUI?
                 TODO:check self for bootstrap node
                 TODO:have a series of machines with static ips
                 TODO:have the external ip set to local ip in debug mode
 
             */
 
+        }else{
+            cLogger.println("Please check help for using this app");
+            formatter.printHelp("SUPCOIN", options);
         }
 
 
     }
 
     private static CommandLine getCommandLine(String[] args) {
-        Options options = new Options();
-        Option input = new Option("i", "init", false, "init config file as XML");
-        Option start = new Option("s", "start", false, "load xml config into program");
-        options.addOption(input);
+
+        Option config = new Option("c", "config", false, "manipulate config");
+            Option init = new Option("i", "init", false, "use with -c --config to init a config file");
+            Option manual = new Option("m", "manual", false, "use with -c --config to show the config manual");
+        Option start = new Option("r", "run", false, "Run the program");
+        options.addOption(config);
+            options.addOption(init);
+            options.addOption(manual);
         options.addOption(start);
         CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
+
         CommandLine cmd = null;
 
         try {
@@ -93,7 +108,7 @@ public class Main {
 
     private static void saveConfig() {
         try {
-            new File("./config").mkdirs();
+            new File("./.config").mkdirs();
             File file = new File(".config/rUtils.xml");
             JAXBContext jaxbContext = JAXBContext.newInstance(RUtils.class);
             Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
@@ -102,10 +117,44 @@ public class Main {
 
             RUtils rUtils = new RUtils();
             jaxbMarshaller.marshal(rUtils, file);
+            cLogger.println("Config successfully saved!");
+            saveConfigManual();
 
         } catch (JAXBException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void saveConfigManual(){
+        PrintWriter writer = null;
+        try {
+            new File("./.config").mkdirs();
+            writer = new PrintWriter(".config/ConfigManual.txt", "UTF-8");
+            writer.println(getManualText());
+            writer.close();
+
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static String getManualText(){
+        return  "\n" + "---You can modify .config/rUtils.xml to change application variables that are loaded when the application starts" + "\n" +
+                "---Failure to follow these guidelines will result in errors;"+ "\n" +
+                "environment: " + Arrays.toString(Environment.values()) + "\n" +
+                "LogLevel: " + Arrays.toString(LogLevel.values()) + "\n" +
+                "Role: " + Arrays.toString(Role.values()) + "\n" +
+                "ExternalIP: " + "IPv4 address in  x.x.x.x format as a string" + "\n" +
+                "localClientAddresses: " + "IPv4 addresses in  x.x.x.x format as a string" + "\n" +
+                "externalClientAddresses: " + "IPv4 addresses in  x.x.x.x format as a string" + "\n" +
+                "maxCacheSize: " + "Max cache size of recently exchanged messages in INT" + "\n" +
+                "tcpPort: " + "TCP port to use as INT" + "\n" +
+                "udpPort: " + "UDP port to use as INT" + "\n" +
+                "minNumberOfConnections: " + "The minimum number of connection to this node as INT" + "\n" +
+                "maxNumberOfConnections: " + "The maximum number of connection to this node as INT" + "\n" +
+                "messengerTimeout: " + "Timeout when looking for redundant connections for added performance" + "\n" +
+                "bootstrapNode: " + "IP address of the Bootnode" + "\n";
     }
 
     public static void oldMain() throws InterruptedException {
