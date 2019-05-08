@@ -17,16 +17,19 @@ import org.apache.commons.cli.*;
 
 import javax.xml.bind.*;
 import java.io.*;
-import java.util.Arrays;
-import java.util.Scanner;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.*;
 
 public class Main {
     private static CLogger cLogger = new CLogger(Main.class);
     private static HelpFormatter formatter = new HelpFormatter();
     private static Options options = new Options();
 
-    public static void main(String[] args) throws InterruptedException{
+    public static void main(String[] args) throws InterruptedException, SocketException {
         CommandLine cmd = getCommandLine(args);
+        Scanner user_input = new Scanner(System.in);
 
         if(cmd.hasOption("c")){
             if(cmd.hasOption("i")){
@@ -40,15 +43,6 @@ public class Main {
         }
         else if(cmd.hasOption("r")){
             loadConfigFromXml();
-            /*
-                find a way to set up bootstrap node, the very first node of our system
-                have the ip hardcoded, we will have to settle with a local ip for now
-                then the bootstrap node will try to connect to itself, will have to do
-                a check for that
-                TODO:check self for bootstrap node
-                TODO:have a series of machines with static ips
-                TODO:have the external ip set to local ip in debug mode
-            */
 
             cLogger.println("Welcome to SUPCoin core");
             TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
@@ -56,26 +50,33 @@ public class Main {
 
             switch (RUtils.myRole){
                 case RDV:
-                    if(RUtils.env == Environment.PRODUCTION){
-                        Thread uPnPManagerThread = new Thread(new UPnPManager());
-                        uPnPManagerThread.start();
-                        ExternalIPGet externalIPGet = new ExternalIPGet();
-                        externalIPGet.run();
-                        externalIPGet.join();
-                        cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
-                    }else{
-                        cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from config file: " + RUtils.externalIP);
-                    }
-
-                    Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
-                    discoveryThread.start();
-
+                    startRDVRoutines();
+                    connectToBootNode();
                     break;
                 case EDGE:
                     promptDiscoverRDV();
                     break;
             }
 
+            cLogger.printInput("do you want to test a propagatable message...");
+
+            while(true){
+                String user_choice = user_input.nextLine();
+
+                if(user_choice.equals("stats")){
+                    cLogger.println(RUtils.getStats());
+                }
+                if(user_choice.equals("yes")){
+
+                    TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true,10);
+                    TCPUtils.multicastAll(myCustomMessage,"none");
+                }
+                if(user_choice.equals("exit")){
+                    saveConfig();
+                    System.exit(1);
+                }
+
+            }
 
 
         }else{
@@ -84,6 +85,40 @@ public class Main {
         }
 
 
+    }
+
+    private static void connectToBootNode() throws SocketException {
+        List<String> adapterAddresses = UDPMessageListener.getAdapterAdresses();
+        if(!RUtils.bootstrapNode.equals(RUtils.externalIP) && !adapterAddresses.contains(RUtils.bootstrapNode)){
+            if(isValidIP(RUtils.bootstrapNode) && isValidIP(RUtils.externalIP)){
+                cLogger.println("We are now contacting the bootnode!");
+                TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
+                TCPUtils.unicast(requestMessage,RUtils.bootstrapNode);
+            }else{
+                cLogger.println("Please make sure your bootnode and external IP is valid!");
+                saveConfig();
+                System.exit(1);
+            }
+
+        }else{
+            cLogger.println("You have setup the bootnode to be this node, waiting and listening for other nodes");
+        }
+    }
+
+    private static void startRDVRoutines() throws InterruptedException {
+        if(RUtils.env == Environment.PRODUCTION){
+            Thread uPnPManagerThread = new Thread(new UPnPManager());
+            uPnPManagerThread.start();
+            ExternalIPGet externalIPGet = new ExternalIPGet();
+            externalIPGet.run();
+            externalIPGet.join();
+            cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+        }else{
+            cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from config file: " + RUtils.externalIP);
+        }
+
+        Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
+        discoveryThread.start();
     }
 
     private static void promptDiscoverRDV() {
@@ -107,6 +142,8 @@ public class Main {
             cLogger.println("Closing...");
             System.exit(0);
         }
+
+
     }
 
     private static CommandLine getCommandLine(String[] args) {
@@ -147,6 +184,10 @@ public class Main {
             });
             //inject the xml back into the running application
             RUtils rUtils = (RUtils) jaxbUnmarshaller.unmarshal( new File(".config/rUtils.xml") );
+            if(!isValidIP(RUtils.bootstrapNode)){
+                cLogger.println("Please use a valid IPv4 format for the bootstrap node!");
+                System.exit(1);
+            }
             cLogger.println("Last config successfully loaded!");
             cLogger.log(LogLevel.HIGH,RUtils.getStats());
 
@@ -205,6 +246,33 @@ public class Main {
                 "maxNumberOfConnections: " + "The maximum number of connection to this node as INT" + "\n" +
                 "messengerTimeout: " + "Timeout when looking for redundant connections for added performance" + "\n" +
                 "bootstrapNode: " + "IP address of the Bootnode" + "\n";
+    }
+
+    public static boolean isValidIP(String ip) {
+        try {
+            if ( ip == null || ip.isEmpty() ) {
+                return false;
+            }
+
+            String[] parts = ip.split( "\\." );
+            if ( parts.length != 4 ) {
+                return false;
+            }
+
+            for ( String s : parts ) {
+                int i = Integer.parseInt( s );
+                if ( (i < 0) || (i > 255) ) {
+                    return false;
+                }
+            }
+            if ( ip.endsWith(".") ) {
+                return false;
+            }
+
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 
     public static void oldMain() throws InterruptedException {
@@ -280,19 +348,19 @@ public class Main {
 
         cLogger.printInput("do you want to test a propagatable message...");
 
-        while(true){
-            String user_choice = user_input.nextLine();
-
-            if(user_choice.equals("stats")){
-                cLogger.println(RUtils.getStats());
-            }
-            if(user_choice.equals("yes")){
-
-                TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true,10);
-                TCPUtils.multicastAll(myCustomMessage,"none");
-            }
-
-        }
+//        while(true){
+//            String user_choice = user_input.nextLine();
+//
+//            if(user_choice.equals("stats")){
+//                cLogger.println(RUtils.getStats());
+//            }
+//            if(user_choice.equals("yes")){
+//
+//                TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true,10);
+//                TCPUtils.multicastAll(myCustomMessage,"none");
+//            }
+//
+//        }
     }
 
 }

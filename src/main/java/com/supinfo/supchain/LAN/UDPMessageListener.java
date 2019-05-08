@@ -1,10 +1,7 @@
 package com.supinfo.supchain.LAN;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -33,15 +30,7 @@ public class UDPMessageListener implements Runnable {
             socket.setBroadcast(true);
 
             //Check if packet is from localhost ignore it if it is a loopback
-
-            Enumeration<NetworkInterface> myints = NetworkInterface.getNetworkInterfaces();
-            for (NetworkInterface netint : Collections.list(myints)){
-                Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-                for (InetAddress inetAddress : Collections.list(inetAddresses)) {
-                    adapterAddresses.add(inetAddress.getHostAddress());
-                }
-
-            }
+            adapterAddresses = getAdapterAdresses();
             cLogger.log(LogLevel.HIGH,"Ready to receive packets!");
             while (true) {
 
@@ -81,6 +70,18 @@ public class UDPMessageListener implements Runnable {
         } catch (IOException ex) {
             Logger.getLogger(UDPMessageListener.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public static List<String> getAdapterAdresses() throws SocketException {
+        List<String> adapterAddresses = new ArrayList<>();
+        Enumeration<NetworkInterface> myints = NetworkInterface.getNetworkInterfaces();
+        for (NetworkInterface netint : Collections.list(myints)){
+            Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+            for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+                adapterAddresses.add(inetAddress.getHostAddress());
+            }
+        }
+        return adapterAddresses;
     }
 
     public static UDPMessageListener getInstance() {

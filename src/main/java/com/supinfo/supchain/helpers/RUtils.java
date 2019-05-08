@@ -31,7 +31,6 @@ public class RUtils {
     public static long messengerTimeout = 10;
     public static String bootstrapNode = "";
 
-
     public Environment getEnv() {
         return env;
     }
