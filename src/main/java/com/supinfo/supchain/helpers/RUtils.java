@@ -15,7 +15,7 @@ public class RUtils {
     //using hashsets will allow for a margin of error when trying to add duplicate entries
     //since we heavily want unique values in those Sets, also Hashsets have a .contains search speed of O(1)
     //compared to O(n) for normal ArrayLists
-    public static Environment env = Environment.DEBUG;
+    public static Environment env = Environment.PRODUCTION;
     public static LogLevel logLevel = LogLevel.LOW;
     public static Role myRole = Role.RDV;
     public static String externalIP = "";
@@ -59,6 +59,15 @@ public class RUtils {
         RUtils.myRole = myRole;
     }
 
+    public String getExternalIP() {
+        return externalIP;
+    }
+
+    @XmlElement(name = "externalIP")
+    public void setExternalIP(String externalIP) {
+        RUtils.externalIP = externalIP;
+    }
+
 
     public HashSet<String> getLocalClientAddresses() {
         return localClientAddresses;
@@ -93,7 +102,7 @@ public class RUtils {
         return tcpPort;
     }
 
-    @XmlElement(name = "tcpPort")
+    //@XmlElement(name = "tcpPort")
     public void setTcpPort(int tcpPort) {
         RUtils.tcpPort = tcpPort;
     }
@@ -102,7 +111,7 @@ public class RUtils {
         return udpPort;
     }
 
-    @XmlElement(name = "udpPort")
+    //@XmlElement(name = "udpPort")
     public void setUdpPort(int udpPort) {
         RUtils.udpPort = udpPort;
     }

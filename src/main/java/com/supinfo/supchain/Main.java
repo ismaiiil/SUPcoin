@@ -48,8 +48,35 @@ public class Main {
                 TODO:check self for bootstrap node
                 TODO:have a series of machines with static ips
                 TODO:have the external ip set to local ip in debug mode
-
             */
+
+            cLogger.println("Welcome to SUPCoin core");
+            TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
+            messageListener.start();
+
+            switch (RUtils.myRole){
+                case RDV:
+                    if(RUtils.env == Environment.PRODUCTION){
+                        Thread uPnPManagerThread = new Thread(new UPnPManager());
+                        uPnPManagerThread.start();
+                        ExternalIPGet externalIPGet = new ExternalIPGet();
+                        externalIPGet.run();
+                        externalIPGet.join();
+                        cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+                    }else{
+                        cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from config file: " + RUtils.externalIP);
+                    }
+
+                    Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
+                    discoveryThread.start();
+
+                    break;
+                case EDGE:
+                    promptDiscoverRDV();
+                    break;
+            }
+
+
 
         }else{
             cLogger.println("Please check help for using this app");
@@ -57,6 +84,30 @@ public class Main {
         }
 
 
+    }
+
+    private static void promptDiscoverRDV() {
+        Scanner user_input = new Scanner(System.in);
+        String userChoice = user_input.nextLine();
+        cLogger.printInput("Do you want to initiate network discovery of an RDV (y/n)");
+
+        if(userChoice.equals("y")){
+            cLogger.println("Searching for an RDV...");
+            Thread client = new Thread(new UDPClientDiscovery(3));
+            client.start();
+            try {
+                client.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(!RUtils.localClientAddresses.isEmpty()){
+                cLogger.println("Successfully found the RDV node at: "+ RUtils.localClientAddresses);
+            }
+        }
+        else{
+            cLogger.println("Closing...");
+            System.exit(0);
+        }
     }
 
     private static CommandLine getCommandLine(String[] args) {
@@ -145,12 +196,12 @@ public class Main {
                 "environment: " + Arrays.toString(Environment.values()) + "\n" +
                 "LogLevel: " + Arrays.toString(LogLevel.values()) + "\n" +
                 "Role: " + Arrays.toString(Role.values()) + "\n" +
-                "ExternalIP: " + "IPv4 address in  x.x.x.x format as a string" + "\n" +
+                "external IP: " + "this can be hard coded for debug purposes else it will be overridden in production mode " + "\n" +
                 "localClientAddresses: " + "IPv4 addresses in  x.x.x.x format as a string" + "\n" +
                 "externalClientAddresses: " + "IPv4 addresses in  x.x.x.x format as a string" + "\n" +
                 "maxCacheSize: " + "Max cache size of recently exchanged messages in INT" + "\n" +
-                "tcpPort: " + "TCP port to use as INT" + "\n" +
-                "udpPort: " + "UDP port to use as INT" + "\n" +
+                //"tcpPort: " + "TCP port to use as INT" + "\n" +
+                //"udpPort: " + "UDP port to use as INT" + "\n" +
                 "minNumberOfConnections: " + "The minimum number of connection to this node as INT" + "\n" +
                 "maxNumberOfConnections: " + "The maximum number of connection to this node as INT" + "\n" +
                 "messengerTimeout: " + "Timeout when looking for redundant connections for added performance" + "\n" +
@@ -186,35 +237,35 @@ public class Main {
                 cLogger.printInput("Do you want to initiate network discovery of an RDP (y/n)");
                 userChoice = user_input.nextLine();
 
-                if(userChoice.equals("y")){
-                    cLogger.println("Searching for an RDV...");
-                    Thread client = new Thread(new UDPClientDiscovery(3));
-                    client.start();
-                    try {
-                        client.join();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    if(!RUtils.localClientAddresses.isEmpty()){
-                        cLogger.println("Successfully found the RDV node at: "+ RUtils.localClientAddresses);
-                    }
-                }
-                else{
-                    cLogger.println("Closing...");
-                    System.exit(0);
-                }
+//                if(userChoice.equals("y")){
+//                    cLogger.println("Searching for an RDV...");
+//                    Thread client = new Thread(new UDPClientDiscovery(3));
+//                    client.start();
+//                    try {
+//                        client.join();
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    if(!RUtils.localClientAddresses.isEmpty()){
+//                        cLogger.println("Successfully found the RDV node at: "+ RUtils.localClientAddresses);
+//                    }
+//                }
+//                else{
+//                    cLogger.println("Closing...");
+//                    System.exit(0);
+//                }
 
                 break;
             case RDV:
-                Thread uPnPManagerThread = new Thread(new UPnPManager());
-                uPnPManagerThread.start();
-                ExternalIPGet externalIPGet = new ExternalIPGet();
-                externalIPGet.run();
-                externalIPGet.join();
-                cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
-
-                Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
-                discoveryThread.start();
+//                Thread uPnPManagerThread = new Thread(new UPnPManager());
+//                uPnPManagerThread.start();
+//                ExternalIPGet externalIPGet = new ExternalIPGet();
+//                externalIPGet.run();
+//                externalIPGet.join();
+//                cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+//
+//                Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
+//                discoveryThread.start();
                 cLogger.printInput("input the public ip address of another optional RDV, write skip to skip this step.");
                 userChoice = user_input.nextLine();
                 if (!userChoice.contains("skip") && !RUtils.allClientAddresses().contains(userChoice) && !userChoice.equals(RUtils.externalIP)) {
