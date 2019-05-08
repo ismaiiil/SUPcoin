@@ -88,9 +88,8 @@ public class Main {
 
     private static void promptDiscoverRDV() {
         Scanner user_input = new Scanner(System.in);
-        String userChoice = user_input.nextLine();
         cLogger.printInput("Do you want to initiate network discovery of an RDV (y/n)");
-
+        String userChoice = user_input.nextLine();
         if(userChoice.equals("y")){
             cLogger.println("Searching for an RDV...");
             Thread client = new Thread(new UDPClientDiscovery(3));
