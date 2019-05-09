@@ -42,16 +42,19 @@ public class Main {
             }
         }
         else if(cmd.hasOption("r")){
-            loadConfigFromXml();
-
             cLogger.println("Welcome to SUPCoin core");
+            loadConfigFromXml();
             TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
             messageListener.start();
 
             switch (RUtils.myRole){
                 case RDV:
                     startRDVRoutines();
-                    connectToBootNode();
+                    //connect to bootnode only if minimum requirements not met
+                    //ping addresses and check for pong
+                    //have a thread that will check if minimum number of connections is satisfied
+                    //we are also going program a function to periodically check the external IP address and take necessary actions
+                    connectToNode(RUtils.bootstrapNode);
                     break;
                 case EDGE:
                     promptDiscoverRDV();
@@ -87,15 +90,15 @@ public class Main {
 
     }
 
-    private static void connectToBootNode() throws SocketException {
+    private static void connectToNode(String node) throws SocketException {
         List<String> adapterAddresses = UDPMessageListener.getAdapterAdresses();
-        if(!RUtils.bootstrapNode.equals(RUtils.externalIP) && !adapterAddresses.contains(RUtils.bootstrapNode)){
-            if(isValidIP(RUtils.bootstrapNode) && isValidIP(RUtils.externalIP)){
-                cLogger.println("We are now contacting the bootnode!");
+        if(!node.equals(RUtils.externalIP) && !adapterAddresses.contains(node)){
+            if(isValidIP(node) && isValidIP(RUtils.externalIP)){
+                cLogger.println("We are now contacting a node!");
                 TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
-                TCPUtils.unicast(requestMessage,RUtils.bootstrapNode);
+                TCPUtils.unicast(requestMessage,node);
             }else{
-                cLogger.println("Please make sure your bootnode and external IP is valid!");
+                cLogger.println("Please make sure the bootnode or IP supplied and external IP is valid!");
                 saveConfig();
                 System.exit(1);
             }
@@ -113,6 +116,7 @@ public class Main {
             externalIPGet.run();
             externalIPGet.join();
             cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+            //start a thread that will monitor the external IP and take necessary actions
         }else{
             cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from config file: " + RUtils.externalIP);
         }
@@ -248,7 +252,7 @@ public class Main {
                 "bootstrapNode: " + "IP address of the Bootnode" + "\n";
     }
 
-    public static boolean isValidIP(String ip) {
+    private static boolean isValidIP(String ip) {
         try {
             if ( ip == null || ip.isEmpty() ) {
                 return false;
@@ -275,92 +279,5 @@ public class Main {
         }
     }
 
-    public static void oldMain() throws InterruptedException {
-        RUtils.logLevel = LogLevel.SUPERDUPERHIGH;
-        CLogger cLogger = new CLogger(Main.class);
-
-        Scanner user_input = new Scanner(System.in);
-        cLogger.println("Welcome to SUPCoin core");
-        cLogger.println("This is prior setup before you start mining");
-        cLogger.printInput("Do you want to use this machine as an RDV(Rendez-Vous) peer or EDGE peer");
-        String userChoice = user_input.nextLine();
-        while (true){
-            try{
-                RUtils.myRole = Role.valueOf(userChoice);
-                break;
-            }catch (IllegalArgumentException e){
-                //cLogger.log(LogLevel.EXCEPTION,"wrong choice please try either inputting EDGE or RDV");
-                cLogger.printInput("wrong choice please try either inputting EDGE or RDV");
-                userChoice = user_input.nextLine();
-            }
-        }
-        cLogger.println("Your choose the Role of " + RUtils.myRole.toString());
-
-        TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
-        messageListener.start();
-
-        switch (RUtils.myRole){
-            case EDGE:
-                cLogger.printInput("Do you want to initiate network discovery of an RDP (y/n)");
-                userChoice = user_input.nextLine();
-
-//                if(userChoice.equals("y")){
-//                    cLogger.println("Searching for an RDV...");
-//                    Thread client = new Thread(new UDPClientDiscovery(3));
-//                    client.start();
-//                    try {
-//                        client.join();
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    if(!RUtils.localClientAddresses.isEmpty()){
-//                        cLogger.println("Successfully found the RDV node at: "+ RUtils.localClientAddresses);
-//                    }
-//                }
-//                else{
-//                    cLogger.println("Closing...");
-//                    System.exit(0);
-//                }
-
-                break;
-            case RDV:
-//                Thread uPnPManagerThread = new Thread(new UPnPManager());
-//                uPnPManagerThread.start();
-//                ExternalIPGet externalIPGet = new ExternalIPGet();
-//                externalIPGet.run();
-//                externalIPGet.join();
-//                cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
-//
-//                Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
-//                discoveryThread.start();
-                cLogger.printInput("input the public ip address of another optional RDV, write skip to skip this step.");
-                userChoice = user_input.nextLine();
-                if (!userChoice.contains("skip") && !RUtils.allClientAddresses().contains(userChoice) && !userChoice.equals(RUtils.externalIP)) {
-                    cLogger.println("We are now contacting this RDV!");
-                    TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
-                    TCPUtils.unicast(requestMessage,userChoice);
-                }else{
-                    cLogger.println("skipping, you already have this IP in your list or your input is your own External IP");
-                }
-                break;
-        }
-
-
-        cLogger.printInput("do you want to test a propagatable message...");
-
-//        while(true){
-//            String user_choice = user_input.nextLine();
-//
-//            if(user_choice.equals("stats")){
-//                cLogger.println(RUtils.getStats());
-//            }
-//            if(user_choice.equals("yes")){
-//
-//                TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true,10);
-//                TCPUtils.multicastAll(myCustomMessage,"none");
-//            }
-//
-//        }
-    }
 
 }

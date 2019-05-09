@@ -5,6 +5,7 @@ import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.models.TCPMessage;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -50,6 +51,10 @@ public class TCPMessageEmmiter extends Thread {
             socket.close();
         } catch (UnknownHostException e){
             cLogger.log(LogLevel.EXCEPTION,e.toString() + ", You may have input an invalid IP");
+        } catch (ConnectException e){
+            cLogger.log(LogLevel.HIGH,"Address: "+ hostname + " is unreachable!");
+            //this is liekly a connection timeout when we try to reach a dead IP, in the case of which we start a checknodes
+            //thread in the background to see if all nodes are alive, and take proper action
         } catch (IOException e) {
             e.printStackTrace();
         }

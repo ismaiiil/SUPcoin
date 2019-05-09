@@ -13,6 +13,10 @@
             <id>src</id>
             <url>http://src.me1312.net/maven/</url>
         </repository>
+        <repository>
+            <id>google</id>
+            <url>https://maven.google.com/</url>
+        </repository>
     </repositories>
 
 
@@ -34,8 +38,6 @@
             <artifactId>jaxb-api</artifactId>
             <version>2.2.11</version>
         </dependency>
-
-
     </dependencies>
 
     <build>

@@ -31,6 +31,8 @@ public class RUtils {
     public static long messengerTimeout = 10;
     public static String bootstrapNode = "";
 
+    //By default, bitcoin-core allows up to 125 connections to different peers
+
     public Environment getEnv() {
         return env;
     }

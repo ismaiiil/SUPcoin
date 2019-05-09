@@ -87,11 +87,12 @@ public class TCPMessageListener extends Thread{
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
                                 TCPUtils.multicastRDVs(messengerCarrier,"none");
                             }
+                            //if in production mode push external IP to REST api
                             break;
                         case MESSENGER_REQ:
                             cLogger.log(HIGH,"This has received a MESSENGER_REQ");
                             Messenger messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
-                            if((RUtils.externalClientAddresses.size() < RUtils.maxNumberOfConnections) //change this to max?
+                            if((RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections) //change this to max?
                                     && !RUtils.externalClientAddresses.contains(messenger.getSearchingIP())){
                                 cLogger.log(HIGH,"Slot available and messenger not form a directly connected peer");
                                 messenger.setNewPeerAddress(RUtils.externalIP);
@@ -102,7 +103,7 @@ public class TCPMessageListener extends Thread{
                                 TCPUtils.unicast(messengerCarrier,messenger.getSearchingIP());
 
                             }else{
-                                cLogger.log(HIGH,"This client already has the max number of required clients or the Message REQ came from a directly connected PEER");
+                                cLogger.log(HIGH,"This client already has the min number of required clients or the Message REQ came from a directly connected PEER");
                                 if(tcpMessage.isAlive()){
                                     TCPUtils.multicastRDVs(tcpMessage,origin);
                                     cLogger.log(HIGH,"MESSENGER_REQ is alive, multicastAll it again.");
