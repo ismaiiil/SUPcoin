@@ -64,7 +64,7 @@ public class TCPMessageListener extends Thread{
 
                                 //send a messenger to look up for a free peer
                                 TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout);
-                                Messenger messenger = new Messenger(origin,null);
+                                Messenger messenger = new Messenger(origin);
                                 // Convert messenger to byte array
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for a connection for the foreveralone peer: " + origin);
@@ -81,7 +81,7 @@ public class TCPMessageListener extends Thread{
                             //redundant connections(if it doesnt have the minimum number of connections), it can do so by sending a messenger req.
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout);
-                                Messenger messenger = new Messenger(RUtils.externalIP,null);
+                                Messenger messenger = new Messenger(RUtils.externalIP);
                                 // Convert messenger to byte array
                                 messengerCarrier.setData(BytesUtil.toByteArray(messenger));
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
@@ -122,6 +122,10 @@ public class TCPMessageListener extends Thread{
                                 cLogger.log(LOW,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                             //once we satisfy the min requirements all message ack received will be dropped
+                        case PING:
+                            break;
+                        case PONG:
+                            break;
                         default:
                             break;
                     }

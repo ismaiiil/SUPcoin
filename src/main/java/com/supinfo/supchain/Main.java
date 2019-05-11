@@ -10,6 +10,7 @@ import com.supinfo.supchain.LAN.UDPClientDiscovery;
 import com.supinfo.supchain.LAN.UDPMessageListener;
 import com.supinfo.supchain.models.TCPMessage;
 import com.supinfo.supchain.helpers.ExternalIPGet;
+import com.supinfo.supchain.networking.ExternalIPCheckTask;
 import com.supinfo.supchain.networking.TCPMessageListener;
 import com.supinfo.supchain.networking.TCPUtils;
 import com.supinfo.supchain.networking.UPnPManager;
@@ -50,11 +51,23 @@ public class Main {
             switch (RUtils.myRole){
                 case RDV:
                     startRDVRoutines();
-                    //connect to bootnode only if minimum requirements not met
+
                     //ping addresses and check for pong
-                    //have a thread that will check if minimum number of connections is satisfied
+                    /*
+                    * brodcast a PING message
+                    * add PINGed addresses to pingedAddresses
+                    * when a node receives a PING the message must have teh same origin and same
+                    * wait until timeout of (5 seconds, make this timeout configurable as connection minLatency)
+                    * for each PONG message received remove the address from the pingedAddresses list
+                    * */
+
+
                     //we are also going program a function to periodically check the external IP address and take necessary actions
+                    //connect to bootnode only if minimum requirements not met
                     connectToNode(RUtils.bootstrapNode);
+
+                    //have a thread that will check if minimum number of connections is satisfied
+
                     break;
                 case EDGE:
                     promptDiscoverRDV();
@@ -110,13 +123,19 @@ public class Main {
 
     private static void startRDVRoutines() throws InterruptedException {
         if(RUtils.env == Environment.PRODUCTION){
+
             Thread uPnPManagerThread = new Thread(new UPnPManager());
             uPnPManagerThread.start();
+
             ExternalIPGet externalIPGet = new ExternalIPGet();
             externalIPGet.run();
             externalIPGet.join();
             cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+
             //start a thread that will monitor the external IP and take necessary actions
+//            Timer time = new Timer(); // Instantiate Timer Object
+//            ExternalIPCheckTask st = new ExternalIPCheckTask(); // Instantiate SheduledTask class
+//            time.schedule(st, 0, 1000); // Create Repetitively task for every 1 secs
         }else{
             cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from config file: " + RUtils.externalIP);
         }

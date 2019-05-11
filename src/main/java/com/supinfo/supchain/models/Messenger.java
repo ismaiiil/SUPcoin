@@ -22,8 +22,7 @@ public class Messenger implements Serializable {
         this.newPeerAddress = newPeerAddress;
     }
 
-    public Messenger(String searchingIP, String newPeerAddress) {
+    public Messenger(String searchingIP) {
         this.searchingIP = searchingIP;
-        this.newPeerAddress = newPeerAddress;
     }
 }
