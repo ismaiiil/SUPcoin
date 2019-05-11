@@ -6,6 +6,7 @@ import com.supinfo.supchain.helpers.BytesUtil;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.models.Messenger;
+import com.supinfo.supchain.models.PingPong;
 import com.supinfo.supchain.models.TCPMessage;
 
 import java.io.*;
@@ -51,7 +52,7 @@ public class TCPMessageListener extends Thread{
                         case REQUEST_CONNECTION:
                             if(RUtils.externalClientAddresses.size() < RUtils.maxNumberOfConnections){
                                 //if we dnt have the maximum number of connections we are going to accept the direct connection
-                                TCPMessage responseMessage = new TCPMessage(TCPMessageType.CONFIRM_CONNECTION,false,0);
+                                TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.CONFIRM_CONNECTION,false,0,null);
                                 TCPUtils.unicast(responseMessage,origin);
                                 RUtils.externalClientAddresses.add(origin);
                                 cLogger.log(LOW,"REQUEST RECEIVED >>>added " + origin + "to the list of clients");
@@ -59,14 +60,12 @@ public class TCPMessageListener extends Thread{
                                 //else we will send a messenger to look for another peer, in the process we may find redundant peers
                                 //thus easing the life of the new peer in finding redundant connections until its minimumNumber of peers
                                 //is satisfied
-                                TCPMessage responseMessage = new TCPMessage(TCPMessageType.WAIT_FOR_LOOKUP,false,0);
+                                TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.WAIT_FOR_LOOKUP,false,0,null);
                                 TCPUtils.unicast(responseMessage,origin);
 
                                 //send a messenger to look up for a free peer
-                                TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout);
                                 Messenger messenger = new Messenger(origin);
-                                // Convert messenger to byte array
-                                messengerCarrier.setData(BytesUtil.toByteArray(messenger));
+                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout,messenger);
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for a connection for the foreveralone peer: " + origin);
                                 TCPUtils.multicastRDVs(messengerCarrier,origin);
                             }
@@ -80,10 +79,9 @@ public class TCPMessageListener extends Thread{
                             //After that this peer has received a confirmation of connection it can begin looking up for
                             //redundant connections(if it doesnt have the minimum number of connections), it can do so by sending a messenger req.
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
-                                TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout);
                                 Messenger messenger = new Messenger(RUtils.externalIP);
-                                // Convert messenger to byte array
-                                messengerCarrier.setData(BytesUtil.toByteArray(messenger));
+                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout,messenger);
+
                                 cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
                                 TCPUtils.multicastRDVs(messengerCarrier,"none");
                             }
@@ -91,13 +89,12 @@ public class TCPMessageListener extends Thread{
                             break;
                         case MESSENGER_REQ:
                             cLogger.log(HIGH,"This has received a MESSENGER_REQ");
-                            Messenger messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
+                            Messenger messenger = (Messenger) tcpMessage.getData();
                             if((RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections) //change this to max?
                                     && !RUtils.externalClientAddresses.contains(messenger.getSearchingIP())){
                                 cLogger.log(HIGH,"Slot available and messenger not form a directly connected peer");
                                 messenger.setNewPeerAddress(RUtils.externalIP);
-                                TCPMessage messengerCarrier = new TCPMessage(TCPMessageType.MESSENGER_ACK, false,0);
-                                messengerCarrier.setData(BytesUtil.toByteArray(messenger));
+                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_ACK, false,0,messenger);
                                 //it fetches the public ip of the new machine and unicast it back to its origin
                                 cLogger.log(HIGH, "sending messenger back to its origin:"+ messenger.getSearchingIP() +" since this peer is the new peer to be added");
                                 TCPUtils.unicast(messengerCarrier,messenger.getSearchingIP());
@@ -116,16 +113,12 @@ public class TCPMessageListener extends Thread{
                         case MESSENGER_ACK:
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 // this will accept ack as long as we do not satisfy the minimum requirements
-                                messenger = (Messenger) BytesUtil.toObject(tcpMessage.getData());
-                                TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
+                                messenger = (Messenger) tcpMessage.getData();
+                                TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,messenger);
                                 TCPUtils.unicast(requestMessage,messenger.getNewPeerAddress());
                                 cLogger.log(LOW,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                             //once we satisfy the min requirements all message ack received will be dropped
-                        case PING:
-                            break;
-                        case PONG:
-                            break;
                         default:
                             break;
                     }
@@ -138,6 +131,18 @@ public class TCPMessageListener extends Thread{
                         if(tcpMessage.isPropagatable() && tcpMessage.isAlive()){
                             TCPUtils.multicastAll(tcpMessage,socket.getInetAddress().getHostAddress());
                         }
+                        break;
+                    case PING:
+
+                        PingPong ping = (PingPong) tcpMessage.getData();
+                        cLogger.log(HIGH,"received a ping from + " + ping.getOrigin() + ", sending back a pong!");
+                        //check if ping message has origin same as the message we received and send back pong
+                        TCPMessage pongMessage = new TCPMessage<>(TCPMessageType.PONG,false,0, new PingPong(RUtils.externalIP));
+                        TCPUtils.unicast(pongMessage, ping.getOrigin());
+                        break;
+                    case PONG:
+                        PingPong pong = (PingPong) tcpMessage.getData();
+                        cLogger.log(HIGH,"successfully received back a pong from + " + pong.getOrigin());
                         break;
                 }
 

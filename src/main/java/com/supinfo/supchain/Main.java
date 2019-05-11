@@ -8,6 +8,7 @@ import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.LAN.UDPClientDiscovery;
 import com.supinfo.supchain.LAN.UDPMessageListener;
+import com.supinfo.supchain.models.PingPong;
 import com.supinfo.supchain.models.TCPMessage;
 import com.supinfo.supchain.helpers.ExternalIPGet;
 import com.supinfo.supchain.networking.ExternalIPCheckTask;
@@ -61,10 +62,16 @@ public class Main {
                     * for each PONG message received remove the address from the pingedAddresses list
                     * */
 
+                    TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,false,0, new PingPong(RUtils.externalIP));
+                    TCPUtils.multicastAll(pingMessage,RUtils.externalIP);
+
 
                     //we are also going program a function to periodically check the external IP address and take necessary actions
+
                     //connect to bootnode only if minimum requirements not met
-                    connectToNode(RUtils.bootstrapNode);
+                    if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
+                        connectToNode(RUtils.bootstrapNode);
+                    }
 
                     //have a thread that will check if minimum number of connections is satisfied
 
@@ -84,7 +91,7 @@ public class Main {
                 }
                 if(user_choice.equals("yes")){
 
-                    TCPMessage myCustomMessage = new TCPMessage(TCPMessageType.VERIFY,true,10);
+                    TCPMessage myCustomMessage = new TCPMessage<>(TCPMessageType.VERIFY,true,10,null);
                     TCPUtils.multicastAll(myCustomMessage,"none");
                 }
                 if(user_choice.equals("exit")){
@@ -108,7 +115,7 @@ public class Main {
         if(!node.equals(RUtils.externalIP) && !adapterAddresses.contains(node)){
             if(isValidIP(node) && isValidIP(RUtils.externalIP)){
                 cLogger.println("We are now contacting a node!");
-                TCPMessage requestMessage = new TCPMessage(TCPMessageType.REQUEST_CONNECTION,false,0);
+                TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,null);
                 TCPUtils.unicast(requestMessage,node);
             }else{
                 cLogger.println("Please make sure the bootnode or IP supplied and external IP is valid!");

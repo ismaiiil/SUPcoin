@@ -8,7 +8,6 @@ import java.io.ObjectOutputStream;
 
 public class BytesUtil {
 
-    // toByteArray and toObject are taken from: http://tinyurl.com/69h8l7x
     public static byte[] toByteArray(Object obj) throws IOException {
         byte[] bytes = null;
         ByteArrayOutputStream bos = null;
