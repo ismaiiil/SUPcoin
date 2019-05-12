@@ -23,6 +23,7 @@ public class RUtils {
     public static HashSet<String> externalClientAddresses = new HashSet<>();
     public static HashSet<String> cacheMessages = new HashSet<>();
     public static HashSet<String> oldCacheMessages = new HashSet<>();
+    public static HashSet<String> pingedAddresses = new HashSet<>();
     public static int maxCacheSize = 1000;
     public static int tcpPort = 8888;
     public static int udpPort = 8888;

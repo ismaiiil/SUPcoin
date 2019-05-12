@@ -8,6 +8,7 @@ import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.LAN.UDPClientDiscovery;
 import com.supinfo.supchain.LAN.UDPMessageListener;
+import com.supinfo.supchain.helpers.SpinnerCLI;
 import com.supinfo.supchain.models.PingPong;
 import com.supinfo.supchain.models.TCPMessage;
 import com.supinfo.supchain.helpers.ExternalIPGet;
@@ -23,6 +24,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.*;
+
+import static java.lang.Thread.sleep;
 
 public class Main {
     private static CLogger cLogger = new CLogger(Main.class);
@@ -62,8 +65,7 @@ public class Main {
                     * for each PONG message received remove the address from the pingedAddresses list
                     * */
 
-                    TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,false,0, new PingPong(RUtils.externalIP));
-                    TCPUtils.multicastAll(pingMessage,RUtils.externalIP);
+                    pingPong();
 
 
                     //we are also going program a function to periodically check the external IP address and take necessary actions
@@ -108,6 +110,36 @@ public class Main {
         }
 
 
+    }
+
+    private static void pingPong() {
+        TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,false,0, new PingPong(RUtils.externalIP));
+        TCPUtils.multicastAll(pingMessage,RUtils.externalIP);
+        RUtils.pingedAddresses = (HashSet<String>) RUtils.externalClientAddresses.clone();
+
+        Thread thisThread = Thread.currentThread();
+        int timeToRun = 5000; //TODO:include in RUtils and marshall it
+
+        new Thread(() -> {
+            try {
+                sleep(timeToRun);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            thisThread.interrupt();
+        }).start();
+        SpinnerCLI spinnerCLI = new SpinnerCLI("Checking cached nodes: ");
+        spinnerCLI.start();
+        while (!Thread.interrupted() || RUtils.pingedAddresses.size() == 0) {
+
+        }
+        spinnerCLI.showProgress = false;
+        for (String address:RUtils.pingedAddresses) {
+            if (address != null) {
+                cLogger.log(LogLevel.HIGH,address + " unreachable, did not reply to pong after latency timeout, removing from cache");
+                RUtils.externalClientAddresses.remove(address);
+            }
+        }
     }
 
     private static void connectToNode(String node) throws SocketException {

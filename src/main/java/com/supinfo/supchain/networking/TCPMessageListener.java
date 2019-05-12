@@ -135,14 +135,20 @@ public class TCPMessageListener extends Thread{
                     case PING:
 
                         PingPong ping = (PingPong) tcpMessage.getData();
-                        cLogger.log(HIGH,"received a ping from + " + ping.getOrigin() + ", sending back a pong!");
-                        //check if ping message has origin same as the message we received and send back pong
-                        TCPMessage pongMessage = new TCPMessage<>(TCPMessageType.PONG,false,0, new PingPong(RUtils.externalIP));
-                        TCPUtils.unicast(pongMessage, ping.getOrigin());
+                        //send back a pong only if ping has the same origin as the message, and the ping origin is stored in the list of external addresses
+                        if(ping.getOrigin().equals(origin) && RUtils.externalClientAddresses.contains(ping.getOrigin())){
+                            cLogger.log(HIGH,"received a ping from + " + ping.getOrigin() + ", sending back a pong!");
+                            TCPMessage pongMessage = new TCPMessage<>(TCPMessageType.PONG,false,0, new PingPong(RUtils.externalIP));
+                            TCPUtils.unicast(pongMessage, ping.getOrigin());
+                        }else{
+                            cLogger.log(HIGH,"received a PING from an unknown host!");
+                        }
+
                         break;
                     case PONG:
                         PingPong pong = (PingPong) tcpMessage.getData();
                         cLogger.log(HIGH,"successfully received back a pong from + " + pong.getOrigin());
+                        RUtils.pingedAddresses.remove(pong.getOrigin());
                         break;
                 }
 

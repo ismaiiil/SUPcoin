@@ -45,6 +45,6 @@ public class CLogger {
     private String beautify(LogLevel logLevel,String text){
         Date date = new Date();
         Timestamp ts = new Timestamp(date.getTime());
-        return (coloredPrefix.get(logLevel) + ts + " [["+logLevel+"]] " + classCaller +" : "+ text + RESET);
+        return (coloredPrefix.get(logLevel) +ts + " [["+logLevel+"]] " + classCaller +" : "+ text + RESET);
     }
 }
