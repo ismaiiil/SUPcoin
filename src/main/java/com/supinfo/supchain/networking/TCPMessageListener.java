@@ -50,7 +50,7 @@ public class TCPMessageListener extends Thread{
                 if(RUtils.myRole == Role.RDV){
                     switch (tcpMessage.getTcpMessageType()){
                         case REQUEST_CONNECTION:
-                            if(RUtils.externalClientAddresses.size() < RUtils.maxNumberOfConnections){
+                            if((RUtils.externalClientAddresses.size() < RUtils.maxNumberOfConnections) && (!RUtils.externalClientAddresses.contains(origin))){
                                 //if we dnt have the maximum number of connections we are going to accept the direct connection
                                 TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.CONFIRM_CONNECTION,false,0,null);
                                 TCPUtils.unicast(responseMessage,origin);
@@ -141,7 +141,7 @@ public class TCPMessageListener extends Thread{
                             TCPMessage pongMessage = new TCPMessage<>(TCPMessageType.PONG,false,0, new PingPong(RUtils.externalIP));
                             TCPUtils.unicast(pongMessage, ping.getOrigin());
                         }else{
-                            cLogger.log(HIGH,"received a PING from an unknown host!");
+                            cLogger.log(HIGH,"received a PING from an unknown host!" + ping.getOrigin() );
                         }
 
                         break;

@@ -1,18 +1,12 @@
 package com.supinfo.supchain;
 
-import com.supinfo.supchain.enums.Environment;
-import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.TCPMessageType;
-import com.supinfo.supchain.helpers.CLogger;
-import com.supinfo.supchain.helpers.ConfigManager;
-import com.supinfo.supchain.helpers.RUtils;
+import com.supinfo.supchain.helpers.*;
 import com.supinfo.supchain.LAN.UDPClientDiscovery;
-import com.supinfo.supchain.LAN.UDPMessageListener;
 import com.supinfo.supchain.models.TCPMessage;
-import com.supinfo.supchain.helpers.ExternalIPGet;
+import com.supinfo.supchain.networking.PingPongTask;
 import com.supinfo.supchain.networking.TCPMessageListener;
 import com.supinfo.supchain.networking.TCPUtils;
-import com.supinfo.supchain.networking.UPnPManager;
 import org.apache.commons.cli.*;
 
 import java.net.SocketException;
@@ -50,8 +44,13 @@ public class Main {
                     TCPUtils.startRDVRoutines();
 
                     //ping addresses and check for pong, remove addresses if no pong received
-
-                    TCPUtils.pingPong();
+                    SpinnerCLI spinnerCLI = new SpinnerCLI("Checking cached nodes: ");
+                    spinnerCLI.start();
+                    TCPUtils.waitPingPong();
+                    Timer time = new Timer(); // Instantiate Timer Object
+                    PingPongTask ppt = new PingPongTask(); // Instantiate SheduledTask class
+                    time.schedule(ppt, 1000, 11000); // Create Repetitively task for every 1 secs
+                    spinnerCLI.showProgress = false;
 
 
                     //we are also going program a function to periodically check the external IP address and take necessary actions

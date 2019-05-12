@@ -78,7 +78,7 @@ public class TCPUtils {
         discoveryThread.start();
     }
 
-    public static void pingPong() {
+    public static void waitPingPong() {
         TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,false,0, new PingPong(RUtils.externalIP));
         TCPUtils.multicastAll(pingMessage,RUtils.externalIP);
         RUtils.pingedAddresses = (HashSet<String>) RUtils.externalClientAddresses.clone();
@@ -94,12 +94,11 @@ public class TCPUtils {
             }
             thisThread.interrupt();
         }).start();
-        SpinnerCLI spinnerCLI = new SpinnerCLI("Checking cached nodes: ");
-        spinnerCLI.start();
+
         while (!Thread.interrupted() || RUtils.pingedAddresses.size() == 0) {
 
         }
-        spinnerCLI.showProgress = false;
+
         for (String address:RUtils.pingedAddresses) {
             if (address != null) {
                 cLogger.log(LogLevel.HIGH,address + " unreachable, did not reply to pong after latency timeout, removing from cache");
