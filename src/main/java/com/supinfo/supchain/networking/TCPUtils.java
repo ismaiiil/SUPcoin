@@ -11,6 +11,7 @@ import com.supinfo.supchain.models.TCPMessage;
 import java.net.SocketException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Timer;
 
 import static java.lang.Thread.sleep;
 
@@ -56,55 +57,31 @@ public class TCPUtils {
     }
 
     public static void startRDVRoutines() throws InterruptedException {
+
+        ExternalIPGet externalIPGet = new ExternalIPGet();
+        externalIPGet.run();
+        externalIPGet.join();
+
+        Timer time = new Timer(); // Instantiate Timer Object
+        ExternalIPCheckTask ppt = new ExternalIPCheckTask(); // Instantiate SheduledTask class
+        time.schedule(ppt, 1000, RUtils.externalIpCheckPeriod);
+
+        //start a thread that will monitor the external IP and take necessary actions
+//            Timer time = new Timer(); // Instantiate Timer Object
+//            ExternalIPCheckTask st = new ExternalIPCheckTask(); // Instantiate SheduledTask class
+//            time.schedule(st, 0, 1000); // Create Repetitively task for every 1 secs
+
         if(RUtils.env == Environment.PRODUCTION){
 
             Thread uPnPManagerThread = new Thread(new UPnPManager());
             uPnPManagerThread.start();
 
-            ExternalIPGet externalIPGet = new ExternalIPGet();
-            externalIPGet.run();
-            externalIPGet.join();
-            cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
-
-            //start a thread that will monitor the external IP and take necessary actions
-//            Timer time = new Timer(); // Instantiate Timer Object
-//            ExternalIPCheckTask st = new ExternalIPCheckTask(); // Instantiate SheduledTask class
-//            time.schedule(st, 0, 1000); // Create Repetitively task for every 1 secs
         }else{
-            cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from config file: " + RUtils.externalIP);
+            cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from debugAPI file: " + RUtils.externalIP);
         }
 
         Thread discoveryThread = new Thread(UDPMessageListener.getInstance());
         discoveryThread.start();
-    }
-
-    public static void waitPingPong() {
-        TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,false,0, new PingPong(RUtils.externalIP));
-        TCPUtils.multicastAll(pingMessage,RUtils.externalIP);
-        RUtils.pingedAddresses = (HashSet<String>) RUtils.externalClientAddresses.clone();
-
-        Thread thisThread = Thread.currentThread();
-        int timeToRun = 5000; //TODO:include in RUtils and marshall it
-
-        new Thread(() -> {
-            try {
-                sleep(timeToRun);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            thisThread.interrupt();
-        }).start();
-
-        while (!Thread.interrupted() || RUtils.pingedAddresses.size() == 0) {
-
-        }
-
-        for (String address:RUtils.pingedAddresses) {
-            if (address != null) {
-                cLogger.log(LogLevel.HIGH,address + " unreachable, did not reply to pong after latency timeout, removing from cache");
-                RUtils.externalClientAddresses.remove(address);
-            }
-        }
     }
 
     public static void connectToNode(String node) throws SocketException {

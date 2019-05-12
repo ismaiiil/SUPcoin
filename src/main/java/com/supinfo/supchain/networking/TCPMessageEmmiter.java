@@ -2,6 +2,7 @@ package com.supinfo.supchain.networking;
 
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.models.TCPMessage;
 
 import java.io.*;
@@ -24,14 +25,15 @@ public class TCPMessageEmmiter extends Thread {
     }
     @Override
     public void run() {
-        try {
-            socket = new Socket(hostname, port);
-            OutputStream outputStream = socket.getOutputStream();
-            // create an object output stream from the output stream so we can send an object through it
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            objectOutputStream.writeObject(tcpMessage);
-            objectOutputStream.flush();
-            objectOutputStream.close();
+        if(!hostname.equals(RUtils.externalIP) && TCPUtils.isValidIP(hostname)){
+            try {
+                socket = new Socket(hostname, port);
+                OutputStream outputStream = socket.getOutputStream();
+                // create an object output stream from the output stream so we can send an object through it
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                objectOutputStream.writeObject(tcpMessage);
+                objectOutputStream.flush();
+                objectOutputStream.close();
 
 //            //TESTING WALLET RECEIVING SERVER RESPONSE IN THE SOCKET ITSELF INSTEAD OF A NEW SOCKET RESPONSE
 //            InputStream inputStream = socket.getInputStream();
@@ -48,15 +50,19 @@ public class TCPMessageEmmiter extends Thread {
 //
 //            }
 
-            socket.close();
-        } catch (UnknownHostException e){
-            cLogger.log(LogLevel.EXCEPTION,e.toString() + ", You may have input an invalid IP");
-        } catch (ConnectException e){
-            cLogger.log(LogLevel.HIGH,"Address: "+ hostname + " is unreachable!");
-            //this is liekly a connection timeout when we try to reach a dead IP, in the case of which we start a checknodes
-            //thread in the background to see if all nodes are alive, and take proper action
-        } catch (IOException e) {
-            e.printStackTrace();
+                socket.close();
+            } catch (UnknownHostException e){
+                cLogger.log(LogLevel.EXCEPTION,e.toString() + ", You may have input an invalid IP");
+            } catch (ConnectException e){
+                cLogger.log(LogLevel.HIGH,"Address: "+ hostname + " is unreachable!");
+                //this is liekly a connection timeout when we try to reach a dead IP, in the case of which we start a checknodes
+                //thread in the background to see if all nodes are alive, and take proper action
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+            cLogger.log(LogLevel.SUPERDUPERHIGH,"Invalid IP supplied(self IP or not an IP)!");
         }
+
     }
 }

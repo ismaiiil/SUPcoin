@@ -8,6 +8,7 @@ import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.models.Messenger;
 import com.supinfo.supchain.models.PingPong;
 import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.supchain.models.Updater;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -119,6 +120,7 @@ public class TCPMessageListener extends Thread{
                                 cLogger.log(LOW,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                             //once we satisfy the min requirements all message ack received will be dropped
+
                         default:
                             break;
                     }
@@ -149,6 +151,13 @@ public class TCPMessageListener extends Thread{
                         PingPong pong = (PingPong) tcpMessage.getData();
                         cLogger.log(HIGH,"successfully received back a pong from + " + pong.getOrigin());
                         RUtils.pingedAddresses.remove(pong.getOrigin());
+                        break;
+                    case UPDATE_SENDER_IP:
+                        Updater updater = (Updater) tcpMessage.getData();
+                        RUtils.externalClientAddresses.remove(updater.getOldIP());
+                        RUtils.localClientAddresses.remove(updater.getOldIP());
+                        RUtils.externalClientAddresses.add(updater.getNewIP());
+                        RUtils.localClientAddresses.add(updater.getNewIP());
                         break;
                 }
 

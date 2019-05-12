@@ -13,16 +13,32 @@ public class PingPongTask extends TimerTask {
     @Override
     public void run() {
         cLogger.log(LogLevel.HIGH,"Running PingPongTask task");
-        TCPUtils.waitPingPong();
+        PingPongThread ppthread1 = new PingPongThread();
+        ppthread1.start();
+        try {
+            ppthread1.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         //first try to connect to the closest peers using a REQUEST_CONNECTION
         if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
             TCPUtils.multicastRDVs(new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,null),RUtils.externalIP);
         }
-        TCPUtils.waitPingPong();
+
+        PingPongThread ppthread2 = new PingPongThread();
+        ppthread2.start();
+        try {
+            ppthread2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         //if after the latency delay the minimum number of connections are still not satisfied, ONLY THEN will we connect the bootnode
         if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
             TCPUtils.unicast(new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,null),RUtils.bootstrapNode);
         }
+
         cLogger.log(LogLevel.HIGH,"finished PingPongTask task");
     }
 

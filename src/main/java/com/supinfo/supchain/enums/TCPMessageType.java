@@ -8,5 +8,6 @@ public enum TCPMessageType {
     MESSENGER_ACK,
     WAIT_FOR_LOOKUP,
     PING,
-    PONG
+    PONG,
+    UPDATE_SENDER_IP
 }

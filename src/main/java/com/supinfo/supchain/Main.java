@@ -5,10 +5,15 @@ import com.supinfo.supchain.helpers.*;
 import com.supinfo.supchain.LAN.UDPClientDiscovery;
 import com.supinfo.supchain.models.TCPMessage;
 import com.supinfo.supchain.networking.PingPongTask;
+import com.supinfo.supchain.networking.PingPongThread;
 import com.supinfo.supchain.networking.TCPMessageListener;
 import com.supinfo.supchain.networking.TCPUtils;
 import org.apache.commons.cli.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.util.*;
 
@@ -18,10 +23,11 @@ public class Main {
     private static CLogger cLogger = new CLogger(Main.class);
     private static HelpFormatter formatter = new HelpFormatter();
     private static Options options = new Options();
+    public static Scanner user_input = new Scanner(System.in);
 
-    public static void main(String[] args) throws InterruptedException, SocketException {
+    public static void main(String[] args) throws InterruptedException, SocketException, FileNotFoundException, UnsupportedEncodingException {
         CommandLine cmd = getCommandLine(args);
-        Scanner user_input = new Scanner(System.in);
+
 
         if(cmd.hasOption("c")){
             if(cmd.hasOption("i")){
@@ -31,6 +37,14 @@ public class Main {
             if(cmd.hasOption("m")){
                 cLogger.println("Below is the config manual:" + ConfigManager.getManualText());
 
+            }
+            if(cmd.hasOption("a")){
+                PrintWriter writer = null;
+                cLogger.println("Creating new apiDebug file as txt");
+                new File("./.config").mkdirs();
+                writer = new PrintWriter(".config/debugApi.txt", "UTF-8");
+                writer.println("replace this text with the Ip you want to use");
+                writer.close();
             }
         }
         else if(cmd.hasOption("r")){
@@ -46,12 +60,15 @@ public class Main {
                     //ping addresses and check for pong, remove addresses if no pong received
                     SpinnerCLI spinnerCLI = new SpinnerCLI("Checking cached nodes: ");
                     spinnerCLI.start();
-                    TCPUtils.waitPingPong();
+
+                    PingPongThread ppthread = new PingPongThread();
+                    ppthread.start();
+                    ppthread.join();
+
                     Timer time = new Timer(); // Instantiate Timer Object
                     PingPongTask ppt = new PingPongTask(); // Instantiate SheduledTask class
-                    time.schedule(ppt, 1000, 11000); // Create Repetitively task for every 1 secs
+                    time.schedule(ppt, 1000, RUtils.pingPongTaskPeriod); // Create Repetitively task for every 1 secs
                     spinnerCLI.showProgress = false;
-
 
                     //we are also going program a function to periodically check the external IP address and take necessary actions
 
@@ -97,6 +114,7 @@ public class Main {
 
     }
 
+
     private static void promptDiscoverRDV() {
         Scanner user_input = new Scanner(System.in);
         cLogger.printInput("Do you want to initiate network discovery of an RDV (y/n)");
@@ -127,10 +145,12 @@ public class Main {
         Option config = new Option("c", "config", false, "manipulate config");
             Option init = new Option("i", "init", false, "use with -c --config to init a config file");
             Option manual = new Option("m", "manual", false, "use with -c --config to show the config manual");
+            Option debugApi = new Option("a", "debugApi", false, "use with -c --config to create a debugApi.txt file");
         Option start = new Option("r", "run", false, "Run the program");
         options.addOption(config);
             options.addOption(init);
             options.addOption(manual);
+            options.addOption(debugApi);
         options.addOption(start);
         CommandLineParser parser = new DefaultParser();
 

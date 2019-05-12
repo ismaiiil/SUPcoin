@@ -30,6 +30,9 @@ public class RUtils {
     public static int minNumberOfConnections = 2;
     public static int maxNumberOfConnections = 3;
     public static long messengerTimeout = 10;
+    public static long connectionLatency = 5000;
+    public static long pingPongTaskPeriod = 40000; //TODO make this xml
+    public static long externalIpCheckPeriod = 40000;
     public static String bootstrapNode = "";
 
     //By default, bitcoin-core allows up to 125 connections to different peers
