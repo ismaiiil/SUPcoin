@@ -64,12 +64,7 @@ public class TCPUtils {
 
         Timer time = new Timer(); // Instantiate Timer Object
         ExternalIPCheckTask ppt = new ExternalIPCheckTask(); // Instantiate SheduledTask class
-        time.schedule(ppt, 1000, RUtils.externalIpCheckPeriod);
-
-        //start a thread that will monitor the external IP and take necessary actions
-//            Timer time = new Timer(); // Instantiate Timer Object
-//            ExternalIPCheckTask st = new ExternalIPCheckTask(); // Instantiate SheduledTask class
-//            time.schedule(st, 0, 1000); // Create Repetitively task for every 1 secs
+        time.schedule(ppt,  RUtils.externalIpCheckPeriod, RUtils.externalIpCheckPeriod);
 
         if(RUtils.env == Environment.PRODUCTION){
 

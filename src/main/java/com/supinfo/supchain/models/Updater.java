@@ -1,6 +1,8 @@
 package com.supinfo.supchain.models;
 
-public class Updater {
+import java.io.Serializable;
+
+public class Updater implements Serializable {
     private String oldIP;
     private String newIP;
 

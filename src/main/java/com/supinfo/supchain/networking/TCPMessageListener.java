@@ -154,10 +154,14 @@ public class TCPMessageListener extends Thread{
                         break;
                     case UPDATE_SENDER_IP:
                         Updater updater = (Updater) tcpMessage.getData();
-                        RUtils.externalClientAddresses.remove(updater.getOldIP());
-                        RUtils.localClientAddresses.remove(updater.getOldIP());
-                        RUtils.externalClientAddresses.add(updater.getNewIP());
-                        RUtils.localClientAddresses.add(updater.getNewIP());
+                        if(RUtils.externalClientAddresses.contains(updater.getOldIP())){
+                            RUtils.externalClientAddresses.remove(updater.getOldIP());
+                            RUtils.externalClientAddresses.add(updater.getNewIP());
+                        }
+                        if(RUtils.localClientAddresses.contains(updater.getOldIP())){
+                            RUtils.localClientAddresses.remove(updater.getOldIP());
+                            RUtils.localClientAddresses.add(updater.getNewIP());
+                        }
                         break;
                 }
 
