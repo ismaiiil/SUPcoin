@@ -48,7 +48,7 @@ public class Main {
             }
         }
         else if(cmd.hasOption("r")){
-            cLogger.println("Welcome to SUPCoin core");
+            cLogger.println("Welcome to SUPCoin core LINUX VERSION");
             TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
             messageListener.start();
             ConfigManager.loadConfigFromXml();
@@ -61,6 +61,7 @@ public class Main {
                     SpinnerCLI spinnerCLI = new SpinnerCLI("Checking cached nodes: ");
                     spinnerCLI.start();
 
+                    //pinging all addresses to see if they are still up
                     PingPongThread ppthread = new PingPongThread();
                     ppthread.start();
                     ppthread.join();
@@ -78,7 +79,7 @@ public class Main {
                     }
 
                     //have a thread that will check if minimum number of connections is satisfied
-
+                    //this is done in the PingPongTask thread
                     break;
                 case EDGE:
                     promptDiscoverRDV();
