@@ -1,6 +1,5 @@
 package com.supinfo.supchain.helpers;
 
-import com.supinfo.supchain.Main;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.TCPMessageType;
@@ -11,9 +10,6 @@ import com.supinfo.supchain.networking.TCPUtils;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Scanner;
 
 public class ExternalIPGet extends Thread {
     private CLogger cLogger = new CLogger(this.getClass());
@@ -24,7 +20,7 @@ public class ExternalIPGet extends Thread {
         if(RUtils.env == Environment.PRODUCTION){
             try {
 
-                cLogger.log(LogLevel.LOW,"Fetching your public IP...");
+                cLogger.log(LogLevel.NETWORK,"Fetching your public IP...");
                 URL url = new URL("https://myexternalip.com/raw");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
@@ -80,14 +76,14 @@ public class ExternalIPGet extends Thread {
         }
 
         if(!newExternalIPAddress.equals(oldExternalIPAddress)){
-            cLogger.log(LogLevel.LOW,"WARNING: PUBLIC IP HAS BEEN CHANGED!");
+            cLogger.log(LogLevel.NETWORK,"WARNING: PUBLIC IP HAS BEEN CHANGED!");
             RUtils.externalIP = newExternalIPAddress;
             Updater updater = new Updater(oldExternalIPAddress,newExternalIPAddress);
             TCPMessage tcpMessage = new TCPMessage<>(TCPMessageType.UPDATE_SENDER_IP, false, 0, updater);
             TCPUtils.multicastAll(tcpMessage,RUtils.externalIP);
         }
 
-        cLogger.log(LogLevel.LOW,"Public IP successfully retrieved: " + RUtils.externalIP);
+        cLogger.log(LogLevel.NETWORK,"Public IP successfully retrieved: " + RUtils.externalIP);
 
     }
 

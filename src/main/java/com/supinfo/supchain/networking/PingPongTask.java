@@ -12,7 +12,7 @@ public class PingPongTask extends TimerTask {
     private CLogger cLogger = new CLogger(this.getClass());
     @Override
     public void run() {
-        cLogger.log(LogLevel.HIGH,"Running PingPongTask task");
+        cLogger.log(LogLevel.NETWORK,"Running PingPongTask task");
         PingPongThread ppthread1 = new PingPongThread();
         ppthread1.start();
         try {
@@ -39,7 +39,7 @@ public class PingPongTask extends TimerTask {
             TCPUtils.unicast(new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,null),RUtils.bootstrapNode);
         }
 
-        cLogger.log(LogLevel.HIGH,"finished PingPongTask task");
+        cLogger.log(LogLevel.NETWORK,"finished PingPongTask task");
     }
 
 }

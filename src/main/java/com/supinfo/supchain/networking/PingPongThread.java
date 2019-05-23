@@ -15,7 +15,7 @@ public class PingPongThread extends Thread{
     public void run() {
         TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,false,0, new PingPong(RUtils.externalIP));
         TCPUtils.multicastAll(pingMessage,RUtils.externalIP);
-        RUtils.pingedAddresses = (HashSet<String>) RUtils.externalClientAddresses.clone();
+        RUtils.pingedAddresses = (HashSet<String>) RUtils.allClientAddresses().clone();
         try {
             sleep(RUtils.connectionLatency);
         } catch (InterruptedException e) {
@@ -23,8 +23,9 @@ public class PingPongThread extends Thread{
         }
         for (String address:RUtils.pingedAddresses) {
             if (address != null) {
-                cLogger.log(LogLevel.HIGH,address + " unreachable, did not reply to pong after latency timeout, removing from cache");
+                cLogger.log(LogLevel.NETWORK,address + " unreachable, did not reply to pong after latency timeout, removing from cache");
                 RUtils.externalClientAddresses.remove(address);
+                RUtils.localClientAddresses.remove(address);
             }
         }
     }

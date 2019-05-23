@@ -16,7 +16,7 @@ public class RUtils {
     //since we heavily want unique values in those Sets, also Hashsets have a .contains search speed of O(1)
     //compared to O(n) for normal ArrayLists
     public static Environment env = Environment.PRODUCTION;
-    public static LogLevel logLevel = LogLevel.LOW;
+    public static LogLevel logLevel = LogLevel.BASIC;
     public static Role myRole = Role.RDV;
     public static String externalIP = "";
     public static HashSet<String> localClientAddresses = new HashSet<>();

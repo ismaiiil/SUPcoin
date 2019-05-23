@@ -118,9 +118,10 @@ public class Main {
 
     private static void promptDiscoverRDV() {
         Scanner user_input = new Scanner(System.in);
-        cLogger.printInput("Do you want to initiate network discovery of an RDV (y/n)");
+        cLogger.printInput("Do you want to initiate network discovery of an RDV, this will invalidate your external connections (y/n)");
         String userChoice = user_input.nextLine();
         if(userChoice.equals("y")){
+            RUtils.externalClientAddresses.clear();
             cLogger.println("Searching for an RDV...");
             Thread client = new Thread(new UDPClientDiscovery(3));
             client.start();

@@ -40,14 +40,14 @@ public class TCPMessageEmmiter extends Thread {
 //            InputStream inputStream = socket.getInputStream();
 //            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 //            TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-//            cLogger.log(LogLevel.SUPERHIGH, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
+//            cLogger.log(LogLevel.NETWORK, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
 //
 //
 //            objectInputStream.close();
 //
 //            if(tcpMessage.getTcpMessageType() == TCPMessageType.CLOSE_SOCKET) {
 //                socket.close();
-//                cLogger.log(LogLevel.SUPERHIGH, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
+//                cLogger.log(LogLevel.NETWORK, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
 //
 //            }
 
@@ -55,7 +55,7 @@ public class TCPMessageEmmiter extends Thread {
             } catch (UnknownHostException e){
                 cLogger.log(LogLevel.EXCEPTION,e.toString() + ", You may have input an invalid IP");
             } catch (ConnectException e){
-                cLogger.log(LogLevel.HIGH,"Address: "+ hostname + " is unreachable!");
+                cLogger.log(LogLevel.NETWORK,"Address: "+ hostname + " is unreachable!");
                 //this is liekly a connection timeout when we try to reach a dead IP, in the case of which we start a checknodes
                 //thread in the background to see if all nodes are alive, and take proper action
             } catch (NoRouteToHostException e){
@@ -64,7 +64,7 @@ public class TCPMessageEmmiter extends Thread {
                 e.printStackTrace();
             }
         }else{
-            cLogger.log(LogLevel.SUPERDUPERHIGH,"Invalid IP supplied(self IP or not an IP)!");
+            cLogger.log(LogLevel.NETWORK,"Invalid IP supplied(self IP or not an IP)!");
         }
 
     }

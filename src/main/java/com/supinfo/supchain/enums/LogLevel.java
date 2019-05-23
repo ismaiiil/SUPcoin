@@ -11,10 +11,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public enum LogLevel {
     EXCEPTION(-1),
     NONE(0),
-    LOW(1),
-    HIGH(2),
-    SUPERHIGH(3),
-    SUPERDUPERHIGH(4),
+    BASIC(1),
+    CHAIN(2),
+    NETWORK(3),
     DEFAULT;
     private int value;
 

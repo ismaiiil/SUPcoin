@@ -5,11 +5,9 @@ import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.TCPMessageType;
 import com.supinfo.supchain.helpers.*;
-import com.supinfo.supchain.models.PingPong;
 import com.supinfo.supchain.models.TCPMessage;
 
 import java.net.SocketException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Timer;
 
@@ -24,13 +22,13 @@ public class TCPUtils {
         if(!RUtils.isMessageCached(tcpMessage)){
             for (String ipadd: RUtils.allClientAddresses()) {
                 if(!ipadd.equals(origin)){
-                    cLogger.log(LogLevel.LOW," MulticastAll message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
+                    cLogger.log(LogLevel.NETWORK," MulticastAll message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
                     TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,RUtils.tcpPort);
                     tcpMessageEmmiter.start();
                 }
             }
         }else{
-            cLogger.log(LogLevel.LOW,"this TCP message has already been sent from this node dropping it." + tcpMessage.getMessageHash());
+            cLogger.log(LogLevel.BASIC,"this TCP message has already been sent from this node dropping it." + tcpMessage.getMessageHash());
         }
         RUtils.addMessageToCache(tcpMessage);
     }
@@ -40,13 +38,13 @@ public class TCPUtils {
         if(!RUtils.isMessageCached(tcpMessage)){
             for (String ipadd: RUtils.externalClientAddresses) {
                 if(!ipadd.equals(origin)){
-                    cLogger.log(LogLevel.LOW," MulticastRDV message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
+                    cLogger.log(LogLevel.NETWORK," MulticastRDV message to: >>" + tcpMessage.getTcpMessageType().toString() +" to "+ ipadd);
                     TCPMessageEmmiter tcpMessageEmmiter = new TCPMessageEmmiter(tcpMessage,ipadd,RUtils.tcpPort);
                     tcpMessageEmmiter.start();
                 }
             }
         }else{
-            cLogger.log(LogLevel.LOW,"this TCP message has already been sent from this node dropping it." + tcpMessage.getMessageHash());
+            cLogger.log(LogLevel.NETWORK,"this TCP message has already been sent from this node dropping it." + tcpMessage.getMessageHash());
         }
         RUtils.addMessageToCache(tcpMessage);
     }
@@ -72,7 +70,7 @@ public class TCPUtils {
             uPnPManagerThread.start();
 
         }else{
-            cLogger.log(LogLevel.LOW,"DEBUG MODE using IP from debugAPI file: " + RUtils.externalIP);
+            cLogger.log(LogLevel.BASIC,"DEBUG MODE using IP from debugAPI file: " + RUtils.externalIP);
         }
 
         Thread discoveryThread = new Thread(UDPMessageListener.getInstance());

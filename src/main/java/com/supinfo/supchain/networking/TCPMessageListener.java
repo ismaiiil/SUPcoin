@@ -2,7 +2,6 @@ package com.supinfo.supchain.networking;
 
 import com.supinfo.supchain.enums.Role;
 import com.supinfo.supchain.enums.TCPMessageType;
-import com.supinfo.supchain.helpers.BytesUtil;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.models.Messenger;
@@ -35,17 +34,15 @@ public class TCPMessageListener extends Thread{
     public void run() {
         while (true){
             try{
-                cLogger.log(SUPERDUPERHIGH,"ServerSocket awaiting connections...");
+
                 Socket socket = serverSocket.accept(); // blocking call, this will wait until a connection is attempted on this port.
-                cLogger.log(SUPERDUPERHIGH,"Connection from " + socket + "!");
                 // get the input stream from the connected socket
                 InputStream inputStream = socket.getInputStream();
                 String origin = socket.getInetAddress().getHostAddress();
-                cLogger.log(SUPERDUPERHIGH,"TCP connection from " + origin);
                 // create a DataInputStream so we can read data from it.
                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
                 TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-                cLogger.log(SUPERDUPERHIGH, "got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
+                cLogger.log(NETWORK, "got the message " + tcpMessage.getTcpMessageType().toString() + " from " + socket.getInetAddress().getHostAddress());
 
                 //these are protocols that apply only to RDVs
                 if(RUtils.myRole == Role.RDV){
@@ -56,7 +53,7 @@ public class TCPMessageListener extends Thread{
                                 TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.CONFIRM_CONNECTION,false,0,null);
                                 TCPUtils.unicast(responseMessage,origin);
                                 RUtils.externalClientAddresses.add(origin);
-                                cLogger.log(LOW,"REQUEST RECEIVED >>>added " + origin + "to the list of clients");
+                                cLogger.log(NETWORK,"REQUEST RECEIVED >>>added " + origin + "to the list of clients");
                             }else{
                                 //else we will send a messenger to look for another peer, in the process we may find redundant peers
                                 //thus easing the life of the new peer in finding redundant connections until its minimumNumber of peers
@@ -67,48 +64,41 @@ public class TCPMessageListener extends Thread{
                                 //send a messenger to look up for a free peer
                                 Messenger messenger = new Messenger(origin);
                                 TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout,messenger);
-                                cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for a connection for the foreveralone peer: " + origin);
+                                cLogger.log(NETWORK,"Broadcasting a MESSENGER_REQ to look for a connection for the foreveralone peer: " + origin);
                                 TCPUtils.multicastRDVs(messengerCarrier,origin);
                             }
                             break;
                         case WAIT_FOR_LOOKUP:
-                            cLogger.log(HIGH,"REQUESTED PEER IS FULL, please wait while we search for another peer");
+                            cLogger.log(NETWORK,"REQUESTED PEER IS FULL, please wait while we search for another peer");
                             break;
                         case CONFIRM_CONNECTION:
                             RUtils.externalClientAddresses.add(origin);
-                            cLogger.log(LOW,"CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
+                            cLogger.log(NETWORK,"CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
                             //After that this peer has received a confirmation of connection it can begin looking up for
                             //redundant connections(if it doesnt have the minimum number of connections), it can do so by sending a messenger req.
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 Messenger messenger = new Messenger(RUtils.externalIP);
                                 TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout,messenger);
 
-                                cLogger.log(HIGH,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
+                                cLogger.log(NETWORK,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
                                 TCPUtils.multicastRDVs(messengerCarrier,"none");
                             }
                             //if in production mode push external IP to REST api
                             break;
                         case MESSENGER_REQ:
-                            cLogger.log(HIGH,"This has received a MESSENGER_REQ");
                             Messenger messenger = (Messenger) tcpMessage.getData();
                             if((RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections) //change this to max?
                                     && !RUtils.externalClientAddresses.contains(messenger.getSearchingIP())){
-                                cLogger.log(HIGH,"Slot available and messenger not form a directly connected peer");
                                 messenger.setNewPeerAddress(RUtils.externalIP);
                                 TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_ACK, false,0,messenger);
                                 //it fetches the public ip of the new machine and unicast it back to its origin
-                                cLogger.log(HIGH, "sending messenger back to its origin:"+ messenger.getSearchingIP() +" since this peer is the new peer to be added");
+                                cLogger.log(NETWORK, "sending messenger back to its origin:"+ messenger.getSearchingIP() +" since this peer is the new peer to be added");
                                 TCPUtils.unicast(messengerCarrier,messenger.getSearchingIP());
 
                             }else{
-                                cLogger.log(HIGH,"This client already has the min number of required clients or the Message REQ came from a directly connected PEER");
-                                if(tcpMessage.isAlive()){
+                               if(tcpMessage.isAlive()){
                                     TCPUtils.multicastRDVs(tcpMessage,origin);
-                                    cLogger.log(HIGH,"MESSENGER_REQ is alive, multicastAll it again.");
-                                }else{
-                                    cLogger.log(HIGH,"MESSENGER_REQ is dead, no multicastAll done.");
                                 }
-
                             }
                             break;
                         case MESSENGER_ACK:
@@ -117,7 +107,7 @@ public class TCPMessageListener extends Thread{
                                 messenger = (Messenger) tcpMessage.getData();
                                 TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,messenger);
                                 TCPUtils.unicast(requestMessage,messenger.getNewPeerAddress());
-                                cLogger.log(LOW,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
+                                cLogger.log(NETWORK,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                             //once we satisfy the min requirements all message ack received will be dropped
 
@@ -129,7 +119,7 @@ public class TCPMessageListener extends Thread{
                 //these are protocols that apply to both RDVs and EDGEs
                 switch (tcpMessage.getTcpMessageType()){
                     case VERIFY:
-                        cLogger.log(HIGH,"Got a verify Message, from "+ origin+ " propagating");
+                        cLogger.log(BASIC,"Got a verify Message, from "+ origin+ " propagating");
                         if(tcpMessage.isPropagatable() && tcpMessage.isAlive()){
                             TCPUtils.multicastAll(tcpMessage,socket.getInetAddress().getHostAddress());
                         }
@@ -139,17 +129,17 @@ public class TCPMessageListener extends Thread{
                         PingPong ping = (PingPong) tcpMessage.getData();
                         //send back a pong only if ping has the same origin as the message, and the ping origin is stored in the list of external addresses
                         if(ping.getOrigin().equals(origin) && RUtils.externalClientAddresses.contains(ping.getOrigin())){
-                            cLogger.log(HIGH,"received a ping from + " + ping.getOrigin() + ", sending back a pong!");
+                            cLogger.log(NETWORK,"received a ping from + " + ping.getOrigin() + ", sending back a pong!");
                             TCPMessage pongMessage = new TCPMessage<>(TCPMessageType.PONG,false,0, new PingPong(RUtils.externalIP));
                             TCPUtils.unicast(pongMessage, ping.getOrigin());
                         }else{
-                            cLogger.log(HIGH,"received a PING from an unknown host!" + ping.getOrigin() );
+                            cLogger.log(NETWORK,"received a PING from an unknown host!" + ping.getOrigin() );
                         }
 
                         break;
                     case PONG:
                         PingPong pong = (PingPong) tcpMessage.getData();
-                        cLogger.log(HIGH,"successfully received back a pong from + " + pong.getOrigin());
+                        cLogger.log(NETWORK,"successfully received back a pong from + " + pong.getOrigin());
                         RUtils.pingedAddresses.remove(pong.getOrigin());
                         break;
                     case UPDATE_SENDER_IP:

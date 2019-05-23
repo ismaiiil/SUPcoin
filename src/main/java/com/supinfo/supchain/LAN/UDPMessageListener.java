@@ -31,7 +31,7 @@ public class UDPMessageListener implements Runnable {
 
             //Check if packet is from localhost ignore it if it is a loopback
             adapterAddresses = getAdapterAdresses();
-            cLogger.log(LogLevel.HIGH,"Ready to receive packets!");
+            cLogger.log(LogLevel.NETWORK,"Ready to receive packets!");
             while (true) {
 
                 //Receive a packet
@@ -41,11 +41,7 @@ public class UDPMessageListener implements Runnable {
                 String packetAddress = packet.getAddress().getHostAddress();
                 if(!adapterAddresses.contains(packet.getAddress().getHostAddress())){
                     //Packet received
-
-                    cLogger.log(LogLevel.HIGH, "packet received from: " + packetAddress);
-                    cLogger.log(LogLevel.HIGH,"data received: " + new String(packet.getData()));
-
-
+                    cLogger.log(LogLevel.NETWORK, "packet received from: " + packetAddress);
                     //See if the packet holds the right command (message)
                     String message = new String(packet.getData()).trim();
                     if(RUtils.myRole == Role.RDV){
@@ -55,11 +51,11 @@ public class UDPMessageListener implements Runnable {
                                 //Send a response
                                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, packet.getAddress(), packet.getPort());
                                 socket.send(sendPacket);
-                                cLogger.log(LogLevel.HIGH, "Sent packet to: " + sendPacket.getAddress().getHostAddress());
+                                cLogger.log(LogLevel.NETWORK, "Sent packet to: " + sendPacket.getAddress().getHostAddress());
                                 break;
                             case CONFIRM_RDV_REQUEST:
                                 RUtils.localClientAddresses.add(packetAddress);
-                                cLogger.log(LogLevel.LOW,"all current EDGEs connected to this RDV node are:" + RUtils.localClientAddresses.toString());
+                                cLogger.log(LogLevel.NETWORK,"all current EDGEs connected to this RDV node are:" + RUtils.localClientAddresses.toString());
                                 break;
                         }
                     }

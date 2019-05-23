@@ -16,10 +16,9 @@ public class CLogger {
 
     private Map<LogLevel, String> coloredPrefix = new HashMap<LogLevel, String>() {{
         put(LogLevel.EXCEPTION, RED_UNDERLINED);
-        put(LogLevel.LOW, YELLOW);
-        put(LogLevel.HIGH, BLUE);
-        put(LogLevel.SUPERHIGH, CYAN);
-        put(LogLevel.SUPERDUPERHIGH, PURPLE);
+        put(LogLevel.BASIC, YELLOW);
+        put(LogLevel.CHAIN, BLUE);
+        put(LogLevel.NETWORK, PURPLE);
     }};
 
     public CLogger(Class classCaller){

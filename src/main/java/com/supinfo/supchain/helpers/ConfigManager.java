@@ -1,6 +1,5 @@
 package com.supinfo.supchain.helpers;
 
-import com.supinfo.supchain.Main;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
@@ -37,7 +36,7 @@ public class ConfigManager {
                 System.exit(1);
             }
             cLogger.println("Last config successfully loaded!");
-            cLogger.log(LogLevel.HIGH,RUtils.getStats());
+            cLogger.log(LogLevel.NETWORK,RUtils.getStats());
 
         } catch (JAXBException e) {
             cLogger.println("An error has occurred while loading the config!, please make sure your fields are valid" +
