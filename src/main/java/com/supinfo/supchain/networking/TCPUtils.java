@@ -3,9 +3,9 @@ package com.supinfo.supchain.networking;
 import com.supinfo.supchain.LAN.UDPMessageListener;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
-import com.supinfo.supchain.enums.TCPMessageType;
+import com.supinfo.shared.TCPMessageType;
 import com.supinfo.supchain.helpers.*;
-import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.shared.TCPMessage;
 
 import java.net.SocketException;
 import java.util.List;

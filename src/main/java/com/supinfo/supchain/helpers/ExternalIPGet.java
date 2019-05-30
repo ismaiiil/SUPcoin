@@ -2,8 +2,8 @@ package com.supinfo.supchain.helpers;
 
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
-import com.supinfo.supchain.enums.TCPMessageType;
-import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.shared.TCPMessageType;
+import com.supinfo.shared.TCPMessage;
 import com.supinfo.supchain.models.Updater;
 import com.supinfo.supchain.networking.TCPUtils;
 

@@ -1,12 +1,12 @@
 package com.supinfo.supchain.networking;
 
 import com.supinfo.supchain.enums.Role;
-import com.supinfo.supchain.enums.TCPMessageType;
+import com.supinfo.shared.TCPMessageType;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.models.Messenger;
 import com.supinfo.supchain.models.PingPong;
-import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.shared.TCPMessage;
 import com.supinfo.supchain.models.Updater;
 
 import java.io.*;
@@ -153,6 +153,13 @@ public class TCPMessageListener extends Thread{
                             RUtils.localClientAddresses.add(updater.getNewIP());
                         }
                         break;
+
+                    //ALL WALLET RELATED MESSAGES:
+                    case WALLET_CONNECT:
+                        cLogger.log(BASIC,"successfully received wallet message from + " + origin);
+                        String data = (String) tcpMessage.getData();
+                        cLogger.log(BASIC,"GOT THE DATA"+ data);
+                        break;
                 }
 
 
@@ -164,6 +171,7 @@ public class TCPMessageListener extends Thread{
 //                objectOutputStream.writeObject(myTestMessage);
 //                objectOutputStream.flush();
 //                objectOutputStream.close();
+
 
                 socket.close();
 

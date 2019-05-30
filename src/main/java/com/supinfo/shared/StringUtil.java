@@ -1,4 +1,4 @@
-package com.supinfo.supchain.helpers;
+package com.supinfo.shared;
 
 import java.security.*;
 import java.util.Base64;

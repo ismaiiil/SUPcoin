@@ -3,7 +3,7 @@ package com.supinfo.supchain.helpers;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
-import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.shared.TCPMessage;
 
 import javax.xml.bind.annotation.*;
 import java.util.HashSet;

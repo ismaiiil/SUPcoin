@@ -1,9 +1,9 @@
 package com.supinfo.supchain;
 
-import com.supinfo.supchain.enums.TCPMessageType;
+import com.supinfo.shared.TCPMessageType;
 import com.supinfo.supchain.helpers.*;
 import com.supinfo.supchain.LAN.UDPClientDiscovery;
-import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.shared.TCPMessage;
 import com.supinfo.supchain.networking.PingPongTask;
 import com.supinfo.supchain.networking.PingPongThread;
 import com.supinfo.supchain.networking.TCPMessageListener;

@@ -1,11 +1,11 @@
 package com.supinfo.supchain.networking;
 
 import com.supinfo.supchain.enums.LogLevel;
-import com.supinfo.supchain.enums.TCPMessageType;
+import com.supinfo.shared.TCPMessageType;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.models.PingPong;
-import com.supinfo.supchain.models.TCPMessage;
+import com.supinfo.shared.TCPMessage;
 
 import java.util.HashSet;
 

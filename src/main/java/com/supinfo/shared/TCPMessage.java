@@ -1,14 +1,11 @@
-package com.supinfo.supchain.models;
-
-import com.supinfo.supchain.enums.TCPMessageType;
+package com.supinfo.shared;
 
 import java.util.*;
 
 import java.io.Serializable;
 
-import com.supinfo.supchain.helpers.StringUtil;
-
 public class TCPMessage<T> implements Serializable {
+    private static final long serialVersionUID = 123456L;
     private TCPMessageType tcpMessageType;
     private String messageHash;
     private long dateTime;
