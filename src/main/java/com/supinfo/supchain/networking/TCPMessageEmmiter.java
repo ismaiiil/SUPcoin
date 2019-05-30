@@ -44,12 +44,7 @@ public class TCPMessageEmmiter extends Thread {
 //
 //
 //            objectInputStream.close();
-//
-//            if(tcpMessage.getTcpMessageType() == TCPMessageType.CLOSE_SOCKET) {
-//                socket.close();
-//                cLogger.log(LogLevel.NETWORK, "TCPEmmiter has sent its message, now closing the socket based on response: " + tcpMessage.getTcpMessageType());
-//
-//            }
+
 
                 socket.close();
             } catch (UnknownHostException e){

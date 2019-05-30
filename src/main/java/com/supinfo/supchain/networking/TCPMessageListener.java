@@ -158,19 +158,19 @@ public class TCPMessageListener extends Thread{
                     case WALLET_CONNECT:
                         cLogger.log(BASIC,"successfully received wallet message from + " + origin);
                         String data = (String) tcpMessage.getData();
-                        cLogger.log(BASIC,"GOT THE DATA"+ data);
+                        cLogger.log(BASIC,"GOT THE DATA: "+ data);
+                        TCPMessage<String> myTestMessage = new TCPMessage<>(TCPMessageType.WALLET_CONNECT,false,0,"TAKE THIS FOR YOU WALLET!");
+                        OutputStream outputStream = socket.getOutputStream();
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                        objectOutputStream.writeObject(myTestMessage);
+                        objectOutputStream.flush();
+                        objectOutputStream.close();
                         break;
                 }
 
 
 
-//                //TESTING NODE OUTPUT BACK TO WALLET
-//                TCPMessage myTestMessage = new TCPMessage(TCPMessageType.CLOSE_SOCKET,false);
-//                OutputStream outputStream = socket.getOutputStream();
-//                ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-//                objectOutputStream.writeObject(myTestMessage);
-//                objectOutputStream.flush();
-//                objectOutputStream.close();
+
 
 
                 socket.close();
