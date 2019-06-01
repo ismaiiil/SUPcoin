@@ -1,4 +1,4 @@
-package com.supinfo.supchain.LAN;
+package com.supinfo.supchain.networking.Threads.LAN;
 
 import java.io.IOException;
 import java.net.*;

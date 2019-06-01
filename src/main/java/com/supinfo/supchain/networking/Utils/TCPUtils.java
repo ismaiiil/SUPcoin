@@ -1,11 +1,16 @@
-package com.supinfo.supchain.networking;
+package com.supinfo.supchain.networking.Utils;
 
-import com.supinfo.supchain.LAN.UDPMessageListener;
+import com.supinfo.shared.Utils.StringUtil;
+import com.supinfo.supchain.networking.Threads.ExternalIPGet;
+import com.supinfo.supchain.networking.Threads.LAN.UDPMessageListener;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
-import com.supinfo.shared.TCPMessageType;
+import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.supchain.helpers.*;
-import com.supinfo.shared.TCPMessage;
+import com.supinfo.shared.Network.TCPMessage;
+import com.supinfo.supchain.networking.Tasks.ExternalIPCheckTask;
+import com.supinfo.supchain.networking.Threads.TCPMessageEmmiter;
+import com.supinfo.supchain.networking.Threads.UPnPManager;
 
 import java.net.SocketException;
 import java.util.List;
@@ -80,9 +85,9 @@ public class TCPUtils {
     public static void connectToNode(String node) throws SocketException {
         List<String> adapterAddresses = UDPMessageListener.getAdapterAdresses();
         if(!node.equals(RUtils.externalIP) && !adapterAddresses.contains(node)){
-            if(isValidIP(node) && isValidIP(RUtils.externalIP)){
+            if(StringUtil.isValidIP(node) && StringUtil.isValidIP(RUtils.externalIP)){
                 cLogger.println("We are now contacting a node!");
-                TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,null);
+                TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,null);
                 TCPUtils.unicast(requestMessage,node);
             }else{
                 cLogger.println("Please make sure the bootnode or IP supplied and external IP is valid!");
@@ -95,30 +100,4 @@ public class TCPUtils {
         }
     }
 
-    public static boolean isValidIP(String ip) {
-        try {
-            if ( ip == null || ip.isEmpty() ) {
-                return false;
-            }
-
-            String[] parts = ip.split( "\\." );
-            if ( parts.length != 4 ) {
-                return false;
-            }
-
-            for ( String s : parts ) {
-                int i = Integer.parseInt( s );
-                if ( (i < 0) || (i > 255) ) {
-                    return false;
-                }
-            }
-            if ( ip.endsWith(".") ) {
-                return false;
-            }
-
-            return true;
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-    }
 }

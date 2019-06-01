@@ -1,17 +1,20 @@
-package com.supinfo.supchain.networking;
+package com.supinfo.supchain.networking.Threads;
 
 import com.supinfo.supchain.enums.Role;
-import com.supinfo.shared.TCPMessageType;
+import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
-import com.supinfo.supchain.models.Messenger;
-import com.supinfo.supchain.models.PingPong;
-import com.supinfo.shared.TCPMessage;
-import com.supinfo.supchain.models.Updater;
+import com.supinfo.supchain.networking.Utils.TCPUtils;
+import com.supinfo.supchain.networking.models.Messenger;
+import com.supinfo.supchain.networking.models.PingPong;
+import com.supinfo.shared.Network.TCPMessage;
+import com.supinfo.supchain.networking.models.Updater;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import static com.supinfo.supchain.enums.LogLevel.*;
 
@@ -50,7 +53,7 @@ public class TCPMessageListener extends Thread{
                         case REQUEST_CONNECTION:
                             if((RUtils.externalClientAddresses.size() < RUtils.maxNumberOfConnections) && (!RUtils.externalClientAddresses.contains(origin))){
                                 //if we dnt have the maximum number of connections we are going to accept the direct connection
-                                TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.CONFIRM_CONNECTION,false,0,null);
+                                TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.CONFIRM_CONNECTION,null);
                                 TCPUtils.unicast(responseMessage,origin);
                                 RUtils.externalClientAddresses.add(origin);
                                 cLogger.log(NETWORK,"REQUEST RECEIVED >>>added " + origin + "to the list of clients");
@@ -58,12 +61,12 @@ public class TCPMessageListener extends Thread{
                                 //else we will send a messenger to look for another peer, in the process we may find redundant peers
                                 //thus easing the life of the new peer in finding redundant connections until its minimumNumber of peers
                                 //is satisfied
-                                TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.WAIT_FOR_LOOKUP,false,0,null);
+                                TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.WAIT_FOR_LOOKUP,null);
                                 TCPUtils.unicast(responseMessage,origin);
 
-                                //send a messenger to look up for a free peer
+                                //send a messenger to look up for a free peer,
                                 Messenger messenger = new Messenger(origin);
-                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout,messenger);
+                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ,RUtils.messengerTimeout,messenger);
                                 cLogger.log(NETWORK,"Broadcasting a MESSENGER_REQ to look for a connection for the foreveralone peer: " + origin);
                                 TCPUtils.multicastRDVs(messengerCarrier,origin);
                             }
@@ -78,7 +81,7 @@ public class TCPMessageListener extends Thread{
                             //redundant connections(if it doesnt have the minimum number of connections), it can do so by sending a messenger req.
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 Messenger messenger = new Messenger(RUtils.externalIP);
-                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ, true,RUtils.messengerTimeout,messenger);
+                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_REQ,RUtils.messengerTimeout,messenger);
 
                                 cLogger.log(NETWORK,"Broadcasting a MESSENGER_REQ to look for Redundant connections");
                                 TCPUtils.multicastRDVs(messengerCarrier,"none");
@@ -90,7 +93,7 @@ public class TCPMessageListener extends Thread{
                             if((RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections) //change this to max?
                                     && !RUtils.externalClientAddresses.contains(messenger.getSearchingIP())){
                                 messenger.setNewPeerAddress(RUtils.externalIP);
-                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_ACK, false,0,messenger);
+                                TCPMessage messengerCarrier = new TCPMessage<>(TCPMessageType.MESSENGER_ACK,messenger);
                                 //it fetches the public ip of the new machine and unicast it back to its origin
                                 cLogger.log(NETWORK, "sending messenger back to its origin:"+ messenger.getSearchingIP() +" since this peer is the new peer to be added");
                                 TCPUtils.unicast(messengerCarrier,messenger.getSearchingIP());
@@ -105,7 +108,7 @@ public class TCPMessageListener extends Thread{
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 // this will accept ack as long as we do not satisfy the minimum requirements
                                 messenger = (Messenger) tcpMessage.getData();
-                                TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,false,0,messenger);
+                                TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,messenger);
                                 TCPUtils.unicast(requestMessage,messenger.getNewPeerAddress());
                                 cLogger.log(NETWORK,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
@@ -130,7 +133,7 @@ public class TCPMessageListener extends Thread{
                         //send back a pong only if ping has the same origin as the message, and the ping origin is stored in the list of external addresses
                         if(ping.getOrigin().equals(origin) && RUtils.externalClientAddresses.contains(ping.getOrigin())){
                             cLogger.log(NETWORK,"received a ping from + " + ping.getOrigin() + ", sending back a pong!");
-                            TCPMessage pongMessage = new TCPMessage<>(TCPMessageType.PONG,false,0, new PingPong(RUtils.externalIP));
+                            TCPMessage pongMessage = new TCPMessage<>(TCPMessageType.PONG,new PingPong(RUtils.externalIP));
                             TCPUtils.unicast(pongMessage, ping.getOrigin());
                         }else{
                             cLogger.log(NETWORK,"received a PING from an unknown host!" + ping.getOrigin() );
@@ -155,32 +158,43 @@ public class TCPMessageListener extends Thread{
                         break;
 
                     //ALL WALLET RELATED MESSAGES:
-                    case WALLET_CONNECT:
+                    case WALLET_PING:{
                         cLogger.log(BASIC,"successfully received wallet message from + " + origin);
-                        String data = (String) tcpMessage.getData();
-                        cLogger.log(BASIC,"GOT THE DATA: "+ data);
-                        TCPMessage<String> myTestMessage = new TCPMessage<>(TCPMessageType.WALLET_CONNECT,false,0,"TAKE THIS FOR YOU WALLET!");
-                        OutputStream outputStream = socket.getOutputStream();
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-                        objectOutputStream.writeObject(myTestMessage);
-                        objectOutputStream.flush();
-                        objectOutputStream.close();
+                        TCPMessage<String> m = new TCPMessage<>(TCPMessageType.WALLET_CONNECT,"");
+                        putInStream(socket, m);
                         break;
+                    }
+                    case WALLET_LIST_NODES:{
+                        cLogger.log(BASIC,"successfully received wallet message from + " + origin);
+                        TCPMessage<HashSet<String>> myTestMessage = new TCPMessage<>(TCPMessageType.WALLET_CONNECT, RUtils.externalClientAddresses);
+                        putInStream(socket, myTestMessage);
+                        break;
+                    }
                 }
 
 
 
 
-
-
+                //does this fix StreamCorruptedException?
+                objectInputStream.close();
                 socket.close();
 
-            }catch (IOException | ClassNotFoundException ex){
+            } catch (StreamCorruptedException e){
+                cLogger.log(EXCEPTION,"A Stream was corrupted closing!");
+            } catch (IOException | ClassNotFoundException ex){
                 ex.printStackTrace();
             }
         }
 
 
 
+    }
+
+    private void putInStream(Socket socket, TCPMessage m) throws IOException {
+        OutputStream outputStream = socket.getOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+        objectOutputStream.writeObject(m);
+        objectOutputStream.flush();
+        objectOutputStream.close();
     }
 }

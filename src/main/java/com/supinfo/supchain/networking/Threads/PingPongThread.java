@@ -1,11 +1,12 @@
-package com.supinfo.supchain.networking;
+package com.supinfo.supchain.networking.Threads;
 
 import com.supinfo.supchain.enums.LogLevel;
-import com.supinfo.shared.TCPMessageType;
+import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
-import com.supinfo.supchain.models.PingPong;
-import com.supinfo.shared.TCPMessage;
+import com.supinfo.supchain.networking.Utils.TCPUtils;
+import com.supinfo.supchain.networking.models.PingPong;
+import com.supinfo.shared.Network.TCPMessage;
 
 import java.util.HashSet;
 
@@ -13,7 +14,7 @@ public class PingPongThread extends Thread{
     private CLogger cLogger = new CLogger(this.getClass());
     @Override
     public void run() {
-        TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,false,0, new PingPong(RUtils.externalIP));
+        TCPMessage pingMessage = new TCPMessage<>(TCPMessageType.PING,new PingPong(RUtils.externalIP));
         TCPUtils.multicastAll(pingMessage,RUtils.externalIP);
         RUtils.pingedAddresses = (HashSet<String>) RUtils.allClientAddresses().clone();
         try {

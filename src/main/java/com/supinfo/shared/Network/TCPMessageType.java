@@ -1,4 +1,4 @@
-package com.supinfo.shared;
+package com.supinfo.shared.Network;
 
 public enum TCPMessageType {
     //RDV related Messages
@@ -12,5 +12,7 @@ public enum TCPMessageType {
     PONG,
     UPDATE_SENDER_IP,
     //Wallet related Messages
-    WALLET_CONNECT
+    WALLET_CONNECT,
+    WALLET_PING,
+    WALLET_LIST_NODES
 }

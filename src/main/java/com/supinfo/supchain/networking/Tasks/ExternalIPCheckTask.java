@@ -1,8 +1,8 @@
-package com.supinfo.supchain.networking;
+package com.supinfo.supchain.networking.Tasks;
 
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.helpers.CLogger;
-import com.supinfo.supchain.helpers.ExternalIPGet;
+import com.supinfo.supchain.networking.Threads.ExternalIPGet;
 
 import java.util.TimerTask;
 

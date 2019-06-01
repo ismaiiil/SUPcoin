@@ -1,11 +1,13 @@
-package com.supinfo.supchain.helpers;
+package com.supinfo.supchain.networking.Threads;
 
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
-import com.supinfo.shared.TCPMessageType;
-import com.supinfo.shared.TCPMessage;
-import com.supinfo.supchain.models.Updater;
-import com.supinfo.supchain.networking.TCPUtils;
+import com.supinfo.shared.Network.TCPMessageType;
+import com.supinfo.shared.Network.TCPMessage;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
+import com.supinfo.supchain.networking.models.Updater;
+import com.supinfo.supchain.networking.Utils.TCPUtils;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -79,7 +81,7 @@ public class ExternalIPGet extends Thread {
             cLogger.log(LogLevel.NETWORK,"WARNING: PUBLIC IP HAS BEEN CHANGED!");
             RUtils.externalIP = newExternalIPAddress;
             Updater updater = new Updater(oldExternalIPAddress,newExternalIPAddress);
-            TCPMessage tcpMessage = new TCPMessage<>(TCPMessageType.UPDATE_SENDER_IP, false, 0, updater);
+            TCPMessage tcpMessage = new TCPMessage<>(TCPMessageType.UPDATE_SENDER_IP,updater);
             TCPUtils.multicastAll(tcpMessage,RUtils.externalIP);
         }
 

@@ -1,13 +1,13 @@
 package com.supinfo.supchain;
 
-import com.supinfo.shared.TCPMessageType;
+import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.supchain.helpers.*;
-import com.supinfo.supchain.LAN.UDPClientDiscovery;
-import com.supinfo.shared.TCPMessage;
-import com.supinfo.supchain.networking.PingPongTask;
-import com.supinfo.supchain.networking.PingPongThread;
-import com.supinfo.supchain.networking.TCPMessageListener;
-import com.supinfo.supchain.networking.TCPUtils;
+import com.supinfo.supchain.networking.Threads.LAN.UDPClientDiscovery;
+import com.supinfo.shared.Network.TCPMessage;
+import com.supinfo.supchain.networking.Tasks.PingPongTask;
+import com.supinfo.supchain.networking.Threads.PingPongThread;
+import com.supinfo.supchain.networking.Threads.TCPMessageListener;
+import com.supinfo.supchain.networking.Utils.TCPUtils;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -48,7 +48,8 @@ public class Main {
             }
         }
         else if(cmd.hasOption("r")){
-            cLogger.println("Welcome to SUPCoin core LINUX VERSION");
+
+            cLogger.println("Welcome to SUPCoin core");
             TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
             messageListener.start();
             ConfigManager.loadConfigFromXml();
@@ -96,7 +97,7 @@ public class Main {
                 }
                 if(user_choice.equals("yes")){
 
-                    TCPMessage myCustomMessage = new TCPMessage<>(TCPMessageType.VERIFY,true,10,null);
+                    TCPMessage myCustomMessage = new TCPMessage<>(TCPMessageType.VERIFY,10,null);
                     TCPUtils.multicastAll(myCustomMessage,"none");
                 }
                 if(user_choice.equals("exit")){

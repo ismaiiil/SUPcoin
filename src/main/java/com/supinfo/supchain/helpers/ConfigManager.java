@@ -1,9 +1,9 @@
 package com.supinfo.supchain.helpers;
 
+import com.supinfo.shared.Utils.StringUtil;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
-import com.supinfo.supchain.networking.TCPUtils;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -31,7 +31,7 @@ public class ConfigManager {
             });
             //inject the xml back into the running application
             RUtils rUtils = (RUtils) jaxbUnmarshaller.unmarshal( new File(".config/rUtils.xml") );
-            if(!TCPUtils.isValidIP(RUtils.bootstrapNode)){
+            if(!StringUtil.isValidIP(RUtils.bootstrapNode)){
                 cLogger.println("Please use a valid IPv4 format for the bootstrap node!");
                 System.exit(1);
             }

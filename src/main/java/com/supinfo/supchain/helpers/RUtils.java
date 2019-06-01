@@ -3,7 +3,7 @@ package com.supinfo.supchain.helpers;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
-import com.supinfo.shared.TCPMessage;
+import com.supinfo.shared.Network.TCPMessage;
 
 import javax.xml.bind.annotation.*;
 import java.util.HashSet;
@@ -30,7 +30,7 @@ public class RUtils {
     public static int minNumberOfConnections = 2;
     public static int maxNumberOfConnections = 3;
     public static long messengerTimeout = 10;
-    public static long connectionLatency = 5000;
+    public static long connectionLatency = 10000;
     public static long pingPongTaskPeriod = 40000; //TODO make this xml
     public static long externalIpCheckPeriod = 40000;
     public static String bootstrapNode = "";

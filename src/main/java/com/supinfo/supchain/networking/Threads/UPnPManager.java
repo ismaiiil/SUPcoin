@@ -1,4 +1,4 @@
-package com.supinfo.supchain.networking;
+package com.supinfo.supchain.networking.Threads;
 
 import com.dosse.upnp.UPnP;
 import com.supinfo.supchain.enums.LogLevel;

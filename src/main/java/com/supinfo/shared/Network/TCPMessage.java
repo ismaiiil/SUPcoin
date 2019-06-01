@@ -1,11 +1,13 @@
-package com.supinfo.shared;
+package com.supinfo.shared.Network;
+
+import com.supinfo.shared.Utils.StringUtil;
 
 import java.util.*;
 
 import java.io.Serializable;
 
 public class TCPMessage<T> implements Serializable {
-    private static final long serialVersionUID = 123456L;
+    public static final long serialVersionUID = 1000000000L;
     private TCPMessageType tcpMessageType;
     private String messageHash;
     private long dateTime;
@@ -13,13 +15,23 @@ public class TCPMessage<T> implements Serializable {
     private boolean propagatable;
     private T data;
 
-    public TCPMessage(TCPMessageType tcpMessageType,boolean propagatable, long propagationTimeout, T data){
+    public TCPMessage(TCPMessageType tcpMessageType,long propagationTimeout, T data){
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         this.dateTime = cal.getTimeInMillis();
         this.propagationTimeout = propagationTimeout * 1000;
         this.tcpMessageType = tcpMessageType;
         this.messageHash = calculateHash();
-        this.propagatable = propagatable;
+        this.propagatable = true;
+        this.data = data;
+    }
+
+    public TCPMessage(TCPMessageType tcpMessageType,T data){
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        this.dateTime = cal.getTimeInMillis();
+        this.propagationTimeout = 0;
+        this.tcpMessageType = tcpMessageType;
+        this.messageHash = calculateHash();
+        this.propagatable = false;
         this.data = data;
     }
 

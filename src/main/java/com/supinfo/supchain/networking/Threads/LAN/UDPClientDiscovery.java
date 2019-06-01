@@ -1,4 +1,4 @@
-package com.supinfo.supchain.LAN;
+package com.supinfo.supchain.networking.Threads.LAN;
 
 import com.supinfo.supchain.enums.LogLevel;
 
@@ -31,7 +31,7 @@ public class UDPClientDiscovery implements Runnable {
             byte[] sendData = UDPMessage.DISCOVER_RDV_REQUEST.toString().getBytes();
 
 
-            // Broadcast the message over all the com.supinfo.supchain.LAN interfaces
+            // Broadcast the message over all the com.supinfo.supchain.networking.Threads.LAN interfaces
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface networkInterface = (NetworkInterface) interfaces.nextElement();

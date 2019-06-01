@@ -1,4 +1,4 @@
-package com.supinfo.supchain.models;
+package com.supinfo.supchain.networking.models;
 
 import java.io.Serializable;
 

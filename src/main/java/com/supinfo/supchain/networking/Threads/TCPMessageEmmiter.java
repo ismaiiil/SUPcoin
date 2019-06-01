@@ -1,9 +1,10 @@
-package com.supinfo.supchain.networking;
+package com.supinfo.supchain.networking.Threads;
 
+import com.supinfo.shared.Utils.StringUtil;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
-import com.supinfo.shared.TCPMessage;
+import com.supinfo.shared.Network.TCPMessage;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -26,7 +27,7 @@ public class TCPMessageEmmiter extends Thread {
     }
     @Override
     public void run() {
-        if(!hostname.equals(RUtils.externalIP) && TCPUtils.isValidIP(hostname)){
+        if(!hostname.equals(RUtils.externalIP) && StringUtil.isValidIP(hostname)){
             try {
                 socket = new Socket(hostname, port);
                 OutputStream outputStream = socket.getOutputStream();
@@ -35,16 +36,6 @@ public class TCPMessageEmmiter extends Thread {
                 objectOutputStream.writeObject(tcpMessage);
                 objectOutputStream.flush();
                 objectOutputStream.close();
-
-//            //TESTING WALLET RECEIVING SERVER RESPONSE IN THE SOCKET ITSELF INSTEAD OF A NEW SOCKET RESPONSE
-//            InputStream inputStream = socket.getInputStream();
-//            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-//            TCPMessage tcpMessage = (TCPMessage) objectInputStream.readObject();
-//            cLogger.log(LogLevel.NETWORK, "Successfully sent message and server responded with a: " + tcpMessage.getTcpMessageType());
-//
-//
-//            objectInputStream.close();
-
 
                 socket.close();
             } catch (UnknownHostException e){
