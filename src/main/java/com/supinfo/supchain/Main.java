@@ -1,6 +1,9 @@
 package com.supinfo.supchain;
 
 import com.supinfo.shared.Network.TCPMessageType;
+import com.supinfo.supchain.blockchain.wallet.Wallet;
+import com.supinfo.supchain.blockchain.wallet.WalletFileManager;
+import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.helpers.*;
 import com.supinfo.supchain.networking.Threads.LAN.UDPClientDiscovery;
 import com.supinfo.shared.Network.TCPMessage;
@@ -10,11 +13,10 @@ import com.supinfo.supchain.networking.Threads.TCPMessageListener;
 import com.supinfo.supchain.networking.Utils.TCPUtils;
 import org.apache.commons.cli.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.SocketException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
@@ -24,8 +26,12 @@ public class Main {
     private static HelpFormatter formatter = new HelpFormatter();
     private static Options options = new Options();
     public static Scanner user_input = new Scanner(System.in);
+    public static String user_choice;
 
     public static void main(String[] args) throws InterruptedException, SocketException, FileNotFoundException, UnsupportedEncodingException {
+
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());//adding BC security provider
+
         CommandLine cmd = getCommandLine(args);
 
 
@@ -53,6 +59,37 @@ public class Main {
             TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
             messageListener.start();
             ConfigManager.loadConfigFromXml();
+            cLogger.println("Checking if a wallet has been configured for this node...");
+            try{
+                PrivateKey privateKey =  WalletFileManager.loadPrivateKey("./.config");
+                RUtils.wallet = new Wallet(WalletFileManager.derivePublicKey(privateKey),privateKey);
+            } catch ( NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+                e.printStackTrace();
+                cLogger.log(LogLevel.EXCEPTION,"Could Not find Your wallet under ./config/private.key");
+                System.exit(1);
+            }catch (IOException e){
+                cLogger.println("Do you want to create your private key?(Y/N)");
+                while (true){
+                    user_choice = user_input.nextLine();
+                    if(user_choice.equals("Y") || user_choice.equals("y")){
+                        RUtils.wallet = new Wallet();
+                        try {
+                            WalletFileManager.savePrivateKey("./.config",RUtils.wallet.getPrivateKey());
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                            cLogger.log(LogLevel.EXCEPTION,"Please Make sure you have initialised the app with -c -i," +
+                                    "can also include -m for a manual, closing...");
+                            System.exit(-1);
+                        }
+                        break;
+                    }else if (user_choice.equals("N") || user_choice.equals("n")){
+                        cLogger.log(LogLevel.BASIC,"You can only mine if you have a wallet associated to this node, exiting...");
+                        System.exit(-1);
+                    }
+                }
+
+            }
+            cLogger.println("Wallet Loaded successfully!");
 
             switch (RUtils.myRole){
                 case RDV:
@@ -87,10 +124,15 @@ public class Main {
                     break;
             }
 
+
+
             cLogger.printInput("do you want to test a propagatable message...");
 
+
+            //test blockchain here
+
             while(true){
-                String user_choice = user_input.nextLine();
+                user_choice = user_input.nextLine();
 
                 if(user_choice.equals("stats")){
                     cLogger.println(RUtils.getStats());
@@ -103,6 +145,9 @@ public class Main {
                 if(user_choice.equals("exit")){
                     ConfigManager.saveConfig();
                     System.exit(1);
+                }
+                if(user_choice.equals("wallet")){
+                    WalletFileManager.dumpKeyPair(RUtils.wallet.getKeyPair());
                 }
 
             }

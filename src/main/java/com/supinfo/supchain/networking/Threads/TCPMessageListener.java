@@ -50,7 +50,7 @@ public class TCPMessageListener extends Thread{
                 //these are protocols that apply only to RDVs
                 if(RUtils.myRole == Role.RDV){
                     switch (tcpMessage.getTcpMessageType()){
-                        case REQUEST_CONNECTION:
+                        case REQUEST_CONNECTION:{
                             if((RUtils.externalClientAddresses.size() < RUtils.maxNumberOfConnections) && (!RUtils.externalClientAddresses.contains(origin))){
                                 //if we dnt have the maximum number of connections we are going to accept the direct connection
                                 TCPMessage responseMessage = new TCPMessage<>(TCPMessageType.CONFIRM_CONNECTION,null);
@@ -70,11 +70,11 @@ public class TCPMessageListener extends Thread{
                                 cLogger.log(NETWORK,"Broadcasting a MESSENGER_REQ to look for a connection for the foreveralone peer: " + origin);
                                 TCPUtils.multicastRDVs(messengerCarrier,origin);
                             }
-                            break;
-                        case WAIT_FOR_LOOKUP:
+                            break;}
+                        case WAIT_FOR_LOOKUP:{
                             cLogger.log(NETWORK,"REQUESTED PEER IS FULL, please wait while we search for another peer");
-                            break;
-                        case CONFIRM_CONNECTION:
+                            break;}
+                        case CONFIRM_CONNECTION:{
                             RUtils.externalClientAddresses.add(origin);
                             cLogger.log(NETWORK,"CONFIRM RECEIVED >>>added " + origin + "to the list of clients");
                             //After that this peer has received a confirmation of connection it can begin looking up for
@@ -87,8 +87,8 @@ public class TCPMessageListener extends Thread{
                                 TCPUtils.multicastRDVs(messengerCarrier,"none");
                             }
                             //if in production mode push external IP to REST api
-                            break;
-                        case MESSENGER_REQ:
+                            break;}
+                        case MESSENGER_REQ:{
                             Messenger messenger = (Messenger) tcpMessage.getData();
                             if((RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections) //change this to max?
                                     && !RUtils.externalClientAddresses.contains(messenger.getSearchingIP())){
@@ -103,17 +103,18 @@ public class TCPMessageListener extends Thread{
                                     TCPUtils.multicastRDVs(tcpMessage,origin);
                                 }
                             }
-                            break;
-                        case MESSENGER_ACK:
+                            break;}
+                        case MESSENGER_ACK:{
+
                             if(RUtils.externalClientAddresses.size() < RUtils.minNumberOfConnections){
                                 // this will accept ack as long as we do not satisfy the minimum requirements
-                                messenger = (Messenger) tcpMessage.getData();
+                                Messenger messenger = (Messenger) tcpMessage.getData();
                                 TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,messenger);
                                 TCPUtils.unicast(requestMessage,messenger.getNewPeerAddress());
                                 cLogger.log(NETWORK,"This client received MESSENGER_ACK, sending a request message to:" + messenger.getNewPeerAddress());
                             }
                             //once we satisfy the min requirements all message ack received will be dropped
-
+                            break;}
                         default:
                             break;
                     }
@@ -121,13 +122,13 @@ public class TCPMessageListener extends Thread{
 
                 //these are protocols that apply to both RDVs and EDGEs
                 switch (tcpMessage.getTcpMessageType()){
-                    case VERIFY:
+                    case VERIFY:{
                         cLogger.log(BASIC,"Got a verify Message, from "+ origin+ " propagating");
                         if(tcpMessage.isPropagatable() && tcpMessage.isAlive()){
                             TCPUtils.multicastAll(tcpMessage,socket.getInetAddress().getHostAddress());
                         }
-                        break;
-                    case PING:
+                        break;}
+                    case PING:{
 
                         PingPong ping = (PingPong) tcpMessage.getData();
                         //send back a pong only if ping has the same origin as the message, and the ping origin is stored in the list of external addresses
@@ -139,13 +140,13 @@ public class TCPMessageListener extends Thread{
                             cLogger.log(NETWORK,"received a PING from an unknown host!" + ping.getOrigin() );
                         }
 
-                        break;
-                    case PONG:
+                        break;}
+                    case PONG:{
                         PingPong pong = (PingPong) tcpMessage.getData();
                         cLogger.log(NETWORK,"successfully received back a pong from + " + pong.getOrigin());
                         RUtils.pingedAddresses.remove(pong.getOrigin());
-                        break;
-                    case UPDATE_SENDER_IP:
+                        break;}
+                    case UPDATE_SENDER_IP:{
                         Updater updater = (Updater) tcpMessage.getData();
                         if(RUtils.externalClientAddresses.contains(updater.getOldIP())){
                             RUtils.externalClientAddresses.remove(updater.getOldIP());
@@ -156,6 +157,7 @@ public class TCPMessageListener extends Thread{
                             RUtils.localClientAddresses.add(updater.getNewIP());
                         }
                         break;
+                    }
 
                     //ALL WALLET RELATED MESSAGES:
                     case WALLET_PING:{
@@ -175,7 +177,7 @@ public class TCPMessageListener extends Thread{
 
 
 
-                //does this fix StreamCorruptedException?
+
                 objectInputStream.close();
                 socket.close();
 

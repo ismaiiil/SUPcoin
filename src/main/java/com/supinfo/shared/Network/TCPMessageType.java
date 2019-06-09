@@ -11,7 +11,7 @@ public enum TCPMessageType {
     PING,
     PONG,
     UPDATE_SENDER_IP,
-    //Wallet related Messages
+    //wallet related Messages
     WALLET_CONNECT,
     WALLET_PING,
     WALLET_LIST_NODES
