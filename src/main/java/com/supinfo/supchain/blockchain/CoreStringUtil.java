@@ -1,5 +1,7 @@
 package com.supinfo.supchain.blockchain;
 
+import com.supinfo.shared.transaction.Transaction;
+
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -79,7 +81,7 @@ public class CoreStringUtil {
 
         List<String> previousTreeLayer = new ArrayList<String>();
         for(Transaction transaction : transactions) {
-            previousTreeLayer.add(transaction.transactionId);
+            previousTreeLayer.add(transaction.getTransactionId());
         }
         List<String> treeLayer = previousTreeLayer;
 

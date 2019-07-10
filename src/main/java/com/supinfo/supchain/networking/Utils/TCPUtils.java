@@ -90,13 +90,15 @@ public class TCPUtils {
                 TCPMessage requestMessage = new TCPMessage<>(TCPMessageType.REQUEST_CONNECTION,null);
                 TCPUtils.unicast(requestMessage,node);
             }else{
-                cLogger.println("Please make sure the bootnode or IP supplied and external IP is valid!");
+                cLogger.println("Please make sure the IP supplied and external IP is valid!");
                 ConfigManager.saveConfig();
                 System.exit(1);
             }
 
         }else{
-            cLogger.println("You have setup the bootnode to be this node, waiting and listening for other nodes");
+            if(RUtils.externalIP.equals(node)){
+                cLogger.println("You have setup the bootnode to be this node, waiting and listening for other nodes");
+            }
         }
     }
 

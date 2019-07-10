@@ -33,10 +33,12 @@ public class RUtils {
     public static long messengerTimeout = 10;
     public static long connectionLatency = 10000;
     public static long pingPongTaskPeriod = 40000; //TODO make this xml
+    public static long initDownloadPeriod = 10000;
     public static long externalIpCheckPeriod = 40000;
     public static float minimumTransaction = 0.1f;
     public static String bootstrapNode = "";
     public static Wallet wallet;
+
 
     //By default, bitcoin-core allows up to 125 connections to different peers
 

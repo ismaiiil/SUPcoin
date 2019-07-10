@@ -1,15 +1,17 @@
 package com.supinfo.supchain.blockchain;
 
 import com.supinfo.shared.Utils.StringUtil;
+import com.supinfo.shared.transaction.Transaction;
+import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
+import org.apache.commons.lang3.builder.RecursiveToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static com.supinfo.supchain.blockchain.CoreStringUtil.getDificultyString;
-import static com.supinfo.supchain.blockchain.CoreStringUtil.getMerkleRoot;
 
-
-public class Block {
+public class Block implements Serializable {
 
     public String hash;
     public String previousHash;
@@ -39,13 +41,15 @@ public class Block {
 
     //Increases nonce value until hash target is reached.
     public void mineBlock(int difficulty) {
-        merkleRoot = getMerkleRoot(transactions);
-        String target = getDificultyString(difficulty); //Create a string with difficulty * "0"
+        //add reward transaction here before mining
+        merkleRoot = CoreStringUtil.getMerkleRoot(transactions);
+        String target = CoreStringUtil.getDificultyString(difficulty); //Create a string with difficulty * "0"
         while(!hash.substring( 0, difficulty).equals(target)) {
             nonce ++;
             hash = calculateHash();
         }
         System.out.println("Block Mined!!! : " + hash);
+        //TODO uptate UTXOS here after the block has been mined, ie all txns are valid
     }
 
     //Add transactions to this block
@@ -53,7 +57,7 @@ public class Block {
         //process transaction and check if valid, unless block is genesis block then ignore.
         if(transaction == null) return false;
         if((!"0".equals(previousHash))) {
-            if((!transaction.processTransaction())) {
+            if((!TransactionOperations.verifyTransaction(transaction))) {
                 System.out.println("Transaction failed to process. Discarded.");
                 return false;
             }
@@ -65,3 +69,4 @@ public class Block {
     }
 
 }
+

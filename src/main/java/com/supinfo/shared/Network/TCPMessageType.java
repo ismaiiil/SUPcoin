@@ -14,5 +14,9 @@ public enum TCPMessageType {
     //wallet related Messages
     WALLET_CONNECT,
     WALLET_PING,
-    WALLET_LIST_NODES
+    WALLET_LIST_NODES,
+    //BlockchainHolder Messages
+    INIT_REQUEST_DOWNLOAD,
+    INIT_DOWNLOAD_FULL_BLOCKCHAIN,
+    REQUEST_MEMPOOL, RECEIVE_MEMPOOL,
 }

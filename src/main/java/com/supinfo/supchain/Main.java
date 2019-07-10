@@ -1,6 +1,8 @@
 package com.supinfo.supchain;
 
 import com.supinfo.shared.Network.TCPMessageType;
+import com.supinfo.supchain.blockchain.BlockchainHolder;
+import com.supinfo.supchain.blockchain.BlockchainHolderManager;
 import com.supinfo.supchain.blockchain.wallet.Wallet;
 import com.supinfo.supchain.blockchain.wallet.WalletFileManager;
 import com.supinfo.supchain.enums.LogLevel;
@@ -12,6 +14,8 @@ import com.supinfo.supchain.networking.Threads.PingPongThread;
 import com.supinfo.supchain.networking.Threads.TCPMessageListener;
 import com.supinfo.supchain.networking.Utils.TCPUtils;
 import org.apache.commons.cli.*;
+import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.*;
 import java.net.SocketException;
@@ -21,12 +25,14 @@ import java.util.*;
 
 import static java.lang.Thread.sleep;
 
-public class Main {
+public class Main{
     private static CLogger cLogger = new CLogger(Main.class);
     private static HelpFormatter formatter = new HelpFormatter();
     private static Options options = new Options();
     public static Scanner user_input = new Scanner(System.in);
     public static String user_choice;
+    public static BlockchainHolder blockchainHolder = BlockchainHolderManager.getInstance();
+
 
     public static void main(String[] args) throws InterruptedException, SocketException, FileNotFoundException, UnsupportedEncodingException {
 
@@ -56,7 +62,7 @@ public class Main {
         else if(cmd.hasOption("r")){
 
             cLogger.println("Welcome to SUPCoin core");
-            TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
+            TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort,blockchainHolder);
             messageListener.start();
             ConfigManager.loadConfigFromXml();
             cLogger.println("Checking if a wallet has been configured for this node...");
@@ -124,12 +130,48 @@ public class Main {
                     break;
             }
 
+            boolean isGenesis = false;
+            while (RUtils.allClientAddresses().size() < 1){
 
+                cLogger.println("Your Node currently has no other peers to connect to");
+                if(blockchainHolder.blockchain.size()>0){
+                    cLogger.println("You already have a genesis block, moving to mining setup!");
+                }
+                cLogger.println("Do you want to wait for the node to discover Blockchain data on other peers or set this as a genesis block, use:(genesis/wait)");
+                user_choice = user_input.nextLine();
+                if(user_choice.equals("genesis")){
+                    blockchainHolder.initGenesisBlockchain();
+                    isGenesis = true;
+                    break;
+                }
+                if(user_choice.equals("wait")){
+                    SpinnerCLI spinnerCLI = new SpinnerCLI("Listening and Discovering Peers to download Blockchain data: ");
+                    spinnerCLI.start();
+                    while (RUtils.allClientAddresses().size() < 1){}
+                    spinnerCLI.showProgress = false;
+                    break;
+                }
 
+            }
+
+            if(!isGenesis){
+                cLogger.println("At least one peer has been found, trying to download blockchain from peer!");
+                boolean hasFoundBlockchain = blockchainHolder.requestBlockchainFromPeers();
+                if(!hasFoundBlockchain){
+                    cLogger.println("No blockchain could be downloaded from the peers you are connected to, the node will now" +
+                            "enter a passive mode until it is able to download a blockchain!");
+                    while(!blockchainHolder.requestBlockchainFromPeers()){
+                        cLogger.println("Waiting for " + RUtils.initDownloadPeriod+ " until we retry requesting peers for the chain!");
+                        sleep(RUtils.initDownloadPeriod);
+                    }
+                }
+            }
+
+            cLogger.println("Blockchain validated!");
             cLogger.printInput("do you want to test a propagatable message...");
 
 
-            //test blockchain here
+            //test blockchainHolder here
 
             while(true){
                 user_choice = user_input.nextLine();
@@ -148,6 +190,9 @@ public class Main {
                 }
                 if(user_choice.equals("wallet")){
                     WalletFileManager.dumpKeyPair(RUtils.wallet.getKeyPair());
+                }
+                if(user_choice.equals("dump")){
+                    cLogger.println(ToStringBuilder.reflectionToString(blockchainHolder, new MultilineRecursiveToStringStyle()));
                 }
 
             }

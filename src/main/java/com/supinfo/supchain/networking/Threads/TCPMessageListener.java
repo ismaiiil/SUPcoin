@@ -1,5 +1,9 @@
 package com.supinfo.supchain.networking.Threads;
 
+import com.supinfo.shared.transaction.Transaction;
+import com.supinfo.supchain.blockchain.Block;
+import com.supinfo.supchain.blockchain.BlockchainCallbacks;
+import com.supinfo.supchain.blockchain.BlockchainHolderManager;
 import com.supinfo.supchain.enums.Role;
 import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.supchain.helpers.CLogger;
@@ -13,17 +17,20 @@ import com.supinfo.supchain.networking.models.Updater;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 
+import static com.supinfo.supchain.Main.blockchainHolder;
 import static com.supinfo.supchain.enums.LogLevel.*;
 
 public class TCPMessageListener extends Thread{
     private int port;
     private ServerSocket serverSocket;
     private CLogger cLogger = new CLogger(this.getClass());
-    public TCPMessageListener(int port) {
+    private BlockchainCallbacks blockchainCallbacks;
+    public TCPMessageListener(int port,BlockchainCallbacks blockchainCallbacks) {
         this.port = port;
+        this.blockchainCallbacks = blockchainCallbacks;
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
@@ -172,10 +179,47 @@ public class TCPMessageListener extends Thread{
                         putInStream(socket, myTestMessage);
                         break;
                     }
+
+                    //ALL BlockchainHolder related message:
+                    case INIT_REQUEST_DOWNLOAD:{
+                        //send to the peer the blockchainHolder
+                        cLogger.log(CHAIN,"received a request to download this node's chain");
+                        TCPMessage sendBlockchain = new TCPMessage<>(TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN, BlockchainHolderManager.getInstance().blockchain);
+                        TCPUtils.unicast(sendBlockchain,origin);
+                        break;
+                    }
+                    case INIT_DOWNLOAD_FULL_BLOCKCHAIN:{
+                        //verify the blockchainHolder
+                        cLogger.log(CHAIN,"NOW DOWNLOADING CHAIN FROM:"+ origin);
+                        blockchainHolder.status = TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN;
+                        ArrayList<Block> newBlockchain = (ArrayList<Block>) tcpMessage.getData();
+                        if(blockchainHolder.validateBlockchain(newBlockchain)
+                                && (blockchainHolder.blockchain.size() < newBlockchain.size())){
+                            blockchainHolder.blockchain = newBlockchain;
+                            //only if it is valid assign it to the blockchainHolder
+                            //once it has received the full blockchainHolder we can start do stuff
+                            blockchainCallbacks.initHasDownloaded(true,origin);
+                        }else{
+                            //send callback failed to get a valid blockchainHolder
+                            blockchainCallbacks.initHasDownloaded(false,origin);
+                        }
+                        break;
+                    }
+                    case REQUEST_MEMPOOL:{
+                        //send the mempool to the requesting node
+                        cLogger.log(CHAIN,"A peer has requested a copy of the mempool!");
+                        TCPMessage sendMempool = new TCPMessage<>(TCPMessageType.RECEIVE_MEMPOOL,blockchainHolder.mempool);
+                        TCPUtils.unicast(sendMempool,origin);
+                        break;
+                    }
+                    case RECEIVE_MEMPOOL:{
+                        //add the new mempool to the current mempool
+                        HashSet<Transaction> newMempool = (HashSet<Transaction>) tcpMessage.getData();
+                        cLogger.log(CHAIN,"Successfully received the new mempool!");
+                        blockchainHolder.mempool.addAll(newMempool);
+                    }
+
                 }
-
-
-
 
 
                 objectInputStream.close();

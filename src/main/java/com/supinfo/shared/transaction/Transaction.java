@@ -11,7 +11,7 @@ public class Transaction implements Serializable {
 
     private String transactionId; //Contains a hash of transaction*
     private PublicKey sender; //Senders address/public key.
-    private ArrayList<Recipient> recipients ; //Recipients address/public key.
+    private PublicKey recipient ; //Recipients address/public key.
     private float value; //Contains the amount we wish to send to the recipient.
     private byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
 
@@ -19,9 +19,9 @@ public class Transaction implements Serializable {
     private ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
     // Constructor:
-    public Transaction(PublicKey from, ArrayList<Recipient> recipients, float value,  ArrayList<TransactionInput> inputs) {
+    public Transaction(PublicKey from, PublicKey recipient, float value,  ArrayList<TransactionInput> inputs) {
         this.sender = from;
-        this.recipients = recipients;
+        this.recipient = recipient;
         this.value = value;
         this.inputs = inputs;
     }
@@ -44,12 +44,12 @@ public class Transaction implements Serializable {
     }
 
 
-    public ArrayList<Recipient> getRecipients() {
-        return recipients;
+    public PublicKey getRecipient() {
+        return recipient;
     }
 
-    public void setRecipients(ArrayList<Recipient> recipients) {
-        this.recipients = recipients;
+    public void setRecipients(PublicKey recipient) {
+        this.recipient = recipient;
     }
     public float getValue() {
         return value;
@@ -167,4 +167,6 @@ public class Transaction implements Serializable {
 //                        Float.toString(value) + sequence
 //        );
 //    }
+
+
 }
