@@ -3,86 +3,27 @@ package com.supinfo.shared.transaction;
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Transaction implements Serializable {
     public static final long serialVersionUID = 1111111111L;
     //TODO we intend to make this just a POJO that carries data ofa txn every validation will be done later on the node
     //TODO simple validations can be done on the wallet to make sure we dnt lose time and send an invalid txn to the node
 
-    private String transactionId; //Contains a hash of transaction*
-    private PublicKey sender; //Senders address/public key.
-    private PublicKey recipient ; //Recipients address/public key.
-    private float value; //Contains the amount we wish to send to the recipient.
-    private byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
+    public String transactionId; //Contains a hash of transaction*
+    public PublicKey sender; //Senders address/public key.
+    public HashMap<PublicKey,Float> recipients = new HashMap<>();
+    public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
 
-    private ArrayList<TransactionInput> inputs = new ArrayList<>();
-    private ArrayList<TransactionOutput> outputs = new ArrayList<>();
+    public ArrayList<TransactionInput> inputs = new ArrayList<>();
+    public ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
     // Constructor:
-    public Transaction(PublicKey from, PublicKey recipient, float value,  ArrayList<TransactionInput> inputs) {
+    public Transaction(PublicKey from,HashMap<PublicKey,Float> recipients,  ArrayList<TransactionInput> inputs) {
         this.sender = from;
-        this.recipient = recipient;
-        this.value = value;
+        this.recipients = recipients;
         this.inputs = inputs;
     }
-
-
-    public String getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = transactionId;
-    }
-
-    public PublicKey getSender() {
-        return sender;
-    }
-
-    public void setSender(PublicKey sender) {
-        this.sender = sender;
-    }
-
-
-    public PublicKey getRecipient() {
-        return recipient;
-    }
-
-    public void setRecipients(PublicKey recipient) {
-        this.recipient = recipient;
-    }
-    public float getValue() {
-        return value;
-    }
-
-    public void setValue(float value) {
-        this.value = value;
-    }
-
-    public byte[] getSignature() {
-        return signature;
-    }
-
-    public void setSignature(byte[] signature) {
-        this.signature = signature;
-    }
-
-    public ArrayList<TransactionInput> getInputs() {
-        return inputs;
-    }
-
-    public void setInputs(ArrayList<TransactionInput> inputs) {
-        this.inputs = inputs;
-    }
-
-    public ArrayList<TransactionOutput> getOutputs() {
-        return outputs;
-    }
-
-    public void setOutputs(ArrayList<TransactionOutput> outputs) {
-        this.outputs = outputs;
-    }
-
 
 //    public boolean processTransaction() {
 //
@@ -132,8 +73,8 @@ public class Transaction implements Serializable {
     public float getInputsValue() {
         float total = 0;
         for(TransactionInput i : inputs) {
-            if(i.getUTXO() == null) continue; //if Transaction can't be found skip it, This behavior may not be optimal.
-            total += i.getUTXO().getValue();
+            if(i.UTXO == null) continue; //if Transaction can't be found skip it, This behavior may not be optimal, miner or reward txns have null inputs
+            total += i.UTXO.value;
         }
         return total;
     }
@@ -154,7 +95,7 @@ public class Transaction implements Serializable {
     public float getOutputsValue() {
         float total = 0;
         for(TransactionOutput o : outputs) {
-            total += o.getValue();
+            total += o.value;
         }
         return total;
     }
@@ -169,4 +110,19 @@ public class Transaction implements Serializable {
 //    }
 
 
+    //to know if a transaction contains our public key below are some methods to do so
+    public boolean containsPublickKey(PublicKey pkey){
+        return sentByPublickKey(pkey) || hasOutputToPublicKey(pkey);
+    }
+
+    public boolean sentByPublickKey(PublicKey pkey){
+        return sender == pkey;
+    }
+
+    public boolean hasOutputToPublicKey(PublicKey pkey){
+        for (TransactionOutput tout : outputs) {
+            if (tout.isMine(pkey)) return true;
+        }
+        return false;
+    }
 }

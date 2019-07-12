@@ -141,6 +141,7 @@ public class Main{
                 user_choice = user_input.nextLine();
                 if(user_choice.equals("genesis")){
                     blockchainHolder.initGenesisBlockchain();
+                    blockchainHolder.validateBlockchain(blockchainHolder.blockchain);
                     isGenesis = true;
                     break;
                 }
@@ -167,7 +168,8 @@ public class Main{
                 }
             }
 
-            cLogger.println("Blockchain validated!");
+
+
             cLogger.printInput("do you want to test a propagatable message...");
 
 

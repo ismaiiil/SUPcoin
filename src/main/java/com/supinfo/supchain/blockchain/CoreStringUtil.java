@@ -81,7 +81,7 @@ public class CoreStringUtil {
 
         List<String> previousTreeLayer = new ArrayList<String>();
         for(Transaction transaction : transactions) {
-            previousTreeLayer.add(transaction.getTransactionId());
+            previousTreeLayer.add(transaction.transactionId);
         }
         List<String> treeLayer = previousTreeLayer;
 

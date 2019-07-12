@@ -4,25 +4,26 @@ import com.supinfo.shared.Utils.StringUtil;
 import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.shared.transaction.TransactionInput;
 import com.supinfo.shared.transaction.TransactionOutput;
-import com.supinfo.supchain.blockchain.BlockchainHolder;
 import com.supinfo.supchain.blockchain.CoreStringUtil;
 import static com.supinfo.supchain.Main.blockchainHolder;
 
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TransactionOperations {
 
     public static boolean verifySignature(Transaction transaction) {
-        String data = CoreStringUtil.getStringFromKey(transaction.getSender())
-                + CoreStringUtil.getStringFromKey(transaction.getRecipient())
-                + Float.toString(transaction.getValue())	;
-        return CoreStringUtil.verifyECDSASig(transaction.getSender(), data, transaction.getSignature());
+        String data = CoreStringUtil.getStringFromKey(transaction.sender)
+                + getMapAsString(transaction);
+        return CoreStringUtil.verifyECDSASig(transaction.sender, data, transaction.signature);
     }
 
     public static Boolean verifyTransaction(Transaction transaction){
-        ArrayList<TransactionInput> inputs = transaction.getInputs();
-        ArrayList<TransactionOutput> outputs = transaction.getOutputs();
+        ArrayList<TransactionInput> inputs = transaction.inputs;
+        ArrayList<TransactionOutput> outputs = transaction.outputs;
 
         if(!verifySignature(transaction)){
             System.out.println("#Transaction Signature failed to verify");
@@ -32,7 +33,7 @@ public class TransactionOperations {
 
         //Gathers transaction inputs (Making sure they are unspent):
         for(TransactionInput i : inputs) {
-            if(!blockchainHolder.UTXOs.containsKey(i.getTransactionOutputId())){
+            if(!blockchainHolder.UTXOs.containsKey(i.transactionOutputId)){
                 System.out.println("Transaction not found in UTXOs");
                 return false;
             }
@@ -48,10 +49,19 @@ public class TransactionOperations {
     }
 
     public static byte[] generateSignature(PrivateKey privateKey,Transaction transaction) {
-        String data = CoreStringUtil.getStringFromKey(transaction.getSender())
-                + CoreStringUtil.getStringFromKey(transaction.getRecipient())
-                + Float.toString(transaction.getValue())	;
+        String data = CoreStringUtil.getStringFromKey(transaction.sender)
+                + getMapAsString(transaction);
         return CoreStringUtil.applyECDSASig(privateKey,data);
+    }
+
+    private static String getMapAsString(Transaction transaction) {
+        HashMap<PublicKey, Float> _recipients = transaction.recipients;
+        StringBuilder output = new StringBuilder();
+        for (HashMap.Entry<PublicKey, Float> entry : _recipients.entrySet()) {
+            String _t = CoreStringUtil.getStringFromKey(entry.getKey()) + Float.toString(entry.getValue());
+            output.append(_t);
+        }
+        return output.toString();
     }
 
     public static ArrayList<TransactionOutput> generateTransactionOutputs(){
@@ -60,8 +70,8 @@ public class TransactionOperations {
 
     public static String generateTransactionOutputThisId(TransactionOutput transactionOutput){
         return StringUtil.applySha256(
-                CoreStringUtil.getStringFromKey(transactionOutput.getReciepient())
-                        +Float.toString(transactionOutput.getValue())
-                        +transactionOutput.getParentTransactionId());
+                CoreStringUtil.getStringFromKey(transactionOutput.reciepient)
+                        +Float.toString(transactionOutput.value)
+                        +transactionOutput.parentTransactionId);
     }
 }

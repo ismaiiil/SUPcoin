@@ -168,15 +168,36 @@ public class TCPMessageListener extends Thread{
 
                     //ALL WALLET RELATED MESSAGES:
                     case WALLET_PING:{
-                        cLogger.log(BASIC,"successfully received wallet message from + " + origin);
                         TCPMessage<String> m = new TCPMessage<>(TCPMessageType.WALLET_CONNECT,"");
                         putInStream(socket, m);
                         break;
                     }
                     case WALLET_LIST_NODES:{
-                        cLogger.log(BASIC,"successfully received wallet message from + " + origin);
                         TCPMessage<HashSet<String>> myTestMessage = new TCPMessage<>(TCPMessageType.WALLET_CONNECT, RUtils.externalClientAddresses);
                         putInStream(socket, myTestMessage);
+                        break;
+                    }
+                    case WALLET_FETCH_UTXOS:{
+                        break;
+                    }
+                    case WALLET_BUY_COINS:{
+                        //will receive a txn and will reply with a WALLET_NODE_INSUFFICIENT_COINS or WALLET_SUCCESS_BUY with putInStream
+                        //if we have enough coins the txn is validated and it is sent to the mempool
+                        //now the important thing is how are we going to manage mempool and when are we going to mine the coins?
+                        Transaction rt = (Transaction) tcpMessage.getData();
+                        if(rt.recipients.values().iterator().next() < blockchainHolder.getMinerRawBalance()){
+                            //the request is less than the total number of available coins on the node
+                            //we can start making the txn valid and then push it onto the mempool
+                            rt.sender = RUtils.wallet.getPublicKey();
+                            //rt.inputs =
+
+                        }
+
+                    }
+                    case WALLET_NODE_BALANCE:{
+                        //return to wallet the balance the miner has!
+                        TCPMessage<Float> amountMessage = new TCPMessage<>(TCPMessageType.WALLET_NODE_BALANCE,blockchainHolder.getMinerRawBalance());
+                        putInStream(socket, amountMessage);
                         break;
                     }
 

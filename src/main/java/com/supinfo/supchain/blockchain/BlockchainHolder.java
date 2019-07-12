@@ -10,6 +10,7 @@ import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.networking.Utils.TCPUtils;
 
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,13 +25,16 @@ public class BlockchainHolder implements BlockchainCallbacks{
     public float minimumTransaction = 0.1f;
     public float rewardTransactionValue = 12f;
     public ArrayList<Block> blockchain = new ArrayList<>();
-    public HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
+    public HashMap<String,TransactionOutput> UTXOs = new HashMap<>();
     public TCPMessageType status;
     public HashSet<String> initTempIPS = new HashSet<>();
     public HashSet<Transaction> mempool = new HashSet<>();
-
     private CLogger cLogger = new CLogger(this.getClass());
-    private HashMap<String,TransactionOutput> tempUTXOs = new HashMap<String,TransactionOutput>();
+    private HashMap<String,TransactionOutput> tempUTXOs = new HashMap<>();
+    private HashMap<String,TransactionOutput> lockedUTXOs = new HashMap<>();
+
+    //before addinga txn to the mempool we first have to validate it prior to the orginal UTXO
+    //have a temp UTXO that will store utxos for unconfirmed validated txns, ie txns that have been validated prior to the actual UTXO list
 
     public Boolean validateBlockchain(ArrayList<Block> blockchain){
         Block currentBlock;
@@ -42,7 +46,7 @@ public class BlockchainHolder implements BlockchainCallbacks{
         }
         Transaction genesis = blockchain.get(0).transactions.get(0);
         //a temporary working list of unspent transactions at a given block state.
-        tempUTXOs.put(genesis.getOutputs().get(0).getId(), genesis.getOutputs().get(0));
+        tempUTXOs.put(genesis.outputs.get(0).id, genesis.outputs.get(0));
 
         //loop through blockchainHolder to check hashes:
         for(int i=1; i < blockchain.size(); i++) {
@@ -50,12 +54,13 @@ public class BlockchainHolder implements BlockchainCallbacks{
             previousBlock = blockchain.get(i-1);
             if(!validateBlock(previousBlock,currentBlock)){
                 tempUTXOs.clear();
+                cLogger.println("The blockchain is invalid!");
                 return false;
             }
         }
         UTXOs = (HashMap<String, TransactionOutput>) tempUTXOs.clone();
         tempUTXOs.clear();
-
+        cLogger.println("The blockchain is valid!");
         return true;
     }
 
@@ -81,70 +86,86 @@ public class BlockchainHolder implements BlockchainCallbacks{
 
         TransactionOutput tempOutput;
         //loop thru block transactions:
+        float transactionFee = 0;
         int rewardTransactionCount = 0;
+        Transaction rewardTransaction= null;
         for(int t=0; t < newBlock.transactions.size(); t++) {
 
-
-
             Transaction currentTransaction = newBlock.transactions.get(t);
-
+            //transaction fee shouldnt exceed the total in minus total out, we do this verification after looping though all transactions
+            transactionFee += currentTransaction.getInputsValue() - currentTransaction.getOutputsValue();
             //verify of blocks contains only one reward transaction
             if(rewardTransactionCount>1){
                 System.out.println("Found more than one null Input transaction");
                 return false;
             }
 
-            if(currentTransaction.getInputs().size() == 0){
+            if(!verifySignature(currentTransaction)) {
+                System.out.println("#Signature on Transaction(" + t + ") is Invalid");
+                return false;
+            }
+
+            for(TransactionOutput output: currentTransaction.outputs) {
+                tempUTXOs.put(output.id, output);
+            }
+
+            if(currentTransaction.inputs == null){
                 //this is the reward transaction
                 //verify that the reward transaction is correct
-                if(currentTransaction.getOutputsValue() > 12){
-                    return false;
-                }
+                rewardTransaction = currentTransaction;
                 rewardTransactionCount++;
                 continue;
             }
 
 
-            if(!verifySignature(currentTransaction)) {
-                System.out.println("#Signature on Transaction(" + t + ") is Invalid");
-                return false;
-            }
+
             if(currentTransaction.getInputsValue() >= currentTransaction.getOutputsValue()) {
                 System.out.println("#Inputs are greater or equal to outputs on Transaction(" + t + ")");
                 return false;
             }
 
-            for(TransactionInput input: currentTransaction.getInputs()) {
+            for(TransactionInput input: currentTransaction.inputs) {
                 //verify all transaction inputs here
-                tempOutput = tempUTXOs.get(input.getTransactionOutputId());
+                tempOutput = tempUTXOs.get(input.transactionOutputId);
 
                 if(tempOutput == null) {
                     System.out.println("#Referenced input on Transaction(" + t + ") is Missing");
                     return false;
                 }
 
-                if(input.getUTXO().getValue() != tempOutput.getValue()) {
+                if(input.UTXO.value != tempOutput.value) {
                     System.out.println("#Referenced input Transaction(" + t + ") value is Invalid");
                     return false;
                 }
 
-                tempUTXOs.remove(input.getTransactionOutputId());
+                tempUTXOs.remove(input.transactionOutputId);
             }
 
-            for(TransactionOutput output: currentTransaction.getOutputs()) {
-                tempUTXOs.put(output.getId(), output);
+
+
+            ArrayList<TransactionOutput> _outputs = currentTransaction.outputs;
+            HashMap<PublicKey,Float> _recipientsFromOutputs = new HashMap<>();
+            for (TransactionOutput _to:_outputs) {
+                _recipientsFromOutputs.put(_to.reciepient,_to.value);
             }
 
-            if( currentTransaction.getOutputs().get(0).getReciepient() != currentTransaction.getRecipient()) {
-                System.out.println("#Transaction(" + t + ") output reciepient is not who it should be");
-                return false;
+            HashMap<PublicKey,Float> _recipients = currentTransaction.recipients;
+
+            if(!_recipients.equals(_recipientsFromOutputs)){
+                System.out.println("#Outputs and recipients do not match");
             }
-            if( currentTransaction.getOutputs().get(1).getReciepient() != currentTransaction.getSender()) {
-                System.out.println("#Transaction(" + t + ") output 'change' is not sender.");
-                return false;
-            }
+
 
         }
+        //after looping through all txn we have the total txn fee and can check if the miner dint exceed its value
+        if(rewardTransaction != null){
+            System.out.println("WARNING! There is no reward Transaction on this block");
+            if(rewardTransaction.getOutputsValue() > rewardTransactionValue+transactionFee){
+                System.out.println("ERROR! This reward transaction is trying to claim more coins that its allowed to!");
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -173,19 +194,21 @@ public class BlockchainHolder implements BlockchainCallbacks{
 
     public void initGenesisBlockchain(){
         //Wallet origin = new Wallet();
-        Wallet origin = RUtils.wallet;
-        Wallet coinbase = new Wallet();
-        Transaction genesisTransaction = new Transaction(origin.getPublicKey(), coinbase.getPublicKey(), 1000000f, null);
-        genesisTransaction.setSignature(generateSignature(origin.getPrivateKey(),genesisTransaction));//manually sign the genesis transaction
-        genesisTransaction.setTransactionId("0"); //manually set the transaction id
+        Wallet origin = new Wallet();
+        Wallet coinbase = RUtils.wallet;
+        HashMap<PublicKey,Float> _recipients = new HashMap<>();
+        _recipients.put(coinbase.getPublicKey(),1000000f);
+        Transaction genesisTransaction = new Transaction(origin.getPublicKey(),_recipients,null);
+        genesisTransaction.signature = (generateSignature(origin.getPrivateKey(),genesisTransaction));//manually sign the genesis transaction
+        genesisTransaction.transactionId = ("0"); //manually set the transaction id
         ArrayList<TransactionOutput> genesisOutputs= new ArrayList<>();
-        TransactionOutput tout = new TransactionOutput(genesisTransaction.getRecipient(),
-                genesisTransaction.getValue(),
-                genesisTransaction.getTransactionId(),"");
-        tout.setId(generateTransactionOutputThisId(tout));
+        TransactionOutput tout = new TransactionOutput(coinbase.getPublicKey(),
+                1000000f,
+                genesisTransaction.transactionId,"");
+        tout.id = (generateTransactionOutputThisId(tout));
         genesisOutputs.add(tout);
-        genesisTransaction.setOutputs(genesisOutputs);
-        UTXOs.put(genesisTransaction.getOutputs().get(0).getId(),genesisTransaction.getOutputs().get(0));
+        genesisTransaction.outputs = (genesisOutputs);
+        UTXOs.put(genesisTransaction.outputs.get(0).id,genesisTransaction.outputs.get(0));
         System.out.println("Creating and Mining Genesis block... ");
         Block genesis = new Block("0");
         genesis.addTransaction(genesisTransaction);
@@ -214,6 +237,26 @@ public class BlockchainHolder implements BlockchainCallbacks{
             }
 
         }
+    }
+
+    public HashSet<TransactionOutput> getAllUTXOForPublicKey(PublicKey publicKey){
+        HashSet<TransactionOutput> _all = new HashSet<>();
+        for (TransactionOutput tout:UTXOs.values()) {
+            if(tout.reciepient == publicKey){
+                _all.add(tout);
+            }
+        }
+        return _all;
+    }
+
+    public float getMinerRawBalance(){
+        float _minerBalance = 0;
+        for (TransactionOutput output:UTXOs.values()) {
+            if(output.isMine(RUtils.wallet.getPublicKey())){
+                _minerBalance += output.value;
+            }
+        }
+        return _minerBalance;
     }
 
     public void addBlock(Block newBlock) {
