@@ -7,6 +7,7 @@ import com.supinfo.shared.transaction.TransactionOutput;
 import com.supinfo.supchain.blockchain.CoreStringUtil;
 import static com.supinfo.supchain.Main.blockchainHolder;
 
+import java.math.BigDecimal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class TransactionOperations {
         }
 
         //Checks if transaction is valid:
-        if(transaction.getInputsValue() < blockchainHolder.minimumTransaction) {
+        if(transaction.getInputsValue().compareTo(blockchainHolder.minimumTransaction) < 0)  {
             System.out.println("Transaction Inputs too small: " + transaction.getInputsValue());
             System.out.println("Please enter the amount greater than " + blockchainHolder.minimumTransaction);
             return false;
@@ -55,10 +56,10 @@ public class TransactionOperations {
     }
 
     private static String getMapAsString(Transaction transaction) {
-        HashMap<PublicKey, Float> _recipients = transaction.recipients;
+        HashMap<PublicKey, BigDecimal> _recipients = transaction.recipients;
         StringBuilder output = new StringBuilder();
-        for (HashMap.Entry<PublicKey, Float> entry : _recipients.entrySet()) {
-            String _t = CoreStringUtil.getStringFromKey(entry.getKey()) + Float.toString(entry.getValue());
+        for (HashMap.Entry<PublicKey, BigDecimal> entry : _recipients.entrySet()) {
+            String _t = CoreStringUtil.getStringFromKey(entry.getKey()) + entry.getValue().toString();
             output.append(_t);
         }
         return output.toString();
@@ -71,7 +72,20 @@ public class TransactionOperations {
     public static String generateTransactionOutputThisId(TransactionOutput transactionOutput){
         return StringUtil.applySha256(
                 CoreStringUtil.getStringFromKey(transactionOutput.reciepient)
-                        +Float.toString(transactionOutput.value)
+                        +transactionOutput.value.toString()
                         +transactionOutput.parentTransactionId);
+    }
+
+    public static String calulateHashTransaction(Transaction transaction) {
+
+        StringBuilder recipients = new StringBuilder();
+        for (PublicKey key:transaction.recipients.keySet()) {
+            recipients.append(CoreStringUtil.getStringFromKey(key));
+        }
+        return StringUtil.applySha256(
+                CoreStringUtil.getStringFromKey(transaction.sender)
+                         + recipients.toString() +
+                        transaction.recipients.values().toString()
+        );
     }
 }

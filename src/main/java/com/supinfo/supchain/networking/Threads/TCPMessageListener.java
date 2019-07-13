@@ -1,9 +1,13 @@
 package com.supinfo.supchain.networking.Threads;
 
 import com.supinfo.shared.transaction.Transaction;
+import com.supinfo.shared.transaction.TransactionInput;
+import com.supinfo.shared.transaction.TransactionOutput;
 import com.supinfo.supchain.blockchain.Block;
 import com.supinfo.supchain.blockchain.BlockchainCallbacks;
 import com.supinfo.supchain.blockchain.BlockchainHolderManager;
+import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
+import com.supinfo.supchain.blockchain.wallet.Wallet;
 import com.supinfo.supchain.enums.Role;
 import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.supchain.helpers.CLogger;
@@ -15,8 +19,10 @@ import com.supinfo.shared.Network.TCPMessage;
 import com.supinfo.supchain.networking.models.Updater;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -185,18 +191,49 @@ public class TCPMessageListener extends Thread{
                         //if we have enough coins the txn is validated and it is sent to the mempool
                         //now the important thing is how are we going to manage mempool and when are we going to mine the coins?
                         Transaction rt = (Transaction) tcpMessage.getData();
-                        if(rt.recipients.values().iterator().next() < blockchainHolder.getMinerRawBalance()){
+                        //putting back the node wallet to get back change
+                        BigDecimal _amount = rt.recipients.values().iterator().next();
+                        PublicKey destination = rt.recipients.keySet().iterator().next();
+
+                        if(_amount.compareTo(blockchainHolder.getMinerRawBalance()) < 0){
                             //the request is less than the total number of available coins on the node
                             //we can start making the txn valid and then push it onto the mempool
                             rt.sender = RUtils.wallet.getPublicKey();
-                            //rt.inputs =
+                            ArrayList<TransactionOutput> _utxosToUse = blockchainHolder.getMinUTXOForPublicKey(RUtils.wallet.getPublicKey(),_amount);
+                            ArrayList<TransactionInput> _inputs = new ArrayList<>();
+                            //convert the txn outputs to inputs
+                            for (TransactionOutput tout:_utxosToUse) {
+                                _inputs.add(new TransactionInput(tout.id,tout));
+                                blockchainHolder.lockedUTXOs.put(tout.id,tout);
+                            }
+                            rt.inputs = _inputs;
+                            rt.recipients.put(RUtils.wallet.getPublicKey(),rt.getInputsValue().subtract(_amount));
+                            rt.transactionId = TransactionOperations.calulateHashTransaction(rt);
+                            //we only need one tout to  the user and a change back to the coin base
+                            ArrayList<TransactionOutput> _txnOutputs =  new ArrayList<>();
+                            TransactionOutput _tout = new TransactionOutput(destination,_amount,rt.transactionId,null);
+                            _tout.id = TransactionOperations.generateTransactionOutputThisId(_tout);
+                            TransactionOutput _change = new TransactionOutput(RUtils.wallet.getPublicKey(), rt.getInputsValue().subtract(_amount),rt.transactionId,null);
+                            _change.id = TransactionOperations.generateTransactionOutputThisId(_change);
+                            _txnOutputs.add(_tout);
+                            _txnOutputs.add(_change);
+                            rt.outputs = _txnOutputs;
+                            rt.signature = TransactionOperations.generateSignature(RUtils.wallet.getPrivateKey(),rt);
+
+                            //we can now reply back the final transaction and we can push it to the mempool
+                            putInStream(socket,new TCPMessage<>(TCPMessageType.WALLET_SUCCESS_BUY,rt));
+                            blockchainHolder.addTransactionToMemPool(rt);
 
                         }
+                        else{
+                            putInStream(socket,new TCPMessage<>(TCPMessageType.WALLET_NODE_INSUFFICIENT_COINS,null));
+                        }
+                        break;
 
                     }
                     case WALLET_NODE_BALANCE:{
                         //return to wallet the balance the miner has!
-                        TCPMessage<Float> amountMessage = new TCPMessage<>(TCPMessageType.WALLET_NODE_BALANCE,blockchainHolder.getMinerRawBalance());
+                        TCPMessage<BigDecimal> amountMessage = new TCPMessage<>(TCPMessageType.WALLET_NODE_BALANCE,blockchainHolder.getMinerRawBalance());
                         putInStream(socket, amountMessage);
                         break;
                     }
@@ -235,9 +272,15 @@ public class TCPMessageListener extends Thread{
                     }
                     case RECEIVE_MEMPOOL:{
                         //add the new mempool to the current mempool
-                        HashSet<Transaction> newMempool = (HashSet<Transaction>) tcpMessage.getData();
+                        ArrayList<Transaction> newMempool = (ArrayList<Transaction>) tcpMessage.getData();
                         cLogger.log(CHAIN,"Successfully received the new mempool!");
                         blockchainHolder.mempool.addAll(newMempool);
+                        break;
+                    }
+                    case PROPAGATE_NEW_TXN_MEMPOOL:{
+                        Transaction transaction = (Transaction) tcpMessage.getData();
+                        break;
+
                     }
 
                 }

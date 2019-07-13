@@ -36,8 +36,8 @@ public class Main{
 
     public static void main(String[] args) throws InterruptedException, SocketException, FileNotFoundException, UnsupportedEncodingException {
 
-        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());//adding BC security provider
-
+        //adding SC security provider
+        Security.addProvider(new org.spongycastle.jce.provider.BouncyCastleProvider());
         CommandLine cmd = getCommandLine(args);
 
 
@@ -194,7 +194,7 @@ public class Main{
                     WalletFileManager.dumpKeyPair(RUtils.wallet.getKeyPair());
                 }
                 if(user_choice.equals("dump")){
-                    cLogger.println(ToStringBuilder.reflectionToString(blockchainHolder, new MultilineRecursiveToStringStyle()));
+                    cLogger.println("\n"+blockchainHolder.dumpBlockchain());
                 }
 
             }

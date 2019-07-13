@@ -2,10 +2,10 @@ package com.supinfo.supchain.blockchain.wallet;
 
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.helpers.CLogger;
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECPoint;
+import org.spongycastle.jce.ECNamedCurveTable;
+import org.spongycastle.jce.spec.ECParameterSpec;
+import org.spongycastle.jce.spec.ECPublicKeySpec;
+import org.spongycastle.math.ec.ECPoint;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,7 +41,7 @@ public class WalletFileManager {
         fis.close();
 
         // Generate KeyPair.
-        KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","BC");
+        KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","SC");
 
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
                 encodedPrivateKey);
@@ -59,10 +59,10 @@ public class WalletFileManager {
     }
 
     public static PublicKey derivePublicKey(PrivateKey privateKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
+        KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "SC");
         ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("prime192v1");
 
-        ECPoint Q = ecSpec.getG().multiply(((org.bouncycastle.jce.interfaces.ECPrivateKey) privateKey).getD());
+        ECPoint Q = ecSpec.getG().multiply(((org.spongycastle.jce.interfaces.ECPrivateKey) privateKey).getD());
 
         ECPublicKeySpec pubSpec = new ECPublicKeySpec(Q, ecSpec);
         return keyFactory.generatePublic(pubSpec);

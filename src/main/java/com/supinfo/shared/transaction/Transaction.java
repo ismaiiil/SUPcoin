@@ -1,8 +1,10 @@
 package com.supinfo.shared.transaction;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class Transaction implements Serializable {
@@ -12,14 +14,14 @@ public class Transaction implements Serializable {
 
     public String transactionId; //Contains a hash of transaction*
     public PublicKey sender; //Senders address/public key.
-    public HashMap<PublicKey,Float> recipients = new HashMap<>();
+    public HashMap<PublicKey,BigDecimal> recipients = new HashMap<>();
     public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
 
     public ArrayList<TransactionInput> inputs = new ArrayList<>();
     public ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
     // Constructor:
-    public Transaction(PublicKey from,HashMap<PublicKey,Float> recipients,  ArrayList<TransactionInput> inputs) {
+    public Transaction(PublicKey from,HashMap<PublicKey,BigDecimal> recipients,  ArrayList<TransactionInput> inputs) {
         this.sender = from;
         this.recipients = recipients;
         this.inputs = inputs;
@@ -51,7 +53,7 @@ public class Transaction implements Serializable {
 
         //TODO set the txn outputs in txn operations
 //        //Generate transaction outputs:
-//        float leftOver = getInputsValue() - value; //get value of inputs then the left over change:
+//        BigDecimal leftOver = getInputsValue() - value; //get value of inputs then the left over change:
 //        transactionId = calulateHash();
 //        outputs.add(new TransactionOutput( this.reciepient, value,transactionId)); //send value to recipient
 //        outputs.add(new TransactionOutput( this.sender, leftOver,transactionId)); //send the left over 'change' back to sender
@@ -70,44 +72,29 @@ public class Transaction implements Serializable {
 //        return true;
 //    }
 
-    public float getInputsValue() {
-        float total = 0;
+    public BigDecimal getInputsValue() {
+        BigDecimal total = BigDecimal.valueOf(0.0);
         for(TransactionInput i : inputs) {
             if(i.UTXO == null) continue; //if Transaction can't be found skip it, This behavior may not be optimal, miner or reward txns have null inputs
-            total += i.UTXO.value;
+            total = total.add(i.UTXO.value);
         }
         return total;
     }
-
-    //move this outside
-//    public void generateSignature(PrivateKey privateKey) {
-//        String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
-//        signature = StringUtil.applyECDSASig(privateKey,data);
-//    }
 
 
     //this will done on the node side
 //    public boolean verifySignature() {
-//        String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + Float.toString(value)	;
+//        String data = StringUtil.getStringFromKey(sender) + StringUtil.getStringFromKey(reciepient) + BigDecimal.toString(value)	;
 //        return StringUtil.verifyECDSASig(sender, data, signature);
 //    }
 
-    public float getOutputsValue() {
-        float total = 0;
+    public BigDecimal getOutputsValue() {
+        BigDecimal total = new BigDecimal(0);
         for(TransactionOutput o : outputs) {
-            total += o.value;
+            total = total.add(o.value);
         }
         return total;
     }
-
-//    private String calulateHash() {
-//        sequence++; //increase the sequence to avoid 2 identical transactions having the same hash
-//        return StringUtil.applySha256(
-//                StringUtil.getStringFromKey(sender) +
-//                        StringUtil.getStringFromKey(reciepient) +
-//                        Float.toString(value) + sequence
-//        );
-//    }
 
 
     //to know if a transaction contains our public key below are some methods to do so
@@ -124,5 +111,15 @@ public class Transaction implements Serializable {
             if (tout.isMine(pkey)) return true;
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "{transactionId:" + java.util.Objects.toString(transactionId, "null") + "\n" +
+                "sender:" + java.util.Objects.toString(sender, "null") + "\n" +
+                "signature:" + java.util.Objects.toString(Arrays.toString(signature), "null") + "\n" +
+                "recipients:" + java.util.Objects.toString(recipients, "null") + "\n" +
+                "{inputs:" + java.util.Objects.toString(inputs, "null") + "\n}" +
+                "{outputs:" + java.util.Objects.toString(outputs, "null") + "\n}";
     }
 }

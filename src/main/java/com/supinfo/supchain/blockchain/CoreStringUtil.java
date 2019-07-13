@@ -19,7 +19,7 @@ public class CoreStringUtil {
         Signature dsa;
         byte[] output = new byte[0];
         try {
-            dsa = Signature.getInstance("ECDSA", "BC");
+            dsa = Signature.getInstance("ECDSA", "SC");
             dsa.initSign(privateKey);
             byte[] strByte = input.getBytes();
             dsa.update(strByte);
@@ -34,7 +34,7 @@ public class CoreStringUtil {
     //Verifies a String signature
     public static boolean verifyECDSASig(PublicKey publicKey, String data, byte[] signature) {
         try {
-            Signature ecdsaVerify = Signature.getInstance("ECDSA", "BC");
+            Signature ecdsaVerify = Signature.getInstance("ECDSA", "SC");
             ecdsaVerify.initVerify(publicKey);
             ecdsaVerify.update(data.getBytes());
             return ecdsaVerify.verify(signature);
@@ -62,7 +62,7 @@ public class CoreStringUtil {
         //converting it back to public key
         KeyFactory factory = null;
         try {
-            factory = KeyFactory.getInstance("ECDSA", "BC");
+            factory = KeyFactory.getInstance("ECDSA", "SC");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (NoSuchProviderException e) {

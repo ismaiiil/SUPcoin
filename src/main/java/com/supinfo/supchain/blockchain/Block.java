@@ -8,6 +8,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 
@@ -68,5 +69,15 @@ public class Block implements Serializable {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "{hash:" + hash + "\n" +
+                "previousHash:" + previousHash + "\n" +
+                "merkleRoot:" + merkleRoot + "\n" +
+                "transactions:" + Arrays.toString(transactions.toArray()) + "\n" +
+                "timeStamp:" + timeStamp + "\n" +
+                "nonce:" + nonce + "\n}" ;
+
+    }
 }
 
