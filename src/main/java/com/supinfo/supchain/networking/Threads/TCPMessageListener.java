@@ -6,8 +6,7 @@ import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.shared.transaction.TransactionInput;
 import com.supinfo.shared.transaction.TransactionOutput;
 import com.supinfo.supchain.blockchain.Block;
-import com.supinfo.supchain.blockchain.BlockchainCallbacks;
-import com.supinfo.supchain.blockchain.BlockchainHolderManager;
+import com.supinfo.supchain.blockchain.BlockchainManagerFactory;
 import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
 import com.supinfo.supchain.enums.Role;
 import com.supinfo.supchain.helpers.CLogger;
@@ -17,6 +16,7 @@ import com.supinfo.supchain.networking.models.Messenger;
 import com.supinfo.supchain.networking.models.PingPong;
 import com.supinfo.supchain.networking.models.Updater;
 
+
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.ServerSocket;
@@ -25,18 +25,16 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import static com.supinfo.supchain.Main.blockchainHolder;
 import static com.supinfo.supchain.enums.LogLevel.*;
+import static com.supinfo.supchain.Main.blockchainManager;
 
 public class TCPMessageListener extends Thread {
     private int port;
     private ServerSocket serverSocket;
     private CLogger cLogger = new CLogger(this.getClass());
-    private BlockchainCallbacks blockchainCallbacks;
 
-    public TCPMessageListener(int port, BlockchainCallbacks blockchainCallbacks) {
+    public TCPMessageListener(int port) {
         this.port = port;
-        this.blockchainCallbacks = blockchainCallbacks;
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
@@ -202,16 +200,16 @@ public class TCPMessageListener extends Thread {
                         BigDecimal _amount = rt.recipients.values().iterator().next();
                         PublicKey destination = rt.recipients.keySet().iterator().next();
 
-                        if (_amount.compareTo(blockchainHolder.getMinerRawBalance()) < 0) {
+                        if (_amount.compareTo(blockchainManager.getMinerRawBalance()) < 0) {
                             //the request is less than the total number of available coins on the node
                             //we can start making the txn valid and then push it onto the mempool
                             rt.sender = RUtils.wallet.getPublicKey();
-                            ArrayList<TransactionOutput> _utxosToUse = blockchainHolder.getMinUTXOForPublicKey(RUtils.wallet.getPublicKey(), _amount);
+                            ArrayList<TransactionOutput> _utxosToUse = blockchainManager.getMinUTXOForPublicKey(RUtils.wallet.getPublicKey(), _amount);
                             ArrayList<TransactionInput> _inputs = new ArrayList<>();
                             //convert the txn outputs to inputs
                             for (TransactionOutput tout : _utxosToUse) {
                                 _inputs.add(new TransactionInput(tout.id, tout));
-                                blockchainHolder.lockedUTXOs.put(tout.id, tout);
+                                blockchainManager.soldUTXOs.put(tout.id, tout);
                             }
                             rt.inputs = _inputs;
                             rt.recipients.put(RUtils.wallet.getPublicKey(), rt.getInputsValue().subtract(_amount));
@@ -229,7 +227,7 @@ public class TCPMessageListener extends Thread {
 
                             //we can now reply back the final transaction and we can push it to the mempool
                             putInStream(socket, new TCPMessage<>(TCPMessageType.WALLET_SUCCESS_BUY, rt));
-                            blockchainHolder.addTransactionToMemPool(rt);
+                            blockchainManager.addTransactionToMemPool(rt);
 
                         } else {
                             putInStream(socket, new TCPMessage<>(TCPMessageType.WALLET_NODE_INSUFFICIENT_COINS, null));
@@ -239,7 +237,7 @@ public class TCPMessageListener extends Thread {
                     }
                     case WALLET_NODE_BALANCE: {
                         //return to wallet the balance the miner has!
-                        TCPMessage<BigDecimal> amountMessage = new TCPMessage<>(TCPMessageType.WALLET_NODE_BALANCE, blockchainHolder.getMinerRawBalance());
+                        TCPMessage<BigDecimal> amountMessage = new TCPMessage<>(TCPMessageType.WALLET_NODE_BALANCE, blockchainManager.getMinerRawBalance());
                         putInStream(socket, amountMessage);
                         break;
                     }
@@ -248,31 +246,31 @@ public class TCPMessageListener extends Thread {
                     case INIT_REQUEST_DOWNLOAD: {
                         //send to the peer the blockchainHolder
                         cLogger.log(CHAIN, "received a request to download this node's chain");
-                        TCPMessage sendBlockchain = new TCPMessage<>(TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN, BlockchainHolderManager.getInstance().blockchain);
+                        TCPMessage sendBlockchain = new TCPMessage<>(TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN, BlockchainManagerFactory.getInstance().blockchain);
                         TCPUtils.unicast(sendBlockchain, origin);
                         break;
                     }
                     case INIT_DOWNLOAD_FULL_BLOCKCHAIN: {
                         //verify the blockchainHolder
                         cLogger.log(CHAIN, "NOW DOWNLOADING CHAIN FROM:" + origin);
-                        blockchainHolder.status = TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN;
+                        blockchainManager.status = TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN;
                         ArrayList<Block> newBlockchain = (ArrayList<Block>) tcpMessage.getData();
-                        if (blockchainHolder.validateBlockchain(newBlockchain)
-                                && (blockchainHolder.blockchain.size() < newBlockchain.size())) {
-                            blockchainHolder.blockchain = newBlockchain;
+                        if (blockchainManager.validateBlockchain(newBlockchain)
+                                && (blockchainManager.blockchain.size() < newBlockchain.size())) {
+                            blockchainManager.blockchain = newBlockchain;
                             //only if it is valid assign it to the blockchainHolder
                             //once it has received the full blockchainHolder we can start do stuff
-                            blockchainCallbacks.initHasDownloaded(true, origin);
+                            blockchainManager.initHasDownloaded(true, origin);
                         } else {
                             //send callback failed to get a valid blockchainHolder
-                            blockchainCallbacks.initHasDownloaded(false, origin);
+                            blockchainManager.initHasDownloaded(false, origin);
                         }
                         break;
                     }
                     case REQUEST_MEMPOOL: {
                         //send the mempool to the requesting node
                         cLogger.log(CHAIN, "A peer has requested a copy of the mempool!");
-                        TCPMessage sendMempool = new TCPMessage<>(TCPMessageType.RECEIVE_MEMPOOL, blockchainHolder.mempool);
+                        TCPMessage sendMempool = new TCPMessage<>(TCPMessageType.RECEIVE_MEMPOOL, blockchainManager.mempool);
                         TCPUtils.unicast(sendMempool, origin);
                         break;
                     }
@@ -280,13 +278,17 @@ public class TCPMessageListener extends Thread {
                         //add the new mempool to the current mempool
                         ArrayList<Transaction> newMempool = (ArrayList<Transaction>) tcpMessage.getData();
                         cLogger.log(CHAIN, "Successfully received the new mempool!");
-                        blockchainHolder.mempool.addAll(newMempool);
+                        blockchainManager.mempool.addAll(newMempool);
                         break;
                     }
                     case PROPAGATE_NEW_TXN_MEMPOOL: {
                         Transaction transaction = (Transaction) tcpMessage.getData();
+                        cLogger.log(CHAIN, "Successfully received the new Transaction!");
+                        TCPMessage sendTxn = new TCPMessage<>(TCPMessageType.PROPAGATE_NEW_TXN_MEMPOOL, transaction);
+                        TCPUtils.multicastAll(sendTxn,origin);
+                        blockchainManager.mempool.add(transaction);
+                        blockchainManager.newTxnReceived();
                         break;
-
                     }
 
                 }

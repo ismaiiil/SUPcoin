@@ -7,6 +7,7 @@ import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
 
 import javax.xml.bind.annotation.*;
+import java.math.BigDecimal;
 import java.util.HashSet;
 
 @XmlRootElement
@@ -38,6 +39,10 @@ public class RUtils {
 
     public static String bootstrapNode = "";
     public static Wallet wallet;
+    public static int difficulty = 3;
+    public static BigDecimal minimumTransaction = new BigDecimal(0.00001);
+    public static BigDecimal rewardTransactionValue = new BigDecimal(12);
+    public static int minTransactionTillMine = 1;
 
 
     //By default, bitcoin-core allows up to 125 connections to different peers

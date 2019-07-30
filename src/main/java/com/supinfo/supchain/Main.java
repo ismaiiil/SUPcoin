@@ -2,8 +2,8 @@ package com.supinfo.supchain;
 
 import com.supinfo.shared.Network.TCPMessage;
 import com.supinfo.shared.Network.TCPMessageType;
-import com.supinfo.supchain.blockchain.BlockchainHolder;
-import com.supinfo.supchain.blockchain.BlockchainHolderManager;
+import com.supinfo.supchain.blockchain.BlockchainManager;
+import com.supinfo.supchain.blockchain.BlockchainManagerFactory;
 import com.supinfo.supchain.blockchain.wallet.Wallet;
 import com.supinfo.supchain.blockchain.wallet.WalletFileManager;
 import com.supinfo.supchain.enums.LogLevel;
@@ -36,7 +36,7 @@ public class Main {
     private static Options options = new Options();
     public static Scanner user_input = new Scanner(System.in);
     public static String user_choice;
-    public static BlockchainHolder blockchainHolder = BlockchainHolderManager.getInstance();
+    public static BlockchainManager blockchainManager = BlockchainManagerFactory.getInstance();
 
 
     public static void main(String[] args) throws InterruptedException, SocketException, FileNotFoundException, UnsupportedEncodingException {
@@ -66,7 +66,7 @@ public class Main {
         } else if (cmd.hasOption("r")) {
 
             cLogger.println("Welcome to SUPCoin core");
-            TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort, blockchainHolder);
+            TCPMessageListener messageListener = new TCPMessageListener(RUtils.tcpPort);
             messageListener.start();
             ConfigManager.loadConfigFromXml();
             cLogger.println("Checking if a wallet has been configured for this node...");
@@ -138,14 +138,14 @@ public class Main {
             while (RUtils.allClientAddresses().size() < 1) {
 
                 cLogger.println("Your Node currently has no other peers to connect to");
-                if (blockchainHolder.blockchain.size() > 0) {
+                if (blockchainManager.blockchain.size() > 0) {
                     cLogger.println("You already have a genesis block, moving to mining setup!");
                 }
                 cLogger.println("Do you want to wait for the node to discover Blockchain data on other peers or set this as a genesis block, use:(genesis/wait)");
                 user_choice = user_input.nextLine();
                 if (user_choice.equals("genesis")) {
-                    blockchainHolder.initGenesisBlockchain();
-                    blockchainHolder.validateBlockchain(blockchainHolder.blockchain);
+                    blockchainManager.initGenesisBlockchain();
+                    blockchainManager.validateBlockchain(blockchainManager.blockchain);
                     isGenesis = true;
                     break;
                 }
@@ -162,11 +162,11 @@ public class Main {
 
             if (!isGenesis) {
                 cLogger.println("At least one peer has been found, trying to download blockchain from peer!");
-                boolean hasFoundBlockchain = blockchainHolder.requestBlockchainFromPeers();
+                boolean hasFoundBlockchain = blockchainManager.requestBlockchainFromPeers();
                 if (!hasFoundBlockchain) {
                     cLogger.println("No blockchain could be downloaded from the peers you are connected to, the node will now" +
                             "enter a passive mode until it is able to download a blockchain!");
-                    while (!blockchainHolder.requestBlockchainFromPeers()) {
+                    while (!blockchainManager.requestBlockchainFromPeers()) {
                         cLogger.println("Waiting for " + RUtils.initDownloadPeriod + " until we retry requesting peers for the chain!");
                         sleep(RUtils.initDownloadPeriod);
                     }
@@ -198,7 +198,7 @@ public class Main {
                     WalletFileManager.dumpKeyPair(RUtils.wallet.getKeyPair());
                 }
                 if (user_choice.equals("dump")) {
-                    cLogger.println("\n" + blockchainHolder.dumpBlockchain());
+                    cLogger.println("\n" + blockchainManager.dumpBlockchain());
                 }
 
             }

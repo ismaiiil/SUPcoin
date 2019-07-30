@@ -5,6 +5,7 @@ import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.shared.transaction.TransactionInput;
 import com.supinfo.shared.transaction.TransactionOutput;
 import com.supinfo.supchain.blockchain.CoreStringUtil;
+import com.supinfo.supchain.helpers.RUtils;
 
 import java.math.BigDecimal;
 import java.security.PrivateKey;
@@ -12,7 +13,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static com.supinfo.supchain.Main.blockchainHolder;
+import static com.supinfo.supchain.Main.blockchainManager;
 
 public class TransactionOperations {
 
@@ -24,7 +25,7 @@ public class TransactionOperations {
 
     public static Boolean verifyTransaction(Transaction transaction) {
         ArrayList<TransactionInput> inputs = transaction.inputs;
-        ArrayList<TransactionOutput> outputs = transaction.outputs;
+        //ArrayList<TransactionOutput> outputs = transaction.outputs;
 
         if (!verifySignature(transaction)) {
             System.out.println("#Transaction Signature failed to verify");
@@ -34,16 +35,16 @@ public class TransactionOperations {
 
         //Gathers transaction inputs (Making sure they are unspent):
         for (TransactionInput i : inputs) {
-            if (!blockchainHolder.UTXOs.containsKey(i.transactionOutputId)) {
-                System.out.println("Transaction not found in UTXOs");
+            if (!blockchainManager.UTXOs.containsKey(i.transactionOutputId)) {
+                System.out.println("Transaction input not found in UTXOs");
                 return false;
             }
         }
 
         //Checks if transaction is valid:
-        if (transaction.getInputsValue().compareTo(blockchainHolder.minimumTransaction) < 0) {
+        if (transaction.getInputsValue().compareTo(RUtils.minimumTransaction) < 0) {
             System.out.println("Transaction Inputs too small: " + transaction.getInputsValue());
-            System.out.println("Please enter the amount greater than " + blockchainHolder.minimumTransaction);
+            System.out.println("Please enter the amount greater than " + RUtils.minimumTransaction);
             return false;
         }
         return true;

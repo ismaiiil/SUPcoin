@@ -1,21 +1,21 @@
 package com.supinfo.supchain.blockchain;
 
-public class BlockchainHolderManager {
+public class BlockchainManagerFactory {
     /**
      * private constructor to prevent others from instantiating this class
      */
-    private BlockchainHolderManager() {
+    private BlockchainManagerFactory() {
     }
 
     /**
      * Create an instance of the class at the time of class loading
      */
-    private static final BlockchainHolder instance = new BlockchainHolder();
+    private static final BlockchainManager instance = new BlockchainManager();
 
     /**
      * Provide a global point of access to the instance
      */
-    public static BlockchainHolder getInstance() {
+    public static BlockchainManager getInstance() {
         return instance;
     }
 }

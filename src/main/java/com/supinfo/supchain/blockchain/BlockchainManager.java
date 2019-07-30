@@ -5,6 +5,7 @@ import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.shared.transaction.TransactionInput;
 import com.supinfo.shared.transaction.TransactionOutput;
+import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
 import com.supinfo.supchain.blockchain.wallet.Wallet;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
@@ -19,30 +20,27 @@ import java.util.HashSet;
 import static com.supinfo.supchain.blockchain.transaction.TransactionOperations.*;
 import static java.lang.Thread.sleep;
 
-public class BlockchainHolder implements BlockchainCallbacks {
-    public int difficulty = 3;
-    public BigDecimal minimumTransaction = new BigDecimal(0.00001);
-    public BigDecimal rewardTransactionValue = new BigDecimal(12);
+public class BlockchainManager implements BlockchainCallbacks {
     public ArrayList<Block> blockchain = new ArrayList<>();
     public HashMap<String, TransactionOutput> UTXOs = new HashMap<>();
     public TCPMessageType status;
     public HashSet<String> initTempIPS = new HashSet<>();
     public ArrayList<Transaction> mempool = new ArrayList<>();
+    //TODO maybe use temp mempool to make sure we are able to update the mempool when we get a new blockchain
     private CLogger cLogger = new CLogger(this.getClass());
-    //tempuUtXOS is used to validate the blockchain by walking through the blockchain, adding and removing UTXOS while we go though the chain
+    //tempUTXOS is used to validate the blockchain by walking through the blockchain, adding and removing UTXOS while we go though the chain
     private HashMap<String, TransactionOutput> tempUTXOs = new HashMap<>();
-    //this will be used just to increase performance by decreasing the number of double spent transaction buying coins at the same time
-    //we are just gonna use this whenver we are adding a transaction to the block, and we will check that the txn has
-    // inputs in either the  UTXOS or locked UTXOS and removed them from their accordingly
-    public HashMap<String, TransactionOutput> lockedUTXOs = new HashMap<>();
+    //this will be used just to increase performance when buying coins: optional!
+    public HashMap<String, TransactionOutput> soldUTXOs = new HashMap<>();
+    public Miner miner = new Miner();
+    //have a thread that will periodically check the mempool, if it >= the min number txn specified in Rutils we can notify
+    //the miner that it can start mining those transactions
 
-    //before addinga txn to the mempool we first have to validate it prior to the orginal UTXO
-    //have a temp UTXO that will store utxos for unconfirmed validated txns, ie txns that have been validated prior to the actual UTXO list
 
     public Boolean validateBlockchain(ArrayList<Block> blockchain) {
         Block currentBlock;
         Block previousBlock;
-
+        tempUTXOs.clear();
         cLogger.println("Please wait while the blockchain is validated...");
         if (blockchain.size() < 1) {
             return false;
@@ -55,7 +53,7 @@ public class BlockchainHolder implements BlockchainCallbacks {
         for (int i = 1; i < blockchain.size(); i++) {
             currentBlock = blockchain.get(i);
             previousBlock = blockchain.get(i - 1);
-            if (!validateBlock(previousBlock, currentBlock)) {
+            if (!validateBlock(previousBlock, currentBlock, false)) {
                 tempUTXOs.clear();
                 cLogger.println("The blockchain is invalid!");
                 return false;
@@ -67,8 +65,14 @@ public class BlockchainHolder implements BlockchainCallbacks {
         return true;
     }
 
-    public Boolean validateBlock(Block previousBlock, Block newBlock) {
-        String hashTarget = new String(new char[difficulty]).replace('\0', '0');
+    public Boolean validateBlock(Block previousBlock, Block newBlock, boolean isBroadcast) {
+
+        //we use this in case we want to verify a new block that has been broadcast to us
+        if (isBroadcast) {
+            tempUTXOs = UTXOs;
+        }
+
+        String hashTarget = new String(new char[RUtils.difficulty]).replace('\0', '0');
 
         //see if block is empty, as per protocol empty blocks aren't allowed
         if (newBlock.transactions.size() == 0) {
@@ -87,7 +91,7 @@ public class BlockchainHolder implements BlockchainCallbacks {
             return false;
         }
         //check if hash is solved
-        if (!newBlock.hash.substring(0, difficulty).equals(hashTarget)) {
+        if (!newBlock.hash.substring(0, RUtils.difficulty).equals(hashTarget)) {
             System.out.println("#This block hasn't been mined");
             return false;
         }
@@ -100,7 +104,7 @@ public class BlockchainHolder implements BlockchainCallbacks {
         for (int t = 0; t < newBlock.transactions.size(); t++) {
 
             Transaction currentTransaction = newBlock.transactions.get(t);
-            //transaction fee shouldnt exceed the total in minus total out, we do this verification after looping though all transactions
+            //transaction fee shouldn't exceed the total in minus total out, we do this verification after looping though all transactions
             transactionFee = transactionFee.add(currentTransaction.getInputsValue().subtract(currentTransaction.getOutputsValue()));
             //verify of blocks contains only one reward transaction
             if (rewardTransactionCount > 1) {
@@ -159,19 +163,25 @@ public class BlockchainHolder implements BlockchainCallbacks {
 
             if (!_recipients.equals(_recipientsFromOutputs)) {
                 System.out.println("#Outputs and recipients do not match");
+                return false;
             }
 
 
         }
         //after looping through all txn we have the total txn fee and can check if the miner dint exceed its value
         if (rewardTransaction != null) {
-            System.out.println("WARNING! There is no reward Transaction on this block");
-            if (rewardTransaction.getOutputsValue().compareTo(rewardTransactionValue.add(transactionFee)) > 0) {
+            if (rewardTransaction.getOutputsValue().compareTo(RUtils.rewardTransactionValue.add(transactionFee)) > 0) {
                 System.out.println("ERROR! This reward transaction is trying to claim more coins that its allowed to!");
                 return false;
             }
+        } else {
+            System.out.println("WARNING! There is no reward Transaction on this block");
         }
 
+        //clear the tempUTXOs after we are done checking the new block
+        if (isBroadcast) {
+            tempUTXOs.clear();
+        }
         return true;
     }
 
@@ -245,6 +255,42 @@ public class BlockchainHolder implements BlockchainCallbacks {
         }
     }
 
+    @Override
+    public void newTxnReceived() {
+        if (mempool.size() >= RUtils.minTransactionTillMine) {
+            ArrayList<Transaction> txnsToMine = new ArrayList<>(mempool.subList(0, RUtils.minTransactionTillMine - 1));
+            if (!miner.isAlive()) {
+                miner.start();
+            }
+            //TODO do that in miner verify if the subset is valid, else we discard invalid txns and send the rest back to the mempool! add at beginning
+//            for (Transaction txn : txnsToMine) {
+//                if (!TransactionOperations.verifyTransaction(txn)) {
+//                    txnsToMine.remove()
+//                }
+//            }
+            miner.startMiningTransactions(txnsToMine);
+            //start mining the tempMempool
+            //now if we receive a new block while mining we are going to check if the new block is valid
+            //CASE ONE, its previous block matches our latest block and we can verify the block to safely add it
+            //we then have to place the miner transactions back in the mempool and update the mempool accordingly
+            //by using the newblock transactions
+            //CASE TWO, it is a block that has a difrent previous block, we need to know if it comes from a longer chain
+            //if it comes from a longer chain we will download the new chain and verify it, if its good we discard
+            //and we use their blockchain, update evrything UTXOS,mempool, etc...
+            //else if it comes from  a chain with same length we continue mining
+        }
+    }
+
+    @Override
+    public void newBlockReceived() {
+
+    }
+
+    @Override
+    public void newBlockMined() {
+
+    }
+
     public ArrayList<TransactionOutput> getMinUTXOForPublicKey(PublicKey publicKey, BigDecimal coins) {
         ArrayList<TransactionOutput> _all = new ArrayList<>();
         BigDecimal _coins = new BigDecimal(0);
@@ -271,7 +317,7 @@ public class BlockchainHolder implements BlockchainCallbacks {
     public BigDecimal getMinerRawBalance() {
         BigDecimal _minerBalance = new BigDecimal(0);
         for (TransactionOutput output : UTXOs.values()) {
-            if (output.isMine(RUtils.wallet.getPublicKey()) && !lockedUTXOs.containsKey(output.id)) {
+            if (output.isMine(RUtils.wallet.getPublicKey()) && !soldUTXOs.containsKey(output.id)) {
                 _minerBalance = _minerBalance.add(output.value);
             }
         }
@@ -283,11 +329,11 @@ public class BlockchainHolder implements BlockchainCallbacks {
                 "{UTXOs" + java.util.Objects.toString(UTXOs, "null") + "\n}" +
                 "{mempool" + java.util.Objects.toString(mempool, "null") + "\n}" +
                 "status" + java.util.Objects.toString(status, "null") + "\n" +
-                "{lockedUTXOs" + java.util.Objects.toString(lockedUTXOs, "null") + "\n}";
+                "{soldUTXOs" + java.util.Objects.toString(soldUTXOs, "null") + "\n}";
     }
 
     public void addBlock(Block newBlock) {
-        newBlock.mineBlock(difficulty);
+        newBlock.mineBlock(RUtils.difficulty);
         blockchain.add(newBlock);
     }
 
