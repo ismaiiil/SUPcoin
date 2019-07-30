@@ -16,7 +16,7 @@ public class LogLevelAdapter extends XmlAdapter<String, LogLevel> {
     public LogLevel unmarshal(String string) throws Exception {
         try {
             return LogLevel.valueOf(string);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new JAXBException(e);
         }
     }

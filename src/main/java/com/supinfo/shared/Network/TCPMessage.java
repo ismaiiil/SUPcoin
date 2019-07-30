@@ -2,9 +2,10 @@ package com.supinfo.shared.Network;
 
 import com.supinfo.shared.Utils.StringUtil;
 
-import java.util.*;
-
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Random;
+import java.util.TimeZone;
 
 public class TCPMessage<T> implements Serializable {
     public static final long serialVersionUID = 1000000000L;
@@ -15,7 +16,7 @@ public class TCPMessage<T> implements Serializable {
     private boolean propagatable;
     private T data;
 
-    public TCPMessage(TCPMessageType tcpMessageType,long propagationTimeout, T data){
+    public TCPMessage(TCPMessageType tcpMessageType, long propagationTimeout, T data) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         this.dateTime = cal.getTimeInMillis();
         this.propagationTimeout = propagationTimeout * 1000;
@@ -25,7 +26,7 @@ public class TCPMessage<T> implements Serializable {
         this.data = data;
     }
 
-    public TCPMessage(TCPMessageType tcpMessageType,T data){
+    public TCPMessage(TCPMessageType tcpMessageType, T data) {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         this.dateTime = cal.getTimeInMillis();
         this.propagationTimeout = 0;
@@ -35,7 +36,7 @@ public class TCPMessage<T> implements Serializable {
         this.data = data;
     }
 
-    private String calculateHash(){
+    private String calculateHash() {
         Random rand = new Random();
         int n = rand.nextInt(100000);
         String stringdata = "jeff";
@@ -87,10 +88,10 @@ public class TCPMessage<T> implements Serializable {
         this.propagationTimeout = propagationTimeout;
     }
 
-    public boolean isAlive(){
+    public boolean isAlive() {
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         long currentTime = cal.getTimeInMillis();
-        if(propagationTimeout == 0){
+        if (propagationTimeout == 0) {
             return true;
         }
         return currentTime < dateTime + propagationTimeout;

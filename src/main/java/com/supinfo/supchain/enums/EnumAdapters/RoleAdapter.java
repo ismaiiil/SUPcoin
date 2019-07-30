@@ -16,7 +16,7 @@ public class RoleAdapter extends XmlAdapter<String, Role> {
     public Role unmarshal(String string) throws Exception {
         try {
             return Role.valueOf(string);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new JAXBException(e);
         }
     }

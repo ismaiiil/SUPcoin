@@ -1,5 +1,11 @@
 package com.supinfo.supchain.networking.Threads.LAN;
 
+import com.supinfo.supchain.enums.LogLevel;
+import com.supinfo.supchain.enums.Role;
+import com.supinfo.supchain.enums.UDPMessage;
+import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.RUtils;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
@@ -8,17 +14,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.supinfo.supchain.enums.LogLevel;
-import com.supinfo.supchain.enums.Role;
-import com.supinfo.supchain.enums.UDPMessage;
-import com.supinfo.supchain.helpers.CLogger;
-import com.supinfo.supchain.helpers.RUtils;
 
 
 public class UDPMessageListener implements Runnable {
 
     private DatagramSocket socket;
-    private List<String> adapterAddresses =  new ArrayList<>();
+    private List<String> adapterAddresses = new ArrayList<>();
 
     private CLogger cLogger = new CLogger(this.getClass());
 
@@ -31,7 +32,7 @@ public class UDPMessageListener implements Runnable {
 
             //Check if packet is from localhost ignore it if it is a loopback
             adapterAddresses = getAdapterAdresses();
-            cLogger.log(LogLevel.NETWORK,"Ready to receive packets!");
+            cLogger.log(LogLevel.NETWORK, "Ready to receive packets!");
             while (true) {
 
                 //Receive a packet
@@ -39,13 +40,13 @@ public class UDPMessageListener implements Runnable {
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 socket.receive(packet);
                 String packetAddress = packet.getAddress().getHostAddress();
-                if(!adapterAddresses.contains(packet.getAddress().getHostAddress())){
+                if (!adapterAddresses.contains(packet.getAddress().getHostAddress())) {
                     //Packet received
                     cLogger.log(LogLevel.NETWORK, "packet received from: " + packetAddress);
                     //See if the packet holds the right command (message)
                     String message = new String(packet.getData()).trim();
-                    if(RUtils.myRole == Role.RDV){
-                        switch (UDPMessage.valueOf(message)){
+                    if (RUtils.myRole == Role.RDV) {
+                        switch (UDPMessage.valueOf(message)) {
                             case DISCOVER_RDV_REQUEST:
                                 byte[] sendData = UDPMessage.DISCOVER_RDV_RESPONSE.toString().getBytes();
                                 //Send a response
@@ -55,7 +56,7 @@ public class UDPMessageListener implements Runnable {
                                 break;
                             case CONFIRM_RDV_REQUEST:
                                 RUtils.localClientAddresses.add(packetAddress);
-                                cLogger.log(LogLevel.NETWORK,"all current EDGEs connected to this RDV node are:" + RUtils.localClientAddresses.toString());
+                                cLogger.log(LogLevel.NETWORK, "all current EDGEs connected to this RDV node are:" + RUtils.localClientAddresses.toString());
                                 break;
                         }
                     }
@@ -71,7 +72,7 @@ public class UDPMessageListener implements Runnable {
     public static List<String> getAdapterAdresses() throws SocketException {
         List<String> adapterAddresses = new ArrayList<>();
         Enumeration<NetworkInterface> myints = NetworkInterface.getNetworkInterfaces();
-        for (NetworkInterface netint : Collections.list(myints)){
+        for (NetworkInterface netint : Collections.list(myints)) {
             Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
             for (InetAddress inetAddress : Collections.list(inetAddresses)) {
                 adapterAddresses.add(inetAddress.getHostAddress());

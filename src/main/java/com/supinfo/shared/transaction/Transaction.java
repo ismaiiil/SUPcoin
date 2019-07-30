@@ -14,14 +14,14 @@ public class Transaction implements Serializable {
 
     public String transactionId; //Contains a hash of transaction*
     public PublicKey sender; //Senders address/public key.
-    public HashMap<PublicKey,BigDecimal> recipients = new HashMap<>();
+    public HashMap<PublicKey, BigDecimal> recipients = new HashMap<>();
     public byte[] signature; //This is to prevent anybody else from spending funds in our wallet.
 
     public ArrayList<TransactionInput> inputs = new ArrayList<>();
     public ArrayList<TransactionOutput> outputs = new ArrayList<>();
 
     // Constructor:
-    public Transaction(PublicKey from,HashMap<PublicKey,BigDecimal> recipients,  ArrayList<TransactionInput> inputs) {
+    public Transaction(PublicKey from, HashMap<PublicKey, BigDecimal> recipients, ArrayList<TransactionInput> inputs) {
         this.sender = from;
         this.recipients = recipients;
         this.inputs = inputs;
@@ -30,19 +30,19 @@ public class Transaction implements Serializable {
 //    public boolean processTransaction() {
 //
 //
-        //TODO this is all the nodes work
+    //TODO this is all the nodes work
 //        if(verifySignature() == false) {
 //            System.out.println("#Transaction Signature failed to verify");
 //            return false;
 //        }
 
-        //TODO node will check evry txn inputs to make sure they are unspent
+    //TODO node will check evry txn inputs to make sure they are unspent
 //        //Gathers transaction inputs (Making sure they are unspent):
 //        for(TransactionInput i : inputs) {
 //            i.UTXO = NoobChain.UTXOs.get(i.transactionOutputId);
 //        }
 
-            //TODO this is also the nodes work to verify the txn is valid by sum dfiference
+    //TODO this is also the nodes work to verify the txn is valid by sum dfiference
 //        //Checks if transaction is valid:
 //        if(getInputsValue() < NoobChain.minimumTransaction) {
 //            System.out.println("Transaction Inputs too small: " + getInputsValue());
@@ -51,7 +51,7 @@ public class Transaction implements Serializable {
 //        }
 
 
-        //TODO set the txn outputs in txn operations
+    //TODO set the txn outputs in txn operations
 //        //Generate transaction outputs:
 //        BigDecimal leftOver = getInputsValue() - value; //get value of inputs then the left over change:
 //        transactionId = calulateHash();
@@ -63,7 +63,7 @@ public class Transaction implements Serializable {
 //            NoobChain.UTXOs.put(o.id , o);
 //        }
 
-        //TODO node will Remove transaction inputs from UTXO lists as spent, will also have to remove in wallet
+    //TODO node will Remove transaction inputs from UTXO lists as spent, will also have to remove in wallet
 //        for(TransactionInput i : inputs) {
 //            if(i.UTXO == null) continue; //if Transaction can't be found skip it
 //            NoobChain.UTXOs.remove(i.UTXO.id);
@@ -74,8 +74,9 @@ public class Transaction implements Serializable {
 
     public BigDecimal getInputsValue() {
         BigDecimal total = BigDecimal.valueOf(0.0);
-        for(TransactionInput i : inputs) {
-            if(i.UTXO == null) continue; //if Transaction can't be found skip it, This behavior may not be optimal, miner or reward txns have null inputs
+        for (TransactionInput i : inputs) {
+            if (i.UTXO == null)
+                continue; //if Transaction can't be found skip it, This behavior may not be optimal, miner or reward txns have null inputs
             total = total.add(i.UTXO.value);
         }
         return total;
@@ -90,7 +91,7 @@ public class Transaction implements Serializable {
 
     public BigDecimal getOutputsValue() {
         BigDecimal total = new BigDecimal(0);
-        for(TransactionOutput o : outputs) {
+        for (TransactionOutput o : outputs) {
             total = total.add(o.value);
         }
         return total;
@@ -98,15 +99,15 @@ public class Transaction implements Serializable {
 
 
     //to know if a transaction contains our public key below are some methods to do so
-    public boolean containsPublickKey(PublicKey pkey){
+    public boolean containsPublickKey(PublicKey pkey) {
         return sentByPublickKey(pkey) || hasOutputToPublicKey(pkey);
     }
 
-    public boolean sentByPublickKey(PublicKey pkey){
+    public boolean sentByPublickKey(PublicKey pkey) {
         return sender == pkey;
     }
 
-    public boolean hasOutputToPublicKey(PublicKey pkey){
+    public boolean hasOutputToPublicKey(PublicKey pkey) {
         for (TransactionOutput tout : outputs) {
             if (tout.isMine(pkey)) return true;
         }

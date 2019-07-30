@@ -30,13 +30,13 @@ public class ConfigManager {
                 return false;
             });
             //inject the xml back into the running application
-            RUtils rUtils = (RUtils) jaxbUnmarshaller.unmarshal( new File(".config/rUtils.xml") );
-            if(!StringUtil.isValidIP(RUtils.bootstrapNode)){
+            RUtils rUtils = (RUtils) jaxbUnmarshaller.unmarshal(new File(".config/rUtils.xml"));
+            if (!StringUtil.isValidIP(RUtils.bootstrapNode)) {
                 cLogger.println("Please use a valid IPv4 format for the bootstrap node!");
                 System.exit(1);
             }
             cLogger.println("Last config successfully loaded!");
-            cLogger.log(LogLevel.NETWORK,RUtils.getStats());
+            cLogger.log(LogLevel.NETWORK, RUtils.getStats());
 
         } catch (JAXBException e) {
             cLogger.println("An error has occurred while loading the config!, please make sure your fields are valid" +
@@ -63,7 +63,7 @@ public class ConfigManager {
         }
     }
 
-    public static void saveConfigManual(){
+    public static void saveConfigManual() {
         PrintWriter writer = null;
         try {
             new File("./.config").mkdirs();
@@ -77,9 +77,9 @@ public class ConfigManager {
 
     }
 
-    public static String getManualText(){
-        return  "\n" + "---You can modify .config/rUtils.xml to change application variables that are loaded when the application starts" + "\n" +
-                "---Failure to follow these guidelines will result in errors;"+ "\n" +
+    public static String getManualText() {
+        return "\n" + "---You can modify .config/rUtils.xml to change application variables that are loaded when the application starts" + "\n" +
+                "---Failure to follow these guidelines will result in errors;" + "\n" +
                 "environment: " + Arrays.toString(Environment.values()) + "\n" +
                 "LogLevel: " + Arrays.toString(LogLevel.values()) + "\n" +
                 "Role: " + Arrays.toString(Role.values()) + "\n" +

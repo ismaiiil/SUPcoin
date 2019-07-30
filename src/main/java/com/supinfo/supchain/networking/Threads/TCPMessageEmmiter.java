@@ -1,12 +1,14 @@
 package com.supinfo.supchain.networking.Threads;
 
+import com.supinfo.shared.Network.TCPMessage;
 import com.supinfo.shared.Utils.StringUtil;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.helpers.CLogger;
 import com.supinfo.supchain.helpers.RUtils;
-import com.supinfo.shared.Network.TCPMessage;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
@@ -20,14 +22,15 @@ public class TCPMessageEmmiter extends Thread {
 
     private CLogger cLogger = new CLogger(this.getClass());
 
-    public TCPMessageEmmiter(TCPMessage tcpMessage, String hostname, int port){
+    public TCPMessageEmmiter(TCPMessage tcpMessage, String hostname, int port) {
         this.tcpMessage = tcpMessage;
         this.hostname = hostname;
         this.port = port;
     }
+
     @Override
     public void run() {
-        if(!hostname.equals(RUtils.externalIP) && StringUtil.isValidIP(hostname)){
+        if (!hostname.equals(RUtils.externalIP) && StringUtil.isValidIP(hostname)) {
             try {
                 socket = new Socket(hostname, port);
                 OutputStream outputStream = socket.getOutputStream();
@@ -38,19 +41,19 @@ public class TCPMessageEmmiter extends Thread {
                 objectOutputStream.close();
 
                 socket.close();
-            } catch (UnknownHostException e){
-                cLogger.log(LogLevel.EXCEPTION,e.toString() + ", You may have input an invalid IP");
-            } catch (ConnectException e){
-                cLogger.log(LogLevel.NETWORK,"Address: "+ hostname + " is unreachable!");
+            } catch (UnknownHostException e) {
+                cLogger.log(LogLevel.EXCEPTION, e.toString() + ", You may have input an invalid IP");
+            } catch (ConnectException e) {
+                cLogger.log(LogLevel.NETWORK, "Address: " + hostname + " is unreachable!");
                 //this is liekly a connection timeout when we try to reach a dead IP, in the case of which we start a checknodes
                 //thread in the background to see if all nodes are alive, and take proper action
-            } catch (NoRouteToHostException e){
+            } catch (NoRouteToHostException e) {
                 //do nothing PingPongTask will handle all unreachable hosts
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }else{
-            cLogger.log(LogLevel.NETWORK,"Invalid IP supplied(self IP or not an IP)!");
+        } else {
+            cLogger.log(LogLevel.NETWORK, "Invalid IP supplied(self IP or not an IP)!");
         }
 
     }

@@ -11,14 +11,14 @@ public class Wallet {
         generateKeyPair();
     }
 
-    public Wallet(PublicKey publicKey,PrivateKey privateKey){
+    public Wallet(PublicKey publicKey, PrivateKey privateKey) {
         this.privateKey = privateKey;
         this.publicKey = publicKey;
     }
 
     public void generateKeyPair() {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA","SC");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA", "SC");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             ECGenParameterSpec ecSpec = new ECGenParameterSpec("prime192v1");
             // Initialize the key generator and generate a KeyPair
@@ -28,7 +28,7 @@ public class Wallet {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
 
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -41,7 +41,7 @@ public class Wallet {
         return publicKey;
     }
 
-    public KeyPair getKeyPair(){
-        return new KeyPair(publicKey,privateKey);
+    public KeyPair getKeyPair() {
+        return new KeyPair(publicKey, privateKey);
     }
 }

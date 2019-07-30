@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 
 public class WalletFileManager {
     private static CLogger cLogger = new CLogger(WalletFileManager.class);
@@ -41,7 +40,7 @@ public class WalletFileManager {
         fis.close();
 
         // Generate KeyPair.
-        KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","SC");
+        KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "SC");
 
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
                 encodedPrivateKey);
@@ -52,10 +51,10 @@ public class WalletFileManager {
 
     public static void dumpKeyPair(KeyPair keyPair) {
         PublicKey pub = keyPair.getPublic();
-        cLogger.log(LogLevel.BASIC,"Public Key: " + getHexString(pub.getEncoded()));
+        cLogger.log(LogLevel.BASIC, "Public Key: " + getHexString(pub.getEncoded()));
 
         PrivateKey priv = keyPair.getPrivate();
-        cLogger.log(LogLevel.BASIC,"Private Key: " + getHexString(priv.getEncoded()));
+        cLogger.log(LogLevel.BASIC, "Private Key: " + getHexString(priv.getEncoded()));
     }
 
     public static PublicKey derivePublicKey(PrivateKey privateKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {

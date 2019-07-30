@@ -7,19 +7,20 @@ import com.supinfo.supchain.helpers.RUtils;
 
 public class UPnPManager implements Runnable {
     private CLogger cLogger = new CLogger(this.getClass());
+
     @Override
     public void run() {
-        cLogger.log(LogLevel.NETWORK,"Attempting UPnP port forwarding...");
+        cLogger.log(LogLevel.NETWORK, "Attempting UPnP port forwarding...");
         if (UPnP.isUPnPAvailable()) { //is UPnP available?
             if (UPnP.isMappedTCP(RUtils.tcpPort)) { //is the port already mapped?
-                cLogger.log(LogLevel.NETWORK,"UPnP port forwarding not enabled: port is already mapped");
+                cLogger.log(LogLevel.NETWORK, "UPnP port forwarding not enabled: port is already mapped");
             } else if (UPnP.openPortTCP(RUtils.tcpPort)) { //try to map port
-                cLogger.log(LogLevel.NETWORK,"UPnP port forwarding enabled");
+                cLogger.log(LogLevel.NETWORK, "UPnP port forwarding enabled");
             } else {
-                cLogger.log(LogLevel.NETWORK,"UPnP port forwarding failed");
+                cLogger.log(LogLevel.NETWORK, "UPnP port forwarding failed");
             }
         } else {
-            cLogger.log(LogLevel.NETWORK,"UPnP is not available");
+            cLogger.log(LogLevel.NETWORK, "UPnP is not available");
         }
     }
 }

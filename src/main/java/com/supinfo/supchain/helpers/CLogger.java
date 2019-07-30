@@ -21,29 +21,30 @@ public class CLogger {
         put(LogLevel.NETWORK, PURPLE);
     }};
 
-    public CLogger(Class classCaller){
+    public CLogger(Class classCaller) {
         this.classCaller = classCaller.getName();
     }
 
-    public void log(LogLevel logLevel, String text){
+    public void log(LogLevel logLevel, String text) {
 
-        if(RUtils.logLevel.getValue() >= logLevel.getValue()){
-            System.out.println(beautify(logLevel,text));
+        if (RUtils.logLevel.getValue() >= logLevel.getValue()) {
+            System.out.println(beautify(logLevel, text));
         }
 
     }
 
-    public void println(String text){
-        System.out.println(WHITE_BACKGROUND_BRIGHT+BLACK_BOLD+"SUPCOIN >>> "+RESET + text);
-    }
-    public void printInput(String text){
-        println(text);
-        System.out.print(WHITE_BACKGROUND_BRIGHT+BLACK_BOLD+"SUPCOIN >>> "+RESET);
+    public void println(String text) {
+        System.out.println(WHITE_BACKGROUND_BRIGHT + BLACK_BOLD + "SUPCOIN >>> " + RESET + text);
     }
 
-    private String beautify(LogLevel logLevel,String text){
+    public void printInput(String text) {
+        println(text);
+        System.out.print(WHITE_BACKGROUND_BRIGHT + BLACK_BOLD + "SUPCOIN >>> " + RESET);
+    }
+
+    private String beautify(LogLevel logLevel, String text) {
         Date date = new Date();
         Timestamp ts = new Timestamp(date.getTime());
-        return (coloredPrefix.get(logLevel) +ts + " [["+logLevel+"]] " + classCaller +" : "+ text + RESET);
+        return (coloredPrefix.get(logLevel) + ts + " [[" + logLevel + "]] " + classCaller + " : " + text + RESET);
     }
 }

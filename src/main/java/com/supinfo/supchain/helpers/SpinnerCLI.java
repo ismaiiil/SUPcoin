@@ -9,12 +9,14 @@ public class SpinnerCLI extends Thread {
     }
 
     public void run() {
-        String anim= "|/-\\";
+        String anim = "|/-\\";
         int x = 0;
         while (showProgress) {
-            System.out.print("\r"+ context + anim.charAt(x++ % anim.length())+ "\r");
-            try { Thread.sleep(100); }
-            catch (Exception e) {};
+            System.out.print("\r" + context + anim.charAt(x++ % anim.length()) + "\r");
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+            }
         }
     }
 }

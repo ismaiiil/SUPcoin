@@ -38,7 +38,7 @@ public class CoreStringUtil {
             ecdsaVerify.initVerify(publicKey);
             ecdsaVerify.update(data.getBytes());
             return ecdsaVerify.verify(signature);
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -53,9 +53,9 @@ public class CoreStringUtil {
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
-    public PublicKey getPublicKeyFromString(String stringkey){
+    public PublicKey getPublicKeyFromString(String stringkey) {
         //converting string to Bytes
-        byte[] byte_pubkey  = Base64.getDecoder().decode(stringkey);
+        byte[] byte_pubkey = Base64.getDecoder().decode(stringkey);
         System.out.println("BYTE KEY::" + byte_pubkey);
 
 
@@ -69,7 +69,7 @@ public class CoreStringUtil {
             e.printStackTrace();
         }
         try {
-            return  (factory != null ? factory.generatePublic(new X509EncodedKeySpec(byte_pubkey)) : null);
+            return (factory != null ? factory.generatePublic(new X509EncodedKeySpec(byte_pubkey)) : null);
         } catch (InvalidKeySpecException e) {
             e.printStackTrace();
         }
@@ -80,15 +80,15 @@ public class CoreStringUtil {
         int count = transactions.size();
 
         List<String> previousTreeLayer = new ArrayList<String>();
-        for(Transaction transaction : transactions) {
+        for (Transaction transaction : transactions) {
             previousTreeLayer.add(transaction.transactionId);
         }
         List<String> treeLayer = previousTreeLayer;
 
-        while(count > 1) {
+        while (count > 1) {
             treeLayer = new ArrayList<String>();
-            for(int i=1; i < previousTreeLayer.size(); i+=2) {
-                treeLayer.add(applySha256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
+            for (int i = 1; i < previousTreeLayer.size(); i += 2) {
+                treeLayer.add(applySha256(previousTreeLayer.get(i - 1) + previousTreeLayer.get(i)));
             }
             count = treeLayer.size();
             previousTreeLayer = treeLayer;

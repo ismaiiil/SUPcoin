@@ -3,8 +3,6 @@ package com.supinfo.supchain.blockchain;
 import com.supinfo.shared.Utils.StringUtil;
 import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
-import org.apache.commons.lang3.builder.RecursiveToStringStyle;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -22,7 +20,7 @@ public class Block implements Serializable {
     public int nonce;
 
     //Block Constructor.
-    public Block(String previousHash ) {
+    public Block(String previousHash) {
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
 
@@ -33,8 +31,8 @@ public class Block implements Serializable {
     public String calculateHash() {
         String calculatedhash = StringUtil.applySha256(
                 previousHash +
-                        Long.toString(timeStamp) +
-                        Integer.toString(nonce) +
+                        timeStamp +
+                        nonce +
                         merkleRoot
         );
         return calculatedhash;
@@ -45,8 +43,8 @@ public class Block implements Serializable {
         //add reward transaction here before mining
         merkleRoot = CoreStringUtil.getMerkleRoot(transactions);
         String target = CoreStringUtil.getDificultyString(difficulty); //Create a string with difficulty * "0"
-        while(!hash.substring( 0, difficulty).equals(target)) {
-            nonce ++;
+        while (!hash.substring(0, difficulty).equals(target)) {
+            nonce++;
             hash = calculateHash();
         }
         System.out.println("Block Mined!!! : " + hash);
@@ -56,9 +54,9 @@ public class Block implements Serializable {
     //Add transactions to this block
     public boolean addTransaction(Transaction transaction) {
         //process transaction and check if valid, unless block is genesis block then ignore.
-        if(transaction == null) return false;
-        if((!"0".equals(previousHash))) {
-            if((!TransactionOperations.verifyTransaction(transaction))) {
+        if (transaction == null) return false;
+        if ((!"0".equals(previousHash))) {
+            if ((!TransactionOperations.verifyTransaction(transaction))) {
                 System.out.println("Transaction failed to process. Discarded.");
                 return false;
             }
@@ -76,7 +74,7 @@ public class Block implements Serializable {
                 "merkleRoot:" + merkleRoot + "\n" +
                 "transactions:" + Arrays.toString(transactions.toArray()) + "\n" +
                 "timeStamp:" + timeStamp + "\n" +
-                "nonce:" + nonce + "\n}" ;
+                "nonce:" + nonce + "\n}";
 
     }
 }

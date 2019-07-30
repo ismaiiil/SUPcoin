@@ -1,14 +1,13 @@
 package com.supinfo.supchain.helpers;
 
+import com.supinfo.shared.Network.TCPMessage;
+import com.supinfo.supchain.blockchain.wallet.Wallet;
 import com.supinfo.supchain.enums.Environment;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.enums.Role;
-import com.supinfo.shared.Network.TCPMessage;
 
 import javax.xml.bind.annotation.*;
-import java.math.BigDecimal;
 import java.util.HashSet;
-import com.supinfo.supchain.blockchain.wallet.Wallet;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
@@ -164,11 +163,9 @@ public class RUtils {
     }
 
 
-
-
-    public static void addMessageToCache(TCPMessage message){
+    public static void addMessageToCache(TCPMessage message) {
         String messageHash = message.getMessageHash();
-        if(cacheMessages.size()>=maxCacheSize){
+        if (cacheMessages.size() >= maxCacheSize) {
             oldCacheMessages.clear();
             oldCacheMessages = (HashSet) cacheMessages.clone();
             cacheMessages.clear();
@@ -176,12 +173,12 @@ public class RUtils {
         cacheMessages.add(messageHash);
     }
 
-    public static boolean isMessageCached(TCPMessage message){
+    public static boolean isMessageCached(TCPMessage message) {
         String messageHash = message.getMessageHash();
         return cacheMessages.contains(messageHash) || oldCacheMessages.contains(messageHash);
     }
 
-    public static HashSet<String> allClientAddresses(){
+    public static HashSet<String> allClientAddresses() {
         HashSet<String> total = new HashSet<>();
         total.addAll(localClientAddresses);
         total.addAll(externalClientAddresses);
@@ -189,8 +186,7 @@ public class RUtils {
     }
 
 
-
-    public static String getStats(){
+    public static String getStats() {
         return ("\n" +
                 "environment: " + RUtils.env + "\n" +
                 "LogLevel: " + RUtils.logLevel + "\n" +
