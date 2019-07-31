@@ -15,6 +15,8 @@ import com.supinfo.supchain.networking.Utils.TCPUtils;
 import com.supinfo.supchain.networking.models.Messenger;
 import com.supinfo.supchain.networking.models.PingPong;
 import com.supinfo.supchain.networking.models.Updater;
+import java.security.*;
+import java.security.spec.ECGenParameterSpec;
 
 
 import java.io.*;
@@ -23,6 +25,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import static com.supinfo.supchain.blockchain.BlockchainManager.miner;
@@ -190,6 +193,10 @@ public class TCPMessageListener extends Thread {
                         break;
                     }
                     case WALLET_FETCH_UTXOS: {
+                        PublicKey userPublicKey = (PublicKey) tcpMessage.getData();
+                        TCPMessage<ArrayList<TransactionOutput>> allUTXOSMessage = new TCPMessage<>(TCPMessageType.WALLET_FETCH_UTXOS, blockchainManager.getMinUTXOForPublicKey(userPublicKey,new BigDecimal(0)));
+                        cLogger.log(CHAIN,allUTXOSMessage.toString());
+                        putInStream(socket,allUTXOSMessage);
                         break;
                     }
                     case WALLET_BUY_COINS: {

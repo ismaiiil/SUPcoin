@@ -303,7 +303,7 @@ public class BlockchainManager implements BlockchainCallbacks {
         ArrayList<TransactionOutput> _all = new ArrayList<>();
         BigDecimal _coins = new BigDecimal(0);
         for (TransactionOutput tout : UTXOs.values()) {
-            if (tout.reciepient == publicKey) {
+            if (tout.reciepient.equals(publicKey)) {
                 _all.add(tout);
                 _coins = _coins.add(tout.value);
                 //if a value other than zero is supplied we stop returning txn once we reached the value requested
@@ -331,6 +331,10 @@ public class BlockchainManager implements BlockchainCallbacks {
         }
         return _minerBalance;
     }
+
+
+
+
 
     public String dumpBlockchain() {
         return "{blockchain" + blockchain.toString() + "\n}" +
