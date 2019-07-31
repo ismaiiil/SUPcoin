@@ -74,11 +74,14 @@ public class Transaction implements Serializable {
 
     public BigDecimal getInputsValue() {
         BigDecimal total = BigDecimal.valueOf(0.0);
-        for (TransactionInput i : inputs) {
-            if (i.UTXO == null)
-                continue; //if Transaction can't be found skip it, This behavior may not be optimal, miner or reward txns have null inputs
-            total = total.add(i.UTXO.value);
+        if(inputs != null){
+            for (TransactionInput i : inputs) {
+                if (i.UTXO == null)
+                    continue; //if Transaction can't be found skip it, This behavior may not be optimal, miner or reward txns have null inputs
+                total = total.add(i.UTXO.value);
+            }
         }
+
         return total;
     }
 
@@ -91,8 +94,10 @@ public class Transaction implements Serializable {
 
     public BigDecimal getOutputsValue() {
         BigDecimal total = new BigDecimal(0);
-        for (TransactionOutput o : outputs) {
-            total = total.add(o.value);
+        if(outputs != null){
+            for (TransactionOutput o : outputs) {
+                total = total.add(o.value);
+            }
         }
         return total;
     }

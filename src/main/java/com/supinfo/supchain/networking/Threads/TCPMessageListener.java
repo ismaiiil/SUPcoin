@@ -25,6 +25,7 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import static com.supinfo.supchain.blockchain.BlockchainManager.miner;
 import static com.supinfo.supchain.enums.LogLevel.*;
 import static com.supinfo.supchain.Main.blockchainManager;
 
@@ -228,6 +229,7 @@ public class TCPMessageListener extends Thread {
                             //we can now reply back the final transaction and we can push it to the mempool
                             putInStream(socket, new TCPMessage<>(TCPMessageType.WALLET_SUCCESS_BUY, rt));
                             blockchainManager.addTransactionToMemPool(rt);
+                            blockchainManager.newTxnReceived();
 
                         } else {
                             putInStream(socket, new TCPMessage<>(TCPMessageType.WALLET_NODE_INSUFFICIENT_COINS, null));
@@ -250,6 +252,18 @@ public class TCPMessageListener extends Thread {
                         TCPUtils.unicast(sendBlockchain, origin);
                         break;
                     }
+                    case REQUEST_CHAIN_SIZE:{
+                        TCPMessage chainSizeMessage = new TCPMessage<>(TCPMessageType.RESPONSE_CHAIN_SIZE,blockchainManager.blockchain.size());
+                        TCPUtils.unicast(chainSizeMessage, origin);
+                        break;
+                    }
+                    case RESPONSE_CHAIN_SIZE:{
+                        int chainSize = (Integer) tcpMessage.getData();
+                        if(chainSize > blockchainManager.blockchain.size()){
+                            TCPMessage requestBlockchain = new TCPMessage<>(TCPMessageType.INIT_REQUEST_DOWNLOAD, "");
+                            TCPUtils.unicast(requestBlockchain,origin);
+                        }
+                    }
                     case INIT_DOWNLOAD_FULL_BLOCKCHAIN: {
                         //verify the blockchainHolder
                         cLogger.log(CHAIN, "NOW DOWNLOADING CHAIN FROM:" + origin);
@@ -257,11 +271,13 @@ public class TCPMessageListener extends Thread {
                         ArrayList<Block> newBlockchain = (ArrayList<Block>) tcpMessage.getData();
                         if (blockchainManager.validateBlockchain(newBlockchain)
                                 && (blockchainManager.blockchain.size() < newBlockchain.size())) {
+                            miner.pauseMining();
                             blockchainManager.blockchain = newBlockchain;
                             //only if it is valid assign it to the blockchainHolder
                             //once it has received the full blockchainHolder we can start do stuff
                             blockchainManager.initHasDownloaded(true, origin);
                         } else {
+                            miner.resumeMining();
                             //send callback failed to get a valid blockchainHolder
                             blockchainManager.initHasDownloaded(false, origin);
                         }

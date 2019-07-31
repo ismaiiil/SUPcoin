@@ -69,7 +69,7 @@ public class BlockchainManager implements BlockchainCallbacks {
 
         //we use this in case we want to verify a new block that has been broadcast to us
         if (isBroadcast) {
-            tempUTXOs = UTXOs;
+            tempUTXOs = (HashMap<String, TransactionOutput>) UTXOs.clone();
         }
 
         String hashTarget = new String(new char[RUtils.difficulty]).replace('\0', '0');
@@ -130,8 +130,8 @@ public class BlockchainManager implements BlockchainCallbacks {
             }
 
 
-            if (currentTransaction.getInputsValue().compareTo(currentTransaction.getOutputsValue()) >= 0) {
-                System.out.println("#Inputs are greater or equal to outputs on Transaction(" + t + ")");
+            if (currentTransaction.getInputsValue().compareTo(currentTransaction.getOutputsValue()) > 0) {
+                System.out.println("#Inputs are greater than outputs on Transaction(" + t + ")");
                 return false;
             }
 
@@ -170,7 +170,7 @@ public class BlockchainManager implements BlockchainCallbacks {
         }
         //after looping through all txn we have the total txn fee and can check if the miner dint exceed its value
         if (rewardTransaction != null) {
-            if (rewardTransaction.getOutputsValue().compareTo(RUtils.rewardTransactionValue.add(transactionFee)) > 0) {
+            if ((rewardTransaction.getOutputsValue().compareTo(RUtils.rewardTransactionValue.add(transactionFee)) <= 0)) {
                 System.out.println("ERROR! This reward transaction is trying to claim more coins that its allowed to!");
                 return false;
             }
@@ -180,7 +180,7 @@ public class BlockchainManager implements BlockchainCallbacks {
 
         //clear the tempUTXOs after we are done checking the new block
         if (isBroadcast) {
-            UTXOs = tempUTXOs;
+            UTXOs = (HashMap<String, TransactionOutput>) tempUTXOs.clone();
             tempUTXOs.clear();
         }
         return true;
@@ -259,11 +259,13 @@ public class BlockchainManager implements BlockchainCallbacks {
     @Override
     public void newTxnReceived() {
         if (mempool.size() >= RUtils.minTransactionTillMine) {
-            ArrayList<Transaction> txnsToMine = new ArrayList<>(mempool.subList(0, RUtils.minTransactionTillMine - 1));
+            ArrayList<Transaction> txnsToMine = new ArrayList<>(mempool.subList(0, RUtils.minTransactionTillMine));
             if (!miner.isAlive()) {
                 miner.start();
             }
-            miner.startMiningTransactions(txnsToMine);
+            if(!miner.isMining){
+                miner.startMiningTransactions(txnsToMine);
+            }
             //start mining the tempMempool
             //now if we receive a new block while mining we are going to check if the new block is valid
             //CASE ONE, its previous block matches our latest block and we can verify the block to safely add it
@@ -277,9 +279,23 @@ public class BlockchainManager implements BlockchainCallbacks {
     }
 
     @Override
-    public void newBlockReceived() {
-        miner.pauseMining();
-
+    public void newBlockReceived(Block block) {
+        Block lastBlock = blockchain.get(blockchain.size()-1);
+        if(block.previousHash.equals(lastBlock.previousHash)){
+            miner.pauseMining();
+            if(validateBlock(lastBlock,block,true)){
+                miner.abortMining();
+                blockchain.add(block);
+                //validateBlockchain(blockchain);
+            }else{
+                miner.resumeMining();
+            }
+        }else{
+            //check if the node that sent the block has a longer chain! and download all changes
+            TCPMessage reqchainSizeMessage = new TCPMessage<>(TCPMessageType.REQUEST_CHAIN_SIZE,null);
+            TCPUtils.unicast(reqchainSizeMessage, RUtils.externalIP);
+            //if we receive in the background a longer chain it will automatically stop mining and will update the blockchain if the chain is valid
+        }
 
     }
 
@@ -327,6 +343,7 @@ public class BlockchainManager implements BlockchainCallbacks {
     public void addBlock(Block newBlock) {
         newBlock.mineBlock(RUtils.difficulty);
         blockchain.add(newBlock);
+        validateBlockchain(blockchain);
     }
 
 

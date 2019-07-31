@@ -51,9 +51,14 @@ public class TransactionOperations {
     }
 
     public static byte[] generateSignature(PrivateKey privateKey, Transaction transaction) {
-        String data = CoreStringUtil.getStringFromKey(transaction.sender)
-                + getMapAsString(transaction);
-        return CoreStringUtil.applyECDSASig(privateKey, data);
+        if(transaction.sender != null){
+            String data = CoreStringUtil.getStringFromKey(transaction.sender)
+                    + getMapAsString(transaction);
+            return CoreStringUtil.applyECDSASig(privateKey, data);
+        }else{
+            String data = getMapAsString(transaction);
+            return CoreStringUtil.applyECDSASig(privateKey, data);
+        }
     }
 
     private static String getMapAsString(Transaction transaction) {

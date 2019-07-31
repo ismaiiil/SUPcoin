@@ -7,6 +7,6 @@ import java.util.ArrayList;
 public interface MinerCallbacks {
     void startMiningTransactions(ArrayList<Transaction> transactions);
     void pauseMining();
-    void restoreTransactionsToMempool();
+    void abortMining();
     void resumeMining();
 }

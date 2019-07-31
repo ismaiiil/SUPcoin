@@ -29,15 +29,16 @@ public class Miner extends Thread implements MinerCallbacks {
     yea we need callbacks to pause mining and verify the newblock that we just received
      */
     public volatile boolean isAborted = false;
-    private volatile boolean isMining = false;
+    public volatile boolean isMining = false;
     public volatile boolean isPaused = false;
-    ArrayList<Transaction> transactionsToMine = new ArrayList<>();
+    private volatile ArrayList<Transaction> transactionsToMine = new ArrayList<>();
 
     @Override
     public void run() {
-        while (!isMining) {
+        while (true){
+            while (!isMining) { }
             while (isMining){
-                if (transactionsToMine.isEmpty()) {
+                if (!transactionsToMine.isEmpty()) {
                     Block latestBlock = blockchainManager.blockchain.get(blockchainManager.blockchain.size() - 1);
                     Block newBlock = new Block(latestBlock.hash);
                     ArrayList<Transaction> _temptxnsToMine = new ArrayList<>();
@@ -54,6 +55,7 @@ public class Miner extends Thread implements MinerCallbacks {
                             blockchainManager.blockchain.add(newBlock);
                             //UPDATE UTXOS and mempool
                             blockchainManager.mempool.removeAll(transactionsToMine);
+                            blockchainManager.validateBlockchain(blockchainManager.blockchain);
                         }
 
                     }
@@ -63,14 +65,18 @@ public class Miner extends Thread implements MinerCallbacks {
             }
         }
 
+
         //miner mines block
         //and informs the blockchain manager
     }
 
     @Override
     public void startMiningTransactions(ArrayList<Transaction> transactions) {
-        isMining = true;
         transactionsToMine = transactions;
+        isMining = true;
+        isPaused = false;
+        isAborted = false;
+
     }
 
     @Override
@@ -79,8 +85,8 @@ public class Miner extends Thread implements MinerCallbacks {
     }
 
     @Override
-    public void restoreTransactionsToMempool() {
-
+    public void abortMining() {
+        isAborted = true;
     }
 
     @Override

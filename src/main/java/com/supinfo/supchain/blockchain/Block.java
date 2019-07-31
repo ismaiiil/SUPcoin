@@ -50,15 +50,18 @@ public class Block implements Serializable {
         //add reward transaction here before mining
         BigDecimal fees = new BigDecimal(0);
         for (Transaction txn : transactions) {
-            fees = fees.add(txn.getInputsValue().subtract(txn.getOutputsValue()));
+            if(!txn.transactionId.equals("0")){
+                fees = fees.add(txn.getInputsValue().subtract(txn.getOutputsValue()));
+            }
         }
         HashMap<PublicKey, BigDecimal> _rewardRecipient = new HashMap<>();
         _rewardRecipient.put(RUtils.wallet.getPublicKey(), RUtils.rewardTransactionValue.add(fees));
-        Transaction rewardTransaction = new Transaction(null, _rewardRecipient, null);
+        Transaction rewardTransaction = new Transaction(RUtils.wallet.getPublicKey(), _rewardRecipient, null);
         TransactionOutput _rewardTransactionOutput = new TransactionOutput(RUtils.wallet.getPublicKey(), RUtils.rewardTransactionValue.add(fees), null, null);
         _rewardTransactionOutput.id = TransactionOperations.generateTransactionOutputThisId(_rewardTransactionOutput);
         rewardTransaction.outputs.add(_rewardTransactionOutput);
         rewardTransaction.signature = TransactionOperations.generateSignature(RUtils.wallet.getPrivateKey(), rewardTransaction);
+        rewardTransaction.transactionId = TransactionOperations.calulateHashTransaction(rewardTransaction);
         transactions.add(rewardTransaction);
 
         //start mining here
@@ -74,7 +77,8 @@ public class Block implements Serializable {
         }
         System.out.println("Block Mined!!! : " + hash);
         return true;
-        //TODO uptate UTXOS here after the block has been mined, ie all txns are valid
+        //DONE uptate UTXOS here after the block has been mined, ie all txns are valid
+
 
     }
 
