@@ -2,12 +2,19 @@ package com.supinfo.supchain.blockchain;
 
 import com.supinfo.shared.Utils.StringUtil;
 import com.supinfo.shared.transaction.Transaction;
+import com.supinfo.shared.transaction.TransactionOutput;
 import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
+import com.supinfo.supchain.helpers.RUtils;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+
+import static com.supinfo.supchain.blockchain.BlockchainManager.miner;
 
 
 public class Block implements Serializable {
@@ -39,16 +46,36 @@ public class Block implements Serializable {
     }
 
     //Increases nonce value until hash target is reached.
-    public void mineBlock(int difficulty) {
+    public boolean mineBlock(int difficulty) {
         //add reward transaction here before mining
+        BigDecimal fees = new BigDecimal(0);
+        for (Transaction txn : transactions) {
+            fees = fees.add(txn.getInputsValue().subtract(txn.getOutputsValue()));
+        }
+        HashMap<PublicKey, BigDecimal> _rewardRecipient = new HashMap<>();
+        _rewardRecipient.put(RUtils.wallet.getPublicKey(), RUtils.rewardTransactionValue.add(fees));
+        Transaction rewardTransaction = new Transaction(null, _rewardRecipient, null);
+        TransactionOutput _rewardTransactionOutput = new TransactionOutput(RUtils.wallet.getPublicKey(), RUtils.rewardTransactionValue.add(fees), null, null);
+        _rewardTransactionOutput.id = TransactionOperations.generateTransactionOutputThisId(_rewardTransactionOutput);
+        rewardTransaction.outputs.add(_rewardTransactionOutput);
+        rewardTransaction.signature = TransactionOperations.generateSignature(RUtils.wallet.getPrivateKey(), rewardTransaction);
+        transactions.add(rewardTransaction);
+
+        //start mining here
         merkleRoot = CoreStringUtil.getMerkleRoot(transactions);
         String target = CoreStringUtil.getDificultyString(difficulty); //Create a string with difficulty * "0"
         while (!hash.substring(0, difficulty).equals(target)) {
+            while (miner.isPaused) {
+            }
+            //wait and do nothing while mining is paused!!!
+            if (miner.isAborted) return false;
             nonce++;
             hash = calculateHash();
         }
         System.out.println("Block Mined!!! : " + hash);
+        return true;
         //TODO uptate UTXOS here after the block has been mined, ie all txns are valid
+
     }
 
     //Add transactions to this block

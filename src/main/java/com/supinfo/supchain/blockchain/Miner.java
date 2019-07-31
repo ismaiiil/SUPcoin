@@ -10,6 +10,7 @@ import static com.supinfo.supchain.Main.blockchainManager;
 
 public class Miner extends Thread implements MinerCallbacks {
 
+
     //specify minimum number of txn in mempool till we start mining
     //get the transactions and remove them from the mempool
     //validate the transactions and start mining
@@ -27,8 +28,9 @@ public class Miner extends Thread implements MinerCallbacks {
     will we have callbacks???
     yea we need callbacks to pause mining and verify the newblock that we just received
      */
-
+    public volatile boolean isAborted = false;
     private volatile boolean isMining = false;
+    public volatile boolean isPaused = false;
     ArrayList<Transaction> transactionsToMine = new ArrayList<>();
 
     @Override
@@ -47,12 +49,16 @@ public class Miner extends Thread implements MinerCallbacks {
                         }
                     }
                     if(_temptxnsToMine.equals(transactionsToMine)){
-                        //MINE and send it back to blockchainholder
-                        newBlock.mineBlock(RUtils.difficulty);
-                    }else{
-                        //do nothing maybe
+                        //MINE
+                        if(newBlock.mineBlock(RUtils.difficulty)){
+                            blockchainManager.blockchain.add(newBlock);
+                            //UPDATE UTXOS and mempool
+                            blockchainManager.mempool.removeAll(transactionsToMine);
+                        }
 
                     }
+                    isMining = false;
+                    transactionsToMine = new ArrayList<>();
                 }
             }
         }
@@ -69,7 +75,7 @@ public class Miner extends Thread implements MinerCallbacks {
 
     @Override
     public void pauseMining() {
-
+        isPaused = true;
     }
 
     @Override
@@ -79,6 +85,6 @@ public class Miner extends Thread implements MinerCallbacks {
 
     @Override
     public void resumeMining() {
-
+        isPaused = false;
     }
 }

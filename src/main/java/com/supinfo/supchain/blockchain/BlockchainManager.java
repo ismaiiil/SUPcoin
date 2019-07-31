@@ -32,7 +32,7 @@ public class BlockchainManager implements BlockchainCallbacks {
     private HashMap<String, TransactionOutput> tempUTXOs = new HashMap<>();
     //this will be used just to increase performance when buying coins: optional!
     public HashMap<String, TransactionOutput> soldUTXOs = new HashMap<>();
-    public Miner miner = new Miner();
+    public static Miner miner = new Miner();
     //have a thread that will periodically check the mempool, if it >= the min number txn specified in Rutils we can notify
     //the miner that it can start mining those transactions
 
@@ -180,6 +180,7 @@ public class BlockchainManager implements BlockchainCallbacks {
 
         //clear the tempUTXOs after we are done checking the new block
         if (isBroadcast) {
+            UTXOs = tempUTXOs;
             tempUTXOs.clear();
         }
         return true;
@@ -262,12 +263,6 @@ public class BlockchainManager implements BlockchainCallbacks {
             if (!miner.isAlive()) {
                 miner.start();
             }
-            //TODO do that in miner verify if the subset is valid, else we discard invalid txns and send the rest back to the mempool! add at beginning
-//            for (Transaction txn : txnsToMine) {
-//                if (!TransactionOperations.verifyTransaction(txn)) {
-//                    txnsToMine.remove()
-//                }
-//            }
             miner.startMiningTransactions(txnsToMine);
             //start mining the tempMempool
             //now if we receive a new block while mining we are going to check if the new block is valid
@@ -283,11 +278,8 @@ public class BlockchainManager implements BlockchainCallbacks {
 
     @Override
     public void newBlockReceived() {
+        miner.pauseMining();
 
-    }
-
-    @Override
-    public void newBlockMined() {
 
     }
 
