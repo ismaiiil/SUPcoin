@@ -312,7 +312,23 @@ public class TCPMessageListener extends Thread {
                         }
                         blockchainManager.mempool.add(transaction);
                         blockchainManager.newTxnReceived();
+
                         break;
+                    }
+                    case NEW_TXN_MEMPOOL:{
+                        try{
+                            Transaction transaction = (Transaction) tcpMessage.getData();
+                            cLogger.log(CHAIN, "Successfully received the new USER GEN Transaction!");
+                            if (tcpMessage.isPropagatable() && tcpMessage.isAlive()) {
+                                TCPUtils.multicastAll(new TCPMessage<>(TCPMessageType.PROPAGATE_NEW_TXN_MEMPOOL,0, transaction), RUtils.externalIP);
+                            }
+                            blockchainManager.mempool.add(transaction);
+                            blockchainManager.newTxnReceived();
+                            putInStream(socket, new TCPMessage<>(TCPMessageType.NEW_TXN_MEMPOOL, "Your Transaction was uploaded to the mempool!"));
+                        }catch(Exception e){
+                            putInStream(socket, new TCPMessage<>(TCPMessageType.FAILURE_ADD_TXN, "Something went wrong when trying to upload your transaction"));
+                        }
+
                     }
                     case PROPAGATE_NEW_BLOCK:{
                         Block block = (Block) tcpMessage.getData();
