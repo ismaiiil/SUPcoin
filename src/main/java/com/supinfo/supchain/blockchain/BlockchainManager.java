@@ -286,7 +286,7 @@ public class BlockchainManager implements BlockchainCallbacks {
             if(validateBlock(lastBlock,block,true)){
                 miner.abortMining();
                 blockchain.add(block);
-                //validateBlockchain(blockchain);
+                validateBlockchain(blockchain);
             }else{
                 miner.resumeMining();
             }
@@ -319,7 +319,7 @@ public class BlockchainManager implements BlockchainCallbacks {
         //whenever a txn is added to the mempool it gets spread to the network
         //we will have to use a TCPMESSAGE TYPE to do this, and set the propagation flag true
         mempool.add(transaction);
-        TCPUtils.multicastAll(new TCPMessage<>(TCPMessageType.PROPAGATE_NEW_TXN_MEMPOOL, 0, transaction), RUtils.externalIP);
+        TCPUtils.multicastAll(new TCPMessage<>(TCPMessageType.PROPAGATE_NEW_TXN_MEMPOOL,0, transaction), RUtils.externalIP);
     }
 
     public BigDecimal getMinerRawBalance() {
@@ -343,7 +343,7 @@ public class BlockchainManager implements BlockchainCallbacks {
     public void addBlock(Block newBlock) {
         newBlock.mineBlock(RUtils.difficulty);
         blockchain.add(newBlock);
-        validateBlockchain(blockchain);
+        //validateBlockchain(blockchain);
     }
 
 

@@ -259,7 +259,7 @@ public class TCPMessageListener extends Thread {
                     }
                     case RESPONSE_CHAIN_SIZE:{
                         int chainSize = (Integer) tcpMessage.getData();
-                        if(chainSize > blockchainManager.blockchain.size()){
+                        if(chainSize >= blockchainManager.blockchain.size()){
                             TCPMessage requestBlockchain = new TCPMessage<>(TCPMessageType.INIT_REQUEST_DOWNLOAD, "");
                             TCPUtils.unicast(requestBlockchain,origin);
                         }
@@ -270,7 +270,7 @@ public class TCPMessageListener extends Thread {
                         blockchainManager.status = TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN;
                         ArrayList<Block> newBlockchain = (ArrayList<Block>) tcpMessage.getData();
                         if (blockchainManager.validateBlockchain(newBlockchain)
-                                && (blockchainManager.blockchain.size() < newBlockchain.size())) {
+                                && (blockchainManager.blockchain.size() <= newBlockchain.size())) {
                             miner.pauseMining();
                             blockchainManager.blockchain = newBlockchain;
                             //only if it is valid assign it to the blockchainHolder
@@ -300,11 +300,19 @@ public class TCPMessageListener extends Thread {
                     case PROPAGATE_NEW_TXN_MEMPOOL: {
                         Transaction transaction = (Transaction) tcpMessage.getData();
                         cLogger.log(CHAIN, "Successfully received the new Transaction!");
-                        TCPMessage sendTxn = new TCPMessage<>(TCPMessageType.PROPAGATE_NEW_TXN_MEMPOOL, transaction);
-                        TCPUtils.multicastAll(sendTxn,origin);
+                        if (tcpMessage.isPropagatable() && tcpMessage.isAlive()) {
+                            TCPUtils.multicastAll(tcpMessage,RUtils.externalIP);
+                        }
                         blockchainManager.mempool.add(transaction);
                         blockchainManager.newTxnReceived();
                         break;
+                    }
+                    case PROPAGATE_NEW_BLOCK:{
+                        Block block = (Block) tcpMessage.getData();
+                        blockchainManager.newBlockReceived(block);
+                        if (tcpMessage.isPropagatable() && tcpMessage.isAlive()) {
+                            TCPUtils.multicastAll(tcpMessage,RUtils.externalIP);
+                        }
                     }
 
                 }

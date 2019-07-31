@@ -1,11 +1,14 @@
 package com.supinfo.supchain.blockchain;
 
+import com.supinfo.shared.Network.TCPMessage;
 import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
 import com.supinfo.supchain.helpers.RUtils;
+import com.supinfo.supchain.networking.Utils.TCPUtils;
 
 import java.util.ArrayList;
 
+import static com.supinfo.shared.Network.TCPMessageType.PROPAGATE_NEW_BLOCK;
 import static com.supinfo.supchain.Main.blockchainManager;
 
 public class Miner extends Thread implements MinerCallbacks {
@@ -56,6 +59,9 @@ public class Miner extends Thread implements MinerCallbacks {
                             //UPDATE UTXOS and mempool
                             blockchainManager.mempool.removeAll(transactionsToMine);
                             blockchainManager.validateBlockchain(blockchainManager.blockchain);
+                            //TCPMessage to propagate that new block to other nodes
+                            TCPMessage propBlock = new TCPMessage<>(PROPAGATE_NEW_BLOCK,newBlock);
+                            TCPUtils.multicastAll(propBlock,RUtils.externalIP);
                         }
 
                     }
