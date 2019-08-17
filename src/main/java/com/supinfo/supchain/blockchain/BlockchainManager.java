@@ -195,7 +195,7 @@ public class BlockchainManager implements BlockchainCallbacks {
                     while(true) {
                         if (status == TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN) {
                             return true;
-                        } else if (!timer.isOver) {
+                        } else if (timer.isOver) {
                             break;
                         }
                     }
