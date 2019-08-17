@@ -59,7 +59,7 @@ public class BlockchainManager implements BlockchainCallbacks {
         }
         UTXOs = (HashMap<String, TransactionOutput>) tempUTXOs.clone();
         tempUTXOs.clear();
-        cLogger.println("The blockchain is valid!");
+        cLogger.println("hThe blockchain is valid!");
         return true;
     }
 
@@ -111,7 +111,7 @@ public class BlockchainManager implements BlockchainCallbacks {
             }
 
             if (!verifySignature(currentTransaction)) {
-                System.out.println("#Signature on Transaction(" + t + ") is Invalid");
+                System.out.println("#Signature on Transaction(" + currentTransaction + ") is Invalid");
                 return false;
             }
 

@@ -6,6 +6,7 @@ import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.shared.transaction.TransactionInput;
 import com.supinfo.shared.transaction.TransactionOutput;
 import com.supinfo.supchain.blockchain.Block;
+import com.supinfo.supchain.blockchain.BlockchainManager;
 import com.supinfo.supchain.blockchain.BlockchainManagerFactory;
 import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
 import com.supinfo.supchain.enums.Role;
@@ -30,9 +31,10 @@ import java.util.HashSet;
 
 import static com.supinfo.supchain.blockchain.BlockchainManager.miner;
 import static com.supinfo.supchain.enums.LogLevel.*;
-import static com.supinfo.supchain.Main.blockchainManager;
+
 
 public class TCPMessageListener extends Thread {
+    private static BlockchainManager blockchainManager = BlockchainManagerFactory.getInstance();
     private int port;
     private ServerSocket serverSocket;
     private CLogger cLogger = new CLogger(this.getClass());

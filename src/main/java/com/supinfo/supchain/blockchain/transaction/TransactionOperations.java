@@ -4,6 +4,8 @@ import com.supinfo.shared.Utils.StringUtil;
 import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.shared.transaction.TransactionInput;
 import com.supinfo.shared.transaction.TransactionOutput;
+import com.supinfo.supchain.blockchain.BlockchainManager;
+import com.supinfo.supchain.blockchain.BlockchainManagerFactory;
 import com.supinfo.supchain.blockchain.CoreStringUtil;
 import com.supinfo.supchain.helpers.RUtils;
 
@@ -13,10 +15,10 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static com.supinfo.supchain.Main.blockchainManager;
+
 
 public class TransactionOperations {
-
+    public static BlockchainManager blockchainManager = BlockchainManagerFactory.getInstance();
     public static boolean verifySignature(Transaction transaction) {
             String data = CoreStringUtil.getStringFromKey(transaction.sender)
                     + getMapAsString(transaction);
