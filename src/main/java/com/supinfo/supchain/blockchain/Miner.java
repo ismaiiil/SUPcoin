@@ -9,11 +9,11 @@ import com.supinfo.supchain.networking.Utils.TCPUtils;
 import java.util.ArrayList;
 
 import static com.supinfo.shared.Network.TCPMessageType.PROPAGATE_NEW_BLOCK;
-import static com.supinfo.supchain.Main.blockchainManager;
+
 
 public class Miner extends Thread implements MinerCallbacks {
 
-
+    private BlockchainManager blockchainManager = BlockchainManagerFactory.getInstance();
     //specify minimum number of txn in mempool till we start mining
     //get the transactions and remove them from the mempool
     //validate the transactions and start mining

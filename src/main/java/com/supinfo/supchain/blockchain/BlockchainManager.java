@@ -5,17 +5,15 @@ import com.supinfo.shared.Network.TCPMessageType;
 import com.supinfo.shared.transaction.Transaction;
 import com.supinfo.shared.transaction.TransactionInput;
 import com.supinfo.shared.transaction.TransactionOutput;
-import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
 import com.supinfo.supchain.blockchain.wallet.Wallet;
 import com.supinfo.supchain.helpers.CLogger;
+import com.supinfo.supchain.helpers.CountdownTimer;
 import com.supinfo.supchain.helpers.RUtils;
 import com.supinfo.supchain.networking.Utils.TCPUtils;
 
 import java.math.BigDecimal;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import static com.supinfo.supchain.blockchain.transaction.TransactionOperations.*;
 import static java.lang.Thread.sleep;
@@ -59,7 +57,7 @@ public class BlockchainManager implements BlockchainCallbacks {
         }
         UTXOs = (HashMap<String, TransactionOutput>) tempUTXOs.clone();
         tempUTXOs.clear();
-        cLogger.println("The blockchain is valid!");
+        cLogger.println("hThe blockchain is valid!");
         return true;
     }
 
@@ -111,7 +109,7 @@ public class BlockchainManager implements BlockchainCallbacks {
             }
 
             if (!verifySignature(currentTransaction)) {
-                System.out.println("#Signature on Transaction(" + t + ") is Invalid");
+                System.out.println("#Signature on Transaction(" + currentTransaction + ") is Invalid");
                 return false;
             }
 
@@ -184,19 +182,23 @@ public class BlockchainManager implements BlockchainCallbacks {
         return true;
     }
 
-    public boolean requestBlockchainFromPeers() throws InterruptedException {
+    public boolean requestBlockchainFromPeers(){
         if (blockchain.size() == 0) {
             status = TCPMessageType.INIT_REQUEST_DOWNLOAD;
             TCPMessage requestBlockchain = new TCPMessage<>(TCPMessageType.INIT_REQUEST_DOWNLOAD, "");
             for (String ip : RUtils.allClientAddresses()) {
                 if (!initTempIPS.contains(ip)) {
                     TCPUtils.unicast(requestBlockchain, ip);
-                    sleep(RUtils.connectionLatency);
-                    if (status == TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN) {
-                        initTempIPS.add(ip);
-                        return true;
-                    }
                     initTempIPS.add(ip);
+                    //sleep(RUtils.connectionLatency);
+                    CountdownTimer timer = new CountdownTimer((int) RUtils.connectionLatency);
+                    while(true) {
+                        if (status == TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN) {
+                            return true;
+                        }else if (timer.isOver) {
+                            break;
+                        }
+                    }
                 }
             }
             if (status == TCPMessageType.INIT_REQUEST_DOWNLOAD) {
@@ -240,15 +242,11 @@ public class BlockchainManager implements BlockchainCallbacks {
         } else {
             if (status == TCPMessageType.INIT_DOWNLOAD_FULL_BLOCKCHAIN) {
                 cLogger.println("Invalid Blockchain detected and has not been downloaded!");
-                try {
-                    //if we have gone through all ips we reset the temp variable to restart scanning those nodes if their blockchain is valid
-                    if (initTempIPS.containsAll(RUtils.allClientAddresses())) {
-                        initTempIPS.clear();
-                    }
-                    requestBlockchainFromPeers();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                //if we have gone through all ips we reset the temp variable to restart scanning those nodes if their blockchain is valid
+                if (initTempIPS.containsAll(RUtils.allClientAddresses())) {
+                    initTempIPS.clear();
                 }
+                requestBlockchainFromPeers();
             }
 
         }

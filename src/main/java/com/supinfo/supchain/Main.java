@@ -172,7 +172,7 @@ public class Main {
                 if (!hasFoundBlockchain) {
                     cLogger.println("No blockchain could be downloaded from the peers you are connected to, the node will now" +
                             "enter a passive mode until it is able to download a blockchain!");
-                    while (!blockchainManager.requestBlockchainFromPeers()) {
+                    while (blockchainManager.blockchain.size() < 1) {
                         cLogger.println("Waiting for " + RUtils.initDownloadPeriod + " until we retry requesting peers for the chain!");
                         sleep(RUtils.initDownloadPeriod);
                     }
