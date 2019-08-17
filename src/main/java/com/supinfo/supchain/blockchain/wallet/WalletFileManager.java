@@ -1,5 +1,6 @@
 package com.supinfo.supchain.blockchain.wallet;
 
+import com.supinfo.supchain.blockchain.CoreStringUtil;
 import com.supinfo.supchain.enums.LogLevel;
 import com.supinfo.supchain.helpers.CLogger;
 import org.spongycastle.jce.ECNamedCurveTable;
@@ -51,10 +52,10 @@ public class WalletFileManager {
 
     public static void dumpKeyPair(KeyPair keyPair) {
         PublicKey pub = keyPair.getPublic();
-        cLogger.log(LogLevel.BASIC, "Public Key: " + getHexString(pub.getEncoded()));
+        cLogger.log(LogLevel.BASIC, "Public Key: " + CoreStringUtil.getStringFromKey(pub));
 
         PrivateKey priv = keyPair.getPrivate();
-        cLogger.log(LogLevel.BASIC, "Private Key: " + getHexString(priv.getEncoded()));
+        cLogger.log(LogLevel.BASIC, "Private Key: " +  CoreStringUtil.getStringFromKey(pub));
     }
 
     public static PublicKey derivePublicKey(PrivateKey privateKey) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {

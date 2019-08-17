@@ -23,7 +23,7 @@ public class TransactionOutput implements Serializable {
 
     //Check if coin belongs to you
     public boolean isMine(PublicKey publicKey) {
-        return (publicKey == reciepient);
+        return (publicKey.equals(reciepient));
     }
 
     @Override

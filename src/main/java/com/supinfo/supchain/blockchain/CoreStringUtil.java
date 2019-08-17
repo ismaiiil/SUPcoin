@@ -58,10 +58,9 @@ public class CoreStringUtil {
 
     }
 
-    public PublicKey getPublicKeyFromString(String stringkey) {
+    public static PublicKey getPublicKeyFromString(String stringkey) {
         //converting string to Bytes
         byte[] byte_pubkey = Base64.getDecoder().decode(stringkey);
-        System.out.println("BYTE KEY::" + byte_pubkey);
 
 
         //converting it back to public key

@@ -26,7 +26,6 @@ public class BlockchainManager implements BlockchainCallbacks {
     public TCPMessageType status;
     public HashSet<String> initTempIPS = new HashSet<>();
     public ArrayList<Transaction> mempool = new ArrayList<>();
-    //TODO maybe use temp mempool to make sure we are able to update the mempool when we get a new blockchain
     private CLogger cLogger = new CLogger(this.getClass());
     //tempUTXOS is used to validate the blockchain by walking through the blockchain, adding and removing UTXOS while we go though the chain
     private HashMap<String, TransactionOutput> tempUTXOs = new HashMap<>();
@@ -46,7 +45,6 @@ public class BlockchainManager implements BlockchainCallbacks {
             return false;
         }
         Transaction genesis = blockchain.get(0).transactions.get(0);
-        //a temporary working list of unspent transactions at a given block state.
         tempUTXOs.put(genesis.outputs.get(0).id, genesis.outputs.get(0));
 
         //loop through blockchainHolder to check hashes:

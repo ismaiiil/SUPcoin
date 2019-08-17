@@ -18,9 +18,10 @@ import static com.supinfo.supchain.Main.blockchainManager;
 public class TransactionOperations {
 
     public static boolean verifySignature(Transaction transaction) {
-        String data = CoreStringUtil.getStringFromKey(transaction.sender)
-                + getMapAsString(transaction);
-        return CoreStringUtil.verifyECDSASig(transaction.sender, data, transaction.signature);
+            String data = CoreStringUtil.getStringFromKey(transaction.sender)
+                    + getMapAsString(transaction);
+            data = data.trim().replaceAll("\n ", "");
+            return CoreStringUtil.verifyECDSASig(transaction.sender, data, transaction.signature);
     }
 
     public static Boolean verifyTransaction(Transaction transaction) {
@@ -41,12 +42,12 @@ public class TransactionOperations {
             }
         }
 
-        //Checks if transaction is valid:
-        if (transaction.getInputsValue().compareTo(RUtils.minimumTransaction) < 0) {
-            System.out.println("Transaction Inputs too small: " + transaction.getInputsValue());
-            System.out.println("Please enter the amount greater than " + RUtils.minimumTransaction);
-            return false;
-        }
+//        //Checks if transaction is valid:
+//        if (transaction.getInputsValue().compareTo(RUtils.minimumTransaction) < 0) {
+//            System.out.println("Transaction Inputs too small: " + transaction.getInputsValue());
+//            System.out.println("Please enter the amount greater than " + RUtils.minimumTransaction);
+//            return false;
+//        }
         return true;
     }
 
@@ -54,9 +55,11 @@ public class TransactionOperations {
         if(transaction.sender != null){
             String data = CoreStringUtil.getStringFromKey(transaction.sender)
                     + getMapAsString(transaction);
+            data = data.trim().replaceAll("\n ", "");
             return CoreStringUtil.applyECDSASig(privateKey, data);
         }else{
             String data = getMapAsString(transaction);
+            data = data.trim().replaceAll("\n ", "");
             return CoreStringUtil.applyECDSASig(privateKey, data);
         }
     }

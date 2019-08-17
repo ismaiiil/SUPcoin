@@ -2,8 +2,13 @@ package com.supinfo.supchain;
 
 import com.supinfo.shared.Network.TCPMessage;
 import com.supinfo.shared.Network.TCPMessageType;
+import com.supinfo.shared.transaction.Transaction;
+import com.supinfo.shared.transaction.TransactionInput;
+import com.supinfo.shared.transaction.TransactionOutput;
 import com.supinfo.supchain.blockchain.BlockchainManager;
 import com.supinfo.supchain.blockchain.BlockchainManagerFactory;
+import com.supinfo.supchain.blockchain.CoreStringUtil;
+import com.supinfo.supchain.blockchain.transaction.TransactionOperations;
 import com.supinfo.supchain.blockchain.wallet.Wallet;
 import com.supinfo.supchain.blockchain.wallet.WalletFileManager;
 import com.supinfo.supchain.enums.LogLevel;
@@ -19,12 +24,12 @@ import com.supinfo.supchain.networking.Utils.TCPUtils;
 import org.apache.commons.cli.*;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.net.SocketException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.Security;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.Timer;
 
@@ -73,6 +78,7 @@ public class Main {
             try {
                 PrivateKey privateKey = WalletFileManager.loadPrivateKey("./.config");
                 RUtils.wallet = new Wallet(WalletFileManager.derivePublicKey(privateKey), privateKey);
+                cLogger.println("Your Public key is: "+ CoreStringUtil.getStringFromKey(RUtils.wallet.getPublicKey()));
             } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
                 e.printStackTrace();
                 cLogger.log(LogLevel.EXCEPTION, "Could Not find Your wallet under ./config/private.key");
@@ -199,6 +205,52 @@ public class Main {
                 }
                 if (user_choice.equals("dump")) {
                     cLogger.println("\n" + blockchainManager.dumpBlockchain());
+                }
+                if (user_choice.equals("test")){
+                    HashMap<PublicKey, BigDecimal> _recipients  = new HashMap<>();
+                    PublicKey destinationKey = CoreStringUtil
+                            .getPublicKeyFromString(
+                                    "MEkwEwYHKoZIzj0CAQYIKoZIzj0DAQEDMgAE2LOOURTBP0o4hD1lFxwMhb8g+iQyvaN1Xg28XioEOWy5/BSOfS9QkUoNw+aXA8eA"
+                            );
+                    _recipients.put(destinationKey
+                            ,new BigDecimal(10));
+                    ArrayList<TransactionOutput> minUTXOS = blockchainManager.getMinUTXOForPublicKey(RUtils.wallet.getPublicKey(),new BigDecimal(10));
+                    ArrayList<TransactionInput> _inputs = new ArrayList<>();
+                    for (TransactionOutput tout : minUTXOS) {
+                        _inputs.add(new TransactionInput(tout.id, tout));
+                    }
+                    Transaction transaction = new Transaction(RUtils.wallet.getPublicKey(),_recipients,new ArrayList<>());
+                    transaction.sender = RUtils.wallet.getPublicKey();
+                    transaction.inputs = _inputs;
+                    //put change back to us
+                    transaction.recipients.put(RUtils.wallet.getPublicKey(),transaction.getInputsValue().subtract(new BigDecimal(10)));
+
+                    //generate id before adding outputs, so that the outputs can have a parent txn id
+                    transaction.transactionId = TransactionOperations.calulateHashTransaction(transaction);
+
+                    //As for POC ill demonstrate to the recipient and a change back to the user base
+                    ArrayList<TransactionOutput> _txnOutputs = new ArrayList<>();
+                    TransactionOutput _tout = new TransactionOutput(destinationKey, new BigDecimal(10), transaction.transactionId, null);
+                    _tout.id = TransactionOperations.generateTransactionOutputThisId(_tout);
+                    TransactionOutput _change = new TransactionOutput(RUtils.wallet.getPublicKey(), transaction.getInputsValue().subtract(new BigDecimal(10)), transaction.transactionId, null);
+                    _change.id = TransactionOperations.generateTransactionOutputThisId(_change);
+                    _txnOutputs.add(_tout);
+                    _txnOutputs.add(_change);
+                    transaction.outputs = _txnOutputs;
+                    //sign the txn!
+                    transaction.signature = TransactionOperations.generateSignature(RUtils.wallet.getPrivateKey(), transaction);
+                    cLogger.println("sig verified? : " +TransactionOperations.verifySignature(transaction));
+                    blockchainManager.addTransactionToMemPool(transaction);
+                    blockchainManager.newTxnReceived();
+                }
+                if (user_choice.equals("balance")){
+                    BigDecimal _minerBalance = new BigDecimal(0);
+                    for (TransactionOutput output : blockchainManager.UTXOs.values()) {
+                        if (output.isMine(RUtils.wallet.getPublicKey())) {
+                            _minerBalance = _minerBalance.add(output.value);
+                        }
+                    }
+                    cLogger.println("MINER GROSS BALANCE IS: "+ _minerBalance.toString());
                 }
 
             }

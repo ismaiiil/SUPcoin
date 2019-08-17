@@ -87,10 +87,14 @@ public class Block implements Serializable {
         //process transaction and check if valid, unless block is genesis block then ignore.
         if (transaction == null) return false;
         if ((!"0".equals(previousHash))) {
-            if ((!TransactionOperations.verifyTransaction(transaction))) {
+            System.out.println(transaction.toString());
+            if (!(TransactionOperations.verifyTransaction(transaction))) {
+
                 System.out.println("Transaction failed to process. Discarded.");
                 return false;
             }
+        }else{
+            System.out.println("Previous hash of block is zero");
         }
 
         transactions.add(transaction);
