@@ -59,7 +59,6 @@ public class BlockchainManager implements BlockchainCallbacks {
         }
         UTXOs = (HashMap<String, TransactionOutput>) tempUTXOs.clone();
         tempUTXOs.clear();
-        cLogger.println("The blockchain is valid!");
         return true;
     }
 
@@ -203,8 +202,10 @@ public class BlockchainManager implements BlockchainCallbacks {
                 cLogger.println("No blockchain could be downloaded from any peer");
                 return false;
             }
+        }else{
+            return true;
         }
-        return false;
+        return true;
     }
 
     public void initGenesisBlockchain() {

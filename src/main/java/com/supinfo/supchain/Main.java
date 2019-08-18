@@ -179,7 +179,7 @@ public class Main {
                 }
             }
 
-
+            cLogger.println("The blockchain is valid!");
             cLogger.printInput("do you want to test a propagatable message...");
 
 
