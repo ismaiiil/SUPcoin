@@ -261,6 +261,7 @@ public class TCPMessageListener extends Thread {
                     }
                     case REQUEST_CHAIN_SIZE:{
                         TCPMessage chainSizeMessage = new TCPMessage<>(TCPMessageType.RESPONSE_CHAIN_SIZE,blockchainManager.blockchain.size());
+                        cLogger.log(CHAIN, "received a request to check this nodes blockchain size");
                         TCPUtils.unicast(chainSizeMessage, origin);
                         break;
                     }
@@ -269,6 +270,7 @@ public class TCPMessageListener extends Thread {
                         if(chainSize >= blockchainManager.blockchain.size()){
                             TCPMessage requestBlockchain = new TCPMessage<>(TCPMessageType.INIT_REQUEST_DOWNLOAD, "");
                             TCPUtils.unicast(requestBlockchain,origin);
+                            cLogger.log(CHAIN, "sending back this nodes blockchain size");
                         }
                     }
                     case INIT_DOWNLOAD_FULL_BLOCKCHAIN: {
@@ -283,9 +285,11 @@ public class TCPMessageListener extends Thread {
                             //only if it is valid assign it to the blockchainHolder
                             //once it has received the full blockchainHolder we can start do stuff
                             blockchainManager.initHasDownloaded(true, origin);
+                            cLogger.log(CHAIN, "Blockchain validated and now saving to cache");
                         } else {
                             miner.resumeMining();
                             //send callback failed to get a valid blockchainHolder
+                            cLogger.log(CHAIN, "Blockchain failed to validate and now resuming any job by the mining thread");
                             blockchainManager.initHasDownloaded(false, origin);
                         }
                         break;
@@ -308,6 +312,7 @@ public class TCPMessageListener extends Thread {
                         Transaction transaction = (Transaction) tcpMessage.getData();
                         cLogger.log(CHAIN, "Successfully received the new Transaction!");
                         if (tcpMessage.isPropagatable() && tcpMessage.isAlive()) {
+                            cLogger.log(CHAIN, "Propagating the new Transaction!");
                             TCPUtils.multicastAll(tcpMessage,RUtils.externalIP);
                         }
                         blockchainManager.mempool.add(transaction);
@@ -318,8 +323,9 @@ public class TCPMessageListener extends Thread {
                     case NEW_TXN_MEMPOOL:{
                         try{
                             Transaction transaction = (Transaction) tcpMessage.getData();
-                            cLogger.log(CHAIN, "Successfully received the new USER GEN Transaction!");
+                            cLogger.log(CHAIN, "Successfully received the new USER GENERATED Transaction!");
                             if (tcpMessage.isPropagatable() && tcpMessage.isAlive()) {
+                                cLogger.log(CHAIN, "Propagating the new Transaction!");
                                 TCPUtils.multicastAll(new TCPMessage<>(TCPMessageType.PROPAGATE_NEW_TXN_MEMPOOL,0, transaction), RUtils.externalIP);
                             }
                             blockchainManager.mempool.add(transaction);
@@ -331,6 +337,7 @@ public class TCPMessageListener extends Thread {
 
                     }
                     case PROPAGATE_NEW_BLOCK:{
+                        cLogger.log(CHAIN, "Received a newly propagated block");
                         Block block = (Block) tcpMessage.getData();
                         blockchainManager.newBlockReceived(block);
                         if (tcpMessage.isPropagatable() && tcpMessage.isAlive()) {

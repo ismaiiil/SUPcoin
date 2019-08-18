@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import static com.supinfo.supchain.blockchain.transaction.TransactionOperations.*;
+import static com.supinfo.supchain.enums.LogLevel.CHAIN;
 import static java.lang.Thread.sleep;
 
 public class BlockchainManager implements BlockchainCallbacks {
@@ -280,7 +281,9 @@ public class BlockchainManager implements BlockchainCallbacks {
     @Override
     public void newBlockReceived(Block block) {
         Block lastBlock = blockchain.get(blockchain.size()-1);
-        if(block.previousHash.equals(lastBlock.previousHash)){
+        //TODO this line was changed "lastBlock.hash" we may have induced a bug if we reapeated the error "lastBlock.hash somewhere else
+        if(block.previousHash.equals(lastBlock.hash)){
+            cLogger.log(CHAIN, "Received a newly propagated block with the same hash as our last block");
             miner.pauseMining();
             if(validateBlock(lastBlock,block,true)){
                 miner.abortMining();
