@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static com.supinfo.supchain.Main.blockchainManager;
+import static java.util.Map.Entry.comparingByValue;
 
 public class TransactionOperations {
 
@@ -67,10 +68,14 @@ public class TransactionOperations {
     private static String getMapAsString(Transaction transaction) {
         HashMap<PublicKey, BigDecimal> _recipients = transaction.recipients;
         StringBuilder output = new StringBuilder();
-        for (HashMap.Entry<PublicKey, BigDecimal> entry : _recipients.entrySet()) {
-            String _t = CoreStringUtil.getStringFromKey(entry.getKey()) + entry.getValue().toString();
+        _recipients.entrySet().stream().sorted(comparingByValue()).forEach(publicKeyBigDecimalEntry -> {
+            String _t =CoreStringUtil.getStringFromKey(publicKeyBigDecimalEntry.getKey()) + publicKeyBigDecimalEntry.getValue().toString();
             output.append(_t);
-        }
+        });
+//        for (HashMap.Entry<PublicKey, BigDecimal> entry : _recipients.entrySet()) {
+//            String _t = getStringFromKey(entry.getKey()) + entry.getValue().toString();
+//            output.append(_t);
+//        }
         return output.toString();
     }
 
